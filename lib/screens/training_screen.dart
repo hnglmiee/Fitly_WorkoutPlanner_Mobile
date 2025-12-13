@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/congratulation_page.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 
 class TrainingScreen extends StatefulWidget {
@@ -13,19 +15,94 @@ class _TrainingScreenState extends State<TrainingScreen> {
   int selectedDayIndex = 2; // mặc định là Wednesday
   int _selectedIndex = 0; // Trạng thái Navigation Bar
 
-  final List<String> days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  final List<String> dates = ["09", "10", "11", "12", "13", "14", "15"];
+  late PageController _pageController;
+
+  /// Tuần hiện tại
+  List<DateTime> weekDates = [];
+
+  /// Tuần đang hiển thị (0 = tuần hiện tại)
+  int weekOffset = 0;
+
+  final ScrollController _weekScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 0);
+    _initWeek();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCenter(selectedDayIndex);
+    });
+  }
+
+  /// Khởi tạo tuần
+  void _initWeek() {
+    final now = DateTime.now();
+    final monday = now.subtract(
+      Duration(days: now.weekday - 1 + weekOffset * 7),
+    );
+
+    weekDates = List.generate(7, (i) => monday.add(Duration(days: i)));
+
+    selectedDayIndex = weekDates.indexWhere(
+      (d) => d.year == now.year && d.month == now.month && d.day == now.day,
+    );
+
+    if (selectedDayIndex < 0) {
+      selectedDayIndex = 0;
+    }
+  }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfileScreen()),
+      ).then((_) => setState(() => _selectedIndex = 0));
+    } else {
+      setState(() => _selectedIndex = index);
+    }
+  }
 
-    // Thêm logic điều hướng tại đây nếu có nhiều trang
+  void _scrollToCenter(int index) {
+    if (!_weekScrollController.hasClients) return;
+
+    const double itemWidth = 72;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final offset = index * itemWidth - (screenWidth / 2) + (itemWidth / 2);
+
+    _weekScrollController.animateTo(
+      offset.clamp(
+        _weekScrollController.position.minScrollExtent,
+        _weekScrollController.position.maxScrollExtent,
+      ),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _weekScrollController.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (weekDates.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     final primaryColor = Theme.of(context).colorScheme.primary;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final thirdColor = Theme.of(context).colorScheme.background;
@@ -47,6 +124,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Greeting + Profile
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -64,10 +142,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         ),
                       ],
                     ),
-                    const CircleAvatar(
-                      radius: 20,
-                      backgroundImage: NetworkImage(
-                        'https://i.pravatar.cc/150?img=3',
+                    GestureDetector(
+                      onTap:
+                          () => _onItemTapped(
+                            3,
+                          ), // Gọi hàm điều hướng đến Profile (index 3)
+                      child: const CircleAvatar(
+                        radius: 20,
+                        backgroundImage: NetworkImage(
+                          'https://images.unsplash.com/photo-1644845225271-4cd4f76a0631?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                        ),
                       ),
                     ),
                   ],
@@ -83,18 +167,20 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 SizedBox(
                   height: 120, // Chiều cao cho phép chấm chỉ báo
                   child: ListView.builder(
+                    controller: _weekScrollController,
                     scrollDirection: Axis.horizontal,
-                    itemCount: days.length,
+                    itemCount: weekDates.length,
                     itemBuilder: (context, index) {
-                      bool isSelected = index == selectedDayIndex;
-                      Color dayBackgroundColor =
-                          isSelected ? Colors.blue : Colors.blue.shade100!;
+                      final date = weekDates[index];
+                      final isSelected = index == selectedDayIndex;
+                      final isToday = _isToday(date);
 
                       return GestureDetector(
                         onTap: () {
                           setState(() {
                             selectedDayIndex = index;
                           });
+                          _scrollToCenter(index);
                         },
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -106,9 +192,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               margin: const EdgeInsets.only(bottom: 6),
                               decoration: BoxDecoration(
                                 color:
-                                    isSelected
+                                    isToday
+                                        ? Colors.red
+                                        : isSelected
                                         ? Colors.blue
                                         : Colors.transparent,
+
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -118,7 +207,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               width: 60,
                               margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
-                                color: dayBackgroundColor,
+                                color:
+                                    isSelected
+                                        ? Colors.blue
+                                        : Colors.blue.shade100,
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Padding(
@@ -130,13 +222,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   children: [
                                     // Tên ngày trong tuần (Mon, Tue, Wed)
                                     Text(
-                                      days[index],
+                                      DateFormat('EEE').format(date),
                                       style: TextStyle(
                                         color:
                                             isSelected
                                                 ? Colors.white
                                                 : Colors.black,
-                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -158,7 +249,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                         ),
                                       ),
                                       child: Text(
-                                        dates[index],
+                                        date.day.toString(),
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
@@ -439,7 +530,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                 const SizedBox(width: 8),
                                 // Label (Steps)
                                 Text(
-                                  'Steps',
+                                  'Streaks',
                                   style: Theme.of(context).textTheme.bodyMedium!
                                       .copyWith(fontWeight: FontWeight.w500),
                                 ),
@@ -449,7 +540,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
                             // Giá trị lớn (1000 steps)
                             Text(
-                              '1,000 steps',
+                              '2 days',
                               style: Theme.of(
                                 context,
                               ).textTheme.headlineMedium!.copyWith(

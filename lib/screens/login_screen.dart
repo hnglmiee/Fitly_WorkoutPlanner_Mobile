@@ -1,9 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:workout_tracker_mini_project_mobile/screens/register_screen.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
+import '../services/auth_service.dart';
+import '../utils/token_storage.dart';
 import '../theme/app_theme.dart';
+import 'register_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
+
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email và password không được để trống")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authResponse = await _authService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // ✅ lưu token
+      await TokenStorage.saveToken(authResponse.token);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Login successful")));
+
+      // TODO: Navigator.pushReplacement(...)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const TrainingScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +76,8 @@ class LoginScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 30),
 
-              // Header
               Text("Let’s Sign you in", style: textTheme.headlineLarge),
-
               const SizedBox(height: 8),
-
               Text(
                 "Sign in and elevate your fitness game.",
                 style: textTheme.bodyLarge,
@@ -31,80 +85,60 @@ class LoginScreen extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              // EMAIL
               Text("Email address", style: textTheme.bodyMedium),
               const SizedBox(height: 6),
 
               TextField(
-                decoration: InputDecoration(
-                  hintText: "Email address",
-                  hintStyle: textTheme.bodyMedium,
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F5),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 16,
-                  ),
-                ),
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: _inputDecoration("Email address", textTheme),
               ),
 
               const SizedBox(height: 20),
 
-              // PASSWORD
               Text("Password", style: textTheme.bodyMedium),
               const SizedBox(height: 6),
 
               TextField(
+                controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
-                  hintText: "Password",
-                  hintStyle: textTheme.bodyMedium,
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F5),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 16,
-                  ),
-                ),
+                decoration: _inputDecoration("Password", textTheme),
               ),
 
               const SizedBox(height: 32),
 
-              // SIGN IN BUTTON
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    "Sign In",
-                    style: textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : Text(
+                            "Sign In",
+                            style: textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
                 ),
               ),
 
               const SizedBox(height: 24),
 
-              // FOOTER
-              // FOOTER
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -137,6 +171,20 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint, TextTheme textTheme) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: textTheme.bodyMedium,
+      filled: true,
+      fillColor: const Color(0xFFF5F5F5),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
     );
   }
 }
