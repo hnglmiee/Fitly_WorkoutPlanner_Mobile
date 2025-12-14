@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -45,9 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Login successful")));
+      // ScaffoldMessenger.of(
+      //   context,
+      // ).showSnackBar(const SnackBar(content: Text("Login successful")));
 
       // TODO: Navigator.pushReplacement(...)
       Navigator.pushReplacement(
@@ -106,8 +107,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
               TextField(
                 controller: _passwordController,
-                obscureText: true,
-                decoration: _inputDecoration("Password", textTheme),
+                obscureText: _obscurePassword,
+                decoration: _inputDecoration("Password", textTheme).copyWith(
+                  suffixIcon: GestureDetector(
+                    onTapDown: (_) {
+                      setState(() => _obscurePassword = false);
+                    },
+                    onTapUp: (_) {
+                      setState(() => _obscurePassword = true);
+                    },
+                    onTapCancel: () {
+                      setState(() => _obscurePassword = true);
+                    },
+                    child: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
               ),
 
               const SizedBox(height: 32),
