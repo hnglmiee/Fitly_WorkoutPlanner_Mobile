@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/congratulation_page.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
+
+import '../models/user_info.dart';
+import '../services/user_service.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -25,6 +29,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   final ScrollController _weekScrollController = ScrollController();
 
+  UserInfo? userInfo;
+  bool isLoadingUser = true;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +41,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCenter(selectedDayIndex);
     });
+
+    _fetchUserInfo();
   }
 
   /// Khởi tạo tuần
@@ -97,6 +106,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
         date.day == now.day;
   }
 
+  Future<void> _fetchUserInfo() async {
+    try {
+      userInfo = await UserService.getMyInfo();
+    } catch (e) {
+      debugPrint("Error fetching user info: $e");
+    } finally {
+      setState(() => isLoadingUser = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (weekDates.isEmpty) {
@@ -130,12 +149,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Hello,', style: TextStyle(fontSize: 20)),
-                        SizedBox(height: 4),
+                      children: [
+                        const Text('Hello,', style: TextStyle(fontSize: 20)),
+                        const SizedBox(height: 4),
+                        // Hiển thị tên
                         Text(
-                          'Jenny Wilson',
-                          style: TextStyle(
+                          isLoadingUser
+                              ? 'Loading...'
+                              : userInfo?.fullName ?? 'User',
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -143,10 +165,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap:
-                          () => _onItemTapped(
-                            3,
-                          ), // Gọi hàm điều hướng đến Profile (index 3)
+                      onTap: () => _onItemTapped(3),
                       child: const CircleAvatar(
                         radius: 20,
                         backgroundImage: NetworkImage(

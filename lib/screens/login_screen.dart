@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import '../services/auth_service.dart';
+import '../services/user_service.dart';
 import '../utils/token_storage.dart';
 import '../theme/app_theme.dart';
 import 'register_screen.dart';
@@ -37,6 +38,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // ✅ lưu token
       await TokenStorage.saveToken(authResponse.token);
+
+      // 2️⃣ Lưu token vào UserService để các API khác dùng
+      UserService.setToken(authResponse.token);
+
+      // ✅ Fetch user info ngay lập tức
+      try {
+        final userInfo = await UserService.getMyInfo();
+        print("User full name: ${userInfo.fullName}");
+      } catch (e) {
+        print("Error fetching user info: $e");
+      }
 
       if (!mounted) return;
 

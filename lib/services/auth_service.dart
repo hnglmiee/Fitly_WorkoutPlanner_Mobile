@@ -18,19 +18,16 @@ class AuthService {
       }
 
       final data = response.data;
-
       if (data is! Map<String, dynamic>) {
         throw Exception("Invalid response format");
       }
 
       final result = data['result'];
-
       if (result == null || result is! Map<String, dynamic>) {
         throw Exception("Invalid login result");
       }
 
       final token = result['token'];
-
       if (token == null || token is! String) {
         throw Exception("Token not found");
       }
