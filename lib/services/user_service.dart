@@ -3,24 +3,8 @@ import '../network/dio_client.dart';
 import '../models/user_info.dart';
 
 class UserService {
-  // static String? _token;
-  //
-  // // ===================== TOKEN =====================
-  // static void setToken(String t) {
-  //   _token = t;
-  //
-  //   // set global Authorization header
-  //   DioClient.dio.options.headers['Authorization'] = 'Bearer $t';
-  // }
-  //
-  // static String? getToken() => _token;
-
   // ===================== GET MY INFO =====================
   static Future<UserInfo> getMyInfo() async {
-    // if (_token == null) {
-    //   throw Exception("Token not set. Please login first.");
-    // }
-
     try {
       final response = await DioClient.dio.get("/users/myInfo");
 

@@ -6,6 +6,8 @@ class UserInfo {
   final String? roleName;
   final String? gender;
   final DateTime? birthday;
+  final double? weight;
+  final double? height;
 
   UserInfo({
     required this.id,
@@ -15,6 +17,8 @@ class UserInfo {
     this.roleName,
     this.gender,
     this.birthday,
+    this.weight,
+    this.height,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
