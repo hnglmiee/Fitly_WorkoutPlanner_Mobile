@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import '../services/auth_service.dart';
 import '../services/user_service.dart';
-import '../utils/token_storage.dart';
 import '../theme/app_theme.dart';
 import 'register_screen.dart';
 

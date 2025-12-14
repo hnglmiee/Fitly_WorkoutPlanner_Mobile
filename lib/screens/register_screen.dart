@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/gender_screen.dart';
 import '../services/auth_service.dart';
-import '../services/user_service.dart';
 import '../theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
