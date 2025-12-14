@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../services/user_service.dart';
 import '../theme/app_theme.dart';
 import 'height_screen.dart';
 
 class GenderScreen extends StatefulWidget {
-  const GenderScreen({super.key});
+  final int userId;
+  const GenderScreen({super.key, required this.userId});
 
   @override
   State<GenderScreen> createState() => _GenderScreenState();
@@ -91,11 +93,24 @@ class _GenderScreenState extends State<GenderScreen> {
                 child: ElevatedButton(
                   onPressed:
                       selectedGender.isNotEmpty
-                          ? () {
-                            Navigator.push(
-                              context,
-                              _slideTo(const HeightScreen()),
-                            );
+                          ? () async {
+                            try {
+                              // Call API để update gender
+                              await UserService.updateUserGender(
+                                userId: widget.userId,
+                                gender: selectedGender,
+                              );
+
+                              // Chuyển sang HeightScreen
+                              Navigator.push(
+                                context,
+                                _slideTo(const HeightScreen()),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
                           }
                           : null,
                   style: ElevatedButton.styleFrom(

@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/gender_screen.dart';
+import '../services/auth_service.dart';
+import '../services/user_service.dart';
 import '../theme/app_theme.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  final AuthService _authService = AuthService();
+
+  @override
+  void dispose() {
+    fullNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,50 +39,53 @@ class RegisterScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 30),
-
-              // Header
               Text("Create Account", style: textTheme.headlineLarge),
-
               const SizedBox(height: 8),
-
               Text(
                 "Sign up and take the first step towards your goals.",
                 style: textTheme.bodyLarge,
               ),
-
               const SizedBox(height: 40),
 
-              // FULL NAME
+              // Full Name
               Text("Full Name", style: textTheme.bodyMedium),
               const SizedBox(height: 6),
-              _buildInput(textTheme, "Full Name"),
+              _buildInput(
+                textTheme,
+                "Full Name",
+                controller: fullNameController,
+              ),
 
               const SizedBox(height: 20),
 
-              // EMAIL
+              // Email
               Text("Email address", style: textTheme.bodyMedium),
               const SizedBox(height: 6),
-              _buildInput(textTheme, "Email address"),
+              _buildInput(
+                textTheme,
+                "Email address",
+                controller: emailController,
+              ),
 
               const SizedBox(height: 20),
 
-              // PASSWORD
+              // Password
               Text("Password", style: textTheme.bodyMedium),
               const SizedBox(height: 6),
-              _buildInput(textTheme, "Password", obscure: true),
+              _buildInput(
+                textTheme,
+                "Password",
+                obscure: true,
+                controller: passwordController,
+              ),
 
               const SizedBox(height: 32),
 
-              // SIGN UP BUTTON
+              // Sign Up Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const GenderScreen()),
-                    );
-                  },
+                  onPressed: _onRegisterPressed,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
@@ -82,7 +106,7 @@ class RegisterScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // FOOTER
+              // Footer
               Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -93,7 +117,7 @@ class RegisterScreen extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pop(context); // quay về login
+                        Navigator.pop(context);
                       },
                       child: Text(
                         "Sign In",
@@ -113,9 +137,14 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  // -------- CUSTOM INPUT WIDGET --------
-  Widget _buildInput(TextTheme textTheme, String hint, {bool obscure = false}) {
+  Widget _buildInput(
+    TextTheme textTheme,
+    String hint, {
+    bool obscure = false,
+    TextEditingController? controller,
+  }) {
     return TextField(
+      controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
         hintText: hint,
@@ -132,5 +161,40 @@ class RegisterScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _onRegisterPressed() async {
+    final fullName = fullNameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+      return;
+    }
+
+    try {
+      // 1️⃣ Register
+      final user = await _authService.register(
+        fullName: fullName,
+        email: email,
+        password: password,
+      );
+
+      // Login (token được lưu trong AuthService)
+      await _authService.login(email: email, password: password);
+
+      // Navigate
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => GenderScreen(userId: user.id)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 }

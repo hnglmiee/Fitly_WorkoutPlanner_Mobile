@@ -36,12 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // ✅ lưu token
-      await TokenStorage.saveToken(authResponse.token);
-
-      // 2️⃣ Lưu token vào UserService để các API khác dùng
-      UserService.setToken(authResponse.token);
-
       // ✅ Fetch user info ngay lập tức
       try {
         final userInfo = await UserService.getMyInfo();
