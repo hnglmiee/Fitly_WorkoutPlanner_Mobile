@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
 import '../models/user_inbody.dart';
 import '../models/user_info.dart';
+import '../services/auth_service.dart';
 import '../services/user_inbody_service.dart';
 import '../services/user_service.dart';
+import 'goal_progress.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -23,6 +27,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _userFuture = UserService.getMyInfo();
     _inbodyFuture = UserInbodyService.getLatestInbody();
+  }
+
+  void _onNavTapped(int index) {
+    if (index == 3) return; // đang ở Profile → không làm gì
+
+    Widget nextScreen;
+
+    switch (index) {
+      case 0:
+        nextScreen = const TrainingScreen();
+        break;
+      case 2:
+        nextScreen = const GoalProgressScreen();
+        break;
+      case 3:
+        nextScreen = const ProfileScreen();
+        break;
+      default:
+        return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
+    );
   }
 
   // Widget riêng để xây dựng thẻ chỉ số nhỏ (Giữ nguyên)
@@ -69,6 +98,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final thirdColor = AppTheme.third; // Màu nền của mục menu
 
+    final isLogout = title == "Logout";
+    final itemColor = isLogout ? Colors.red : primaryColor;
+    final arrowColor = isLogout ? Colors.red : Colors.grey.shade600;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       // BỌC TRONG CLIPRRECT VÀ INKWELL ĐỂ TẠO HIỆU ỨNG NHẤN
@@ -76,23 +109,154 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(50),
         child: InkWell(
           onTap: () {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Tapped on $title')));
+            if (isLogout) {
+              // 🔥 Dialog xác nhận logout
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder:
+                    (_) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // ⚠️ ICON CẢNH BÁO
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.red,
+                                size: 36,
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // TITLE
+                            const Text(
+                              "Confirm Logout",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // CONTENT
+                            Text(
+                              "Are you sure you want to logout?\nYou will need to login again.",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                    child: const Text("Cancel"),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 12),
+
+                                // 🔴 LOGOUT
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      try {
+                                        await AuthService.logout();
+
+                                        if (!context.mounted) return;
+
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const LoginScreen(),
+                                          ),
+                                          (_) => false,
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(content: Text(e.toString())),
+                                        );
+                                      }
+                                    },
+
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      "Logout",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+              );
+            } else {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Tapped on $title')));
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(color: thirdColor),
+            decoration: BoxDecoration(
+              color: isLogout ? Colors.red.shade50 : thirdColor,
+            ),
             child: Row(
               children: [
-                Icon(icon, size: 24, color: primaryColor),
+                Icon(
+                  icon,
+                  size: 24,
+                  color: isLogout ? Colors.red : primaryColor,
+                ),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: textTheme.titleMedium?.copyWith(fontSize: 16),
+                      style: textTheme.titleMedium?.copyWith(
+                        fontSize: 16,
+                        color: isLogout ? Colors.red : null,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -105,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: Colors.grey.shade600,
+                  color: isLogout ? Colors.red : null,
                 ),
               ],
             ),
@@ -282,6 +446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Icons.local_fire_department,
                           "Goal",
                         ),
+                        _buildMenuItem(context, Icons.logout, "Logout"),
                       ],
                     ),
                   ),
@@ -297,11 +462,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
           selectedIndex: 3, // Profile là index 3
-          onItemTapped: (index) {
-            if (index == 0) {
-              Navigator.pop(context); // Quay lại TrainingScreen
-            }
-          },
+          onItemTapped: _onNavTapped,
         ),
       ),
     );

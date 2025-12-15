@@ -80,4 +80,9 @@ class AuthService {
       throw Exception(message);
     }
   }
+
+  static Future<void> logout() async {
+    await DioClient.dio.post("/auth/logout");
+    await TokenStorage.clear();
+  }
 }

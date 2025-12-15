@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:workout_tracker_mini_project_mobile/screens/congratulation_page.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/goal_progress.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 
@@ -62,15 +62,33 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
   }
 
-  void _onItemTapped(int index) {
-    if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ProfileScreen()),
-      ).then((_) => setState(() => _selectedIndex = 0));
-    } else {
-      setState(() => _selectedIndex = index);
+  void _onNavTapped(int index) {
+    if (index == _selectedIndex) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    Widget nextScreen;
+
+    switch (index) {
+      case 0:
+        nextScreen = const TrainingScreen();
+        break;
+      case 2:
+        nextScreen = const GoalProgressScreen();
+        break;
+      case 3:
+        nextScreen = const ProfileScreen();
+        break;
+      default:
+        return;
     }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => nextScreen),
+    );
   }
 
   void _scrollToCenter(int index) {
@@ -130,7 +148,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
           selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
+          onItemTapped: _onNavTapped,
         ),
       ),
       body: SafeArea(
@@ -164,7 +182,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () => _onItemTapped(3),
+                      onTap: () => _onNavTapped(3),
                       child: const CircleAvatar(
                         radius: 20,
                         backgroundImage: NetworkImage(
@@ -386,7 +404,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const CongratulationsPage(),
+                              builder: (_) => const GoalProgressScreen(),
                             ),
                           );
                         },
