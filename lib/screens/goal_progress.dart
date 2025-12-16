@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/percentage_progress_bar.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
@@ -26,6 +27,9 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
       case 0:
         nextScreen = TrainingScreen();
         break;
+      case 1:
+        nextScreen = const ScheduleScreen();
+        break;
       case 2:
         nextScreen = const GoalProgressScreen();
         break;
@@ -38,7 +42,11 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => nextScreen),
+      PageRouteBuilder(
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => nextScreen,
+      ),
     );
   }
 
@@ -236,7 +244,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                           const SizedBox(height: 6),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: PercentageProgressBar(percent: 46),
+                            child: PercentageProgressBar(percent: 30),
                           ),
                           const SizedBox(height: 4),
                         ],

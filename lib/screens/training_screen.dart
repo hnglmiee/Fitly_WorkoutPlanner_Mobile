@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/goal_progress.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 
 import '../models/user_info.dart';
@@ -81,13 +82,19 @@ class _TrainingScreenState extends State<TrainingScreen> {
       case 3:
         nextScreen = const ProfileScreen();
         break;
+      case 1:
+        nextScreen = const ScheduleScreen();
       default:
         return;
     }
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => nextScreen),
+      PageRouteBuilder(
+        transitionDuration: Duration.zero, // 🚫 không animation
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => nextScreen,
+      ),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
@@ -38,6 +39,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 0:
         nextScreen = const TrainingScreen();
         break;
+      case 1:
+        nextScreen = const ScheduleScreen();
       case 2:
         nextScreen = const GoalProgressScreen();
         break;
@@ -50,7 +53,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => nextScreen),
+      PageRouteBuilder(
+        transitionDuration: Duration.zero, // 🚫 không animation
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => nextScreen,
+      ),
     );
   }
 
