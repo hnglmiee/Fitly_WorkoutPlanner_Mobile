@@ -6,6 +6,7 @@ import '../models/schedule_plan.dart';
 import '../shared/navigation_bar.dart';
 import '../shared/schedule_calendar.dart';
 import '../shared/schedule_plan_item.dart';
+import 'add_plan.dart';
 import 'goal_progress.dart';
 import 'package:intl/intl.dart';
 
@@ -172,13 +173,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
               /// ADD PLAN
               Row(
-                children: const [
+                children: [
                   Text(
                     'Add plan',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(width: 4),
-                  Icon(Icons.add),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AddPlanScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
 
