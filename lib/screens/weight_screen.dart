@@ -14,20 +14,24 @@ class _WeightScreenState extends State<WeightScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const SizedBox(height: 15),
-
-              Text("Weight", style: textTheme.headlineMedium),
               const SizedBox(height: 20),
 
+              /// HEADER
+              const Text(
+                "Weight",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// PROGRESS BAR
               Row(
                 children: [
                   _progress(true),
@@ -37,52 +41,129 @@ class _WeightScreenState extends State<WeightScreen> {
                 ],
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
 
-              Text(
+              /// TITLE
+              const Text(
                 "What is your Weight?",
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 12),
+
+              /// SUBTITLE
+              Text(
+                "Weight in kg — don't worry you can always\nchange it later",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
                 ),
               ),
-              const SizedBox(height: 8),
 
-              Text(
-                "Weight in kg — don’t worry you can always\nchange it later",
-                textAlign: TextAlign.center,
-                style: textTheme.bodyMedium,
-              ),
+              const SizedBox(height: 40),
 
-              const SizedBox(height: 30),
-
+              /// WEIGHT SELECTOR
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: AppTheme.third,
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primary,
-                      ),
-                      child: Text(weight.toInt().toString()),
+                    /// WEIGHT VALUE
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: 64,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primary,
+                            height: 1,
+                          ),
+                          child: Text(weight.toInt().toString()),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8, left: 4),
+                          child: Text(
+                            "kg",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text("kilograms"),
 
-                    Slider(
-                      min: 30,
-                      max: 150,
-                      value: weight,
-                      activeColor: AppTheme.primary,
-                      onChanged: (v) {
-                        setState(() => weight = v);
-                      },
+                    const SizedBox(height: 32),
+
+                    /// SLIDER
+                    SliderTheme(
+                      data: SliderThemeData(
+                        trackHeight: 6,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 12,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 24,
+                        ),
+                        activeTrackColor: AppTheme.primary,
+                        inactiveTrackColor: Colors.grey.shade200,
+                        thumbColor: AppTheme.primary,
+                        overlayColor: AppTheme.primary.withOpacity(0.2),
+                      ),
+                      child: Slider(
+                        min: 30,
+                        max: 150,
+                        value: weight,
+                        onChanged: (v) {
+                          setState(() => weight = v);
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    /// MIN MAX LABELS
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "30 kg",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          "150 kg",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -90,22 +171,28 @@ class _WeightScreenState extends State<WeightScreen> {
 
               const Spacer(),
 
+              /// NEXT BUTTON
               SizedBox(
                 width: double.infinity,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(context, _slideTo(const GoalScreen()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    elevation: 0,
                   ),
-                  child: Text(
+                  child: const Text(
                     "Next",
-                    style: textTheme.titleMedium?.copyWith(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -122,11 +209,11 @@ class _WeightScreenState extends State<WeightScreen> {
     return Expanded(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        height: 4,
+        height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: active ? AppTheme.primary : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(3),
         ),
       ),
     );

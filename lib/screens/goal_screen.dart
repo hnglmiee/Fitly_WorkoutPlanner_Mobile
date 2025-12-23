@@ -16,37 +16,49 @@ class _GoalScreenState extends State<GoalScreen> {
     {
       "title": "Exercise",
       "subtitle": "Burn calories, burn fat",
-      "icon": "🏃‍♂️",
+      "icon": Icons.directions_run,
+      "color": Colors.orange,
     },
-    {"title": "Get Fit", "subtitle": "Build habits & balance", "icon": "💪"},
+    {
+      "title": "Get Fit",
+      "subtitle": "Build habits & balance",
+      "icon": Icons.favorite,
+      "color": Colors.red,
+    },
     {
       "title": "Get Strong",
       "subtitle": "Gain strength & muscle",
-      "icon": "🏋️",
+      "icon": Icons.fitness_center,
+      "color": Colors.blue,
     },
     {
       "title": "Combination",
       "subtitle": "Burn fat + build muscle",
-      "icon": "🔥",
+      "icon": Icons.local_fire_department,
+      "color": Colors.deepOrange,
     },
   ];
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const SizedBox(height: 15),
-
-              Text("Goal", style: textTheme.headlineMedium),
               const SizedBox(height: 20),
 
+              /// HEADER
+              const Text(
+                "Goal",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// PROGRESS BAR
               Row(
                 children: [
                   _progress(true),
@@ -56,100 +68,67 @@ class _GoalScreenState extends State<GoalScreen> {
                 ],
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
 
-              Text(
+              /// TITLE
+              const Text(
                 "What is your Goal?",
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
                 ),
+                textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
 
+              /// SUBTITLE
               Text(
-                "You can choose more than one — change anytime later.",
-                style: textTheme.bodyMedium,
+                "You can choose more than one — change\nanytime later.",
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
                 textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 32),
+
+              /// GOALS LIST
+              Expanded(
+                child: ListView.separated(
+                  itemCount: goals.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final goal = goals[index];
+                    final isSelected = selected.contains(goal["title"]);
+
+                    return _goalCard(
+                      title: goal["title"],
+                      subtitle: goal["subtitle"],
+                      icon: goal["icon"],
+                      color: goal["color"],
+                      isSelected: isSelected,
+                      onTap: () {
+                        setState(() {
+                          isSelected
+                              ? selected.remove(goal["title"])
+                              : selected.add(goal["title"]);
+                        });
+                      },
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 20),
 
-              Expanded(
-                child: ListView(
-                  children:
-                      goals.map((goal) {
-                        final isSelected = selected.contains(goal["title"]);
-
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: const EdgeInsets.only(bottom: 14),
-                          child: Material(
-                            color:
-                                isSelected
-                                    ? AppTheme.primary.withOpacity(0.08)
-                                    : AppTheme.third,
-                            borderRadius: BorderRadius.circular(16),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              splashColor: AppTheme.primary.withOpacity(0.2),
-                              onTap: () {
-                                setState(() {
-                                  isSelected
-                                      ? selected.remove(goal["title"])
-                                      : selected.add(goal["title"]);
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      goal["icon"],
-                                      style: const TextStyle(fontSize: 26),
-                                    ),
-                                    const SizedBox(width: 16),
-
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          goal["title"],
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(goal["subtitle"]),
-                                      ],
-                                    ),
-
-                                    const Spacer(),
-
-                                    AnimatedOpacity(
-                                      duration: const Duration(
-                                        milliseconds: 200,
-                                      ),
-                                      opacity: isSelected ? 1 : 0,
-                                      child: Icon(
-                                        Icons.check_circle,
-                                        color: AppTheme.primary,
-                                        size: 26,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                ),
-              ),
-
+              /// NEXT BUTTON
               SizedBox(
                 width: double.infinity,
+                height: 52,
                 child: ElevatedButton(
                   onPressed:
                       selected.isNotEmpty
@@ -164,15 +143,19 @@ class _GoalScreenState extends State<GoalScreen> {
                           : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primary,
-                    disabledBackgroundColor: Colors.blue[200],
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    disabledBackgroundColor: AppTheme.primary.withOpacity(0.4),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    elevation: 0,
                   ),
-                  child: Text(
+                  child: const Text(
                     "Next",
-                    style: textTheme.titleMedium?.copyWith(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -189,11 +172,103 @@ class _GoalScreenState extends State<GoalScreen> {
     return Expanded(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        height: 4,
+        height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: active ? AppTheme.primary : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
+    );
+  }
+
+  Widget _goalCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: isSelected ? AppTheme.primary : Colors.grey.shade200,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  isSelected
+                      ? AppTheme.primary.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.02),
+              blurRadius: isSelected ? 12 : 4,
+              offset: Offset(0, isSelected ? 4 : 1),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            /// ICON
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color:
+                    isSelected ? color.withOpacity(0.15) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? color : Colors.grey.shade600,
+                size: 28,
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            /// TEXT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? AppTheme.primary : Colors.black87,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+
+            /// CHECK ICON
+            AnimatedScale(
+              duration: const Duration(milliseconds: 200),
+              scale: isSelected ? 1 : 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: Colors.white, size: 18),
+              ),
+            ),
+          ],
         ),
       ),
     );
