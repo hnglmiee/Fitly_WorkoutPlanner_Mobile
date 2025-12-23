@@ -20,7 +20,7 @@ class GoalProgressScreen extends StatefulWidget {
 class _GoalProgressScreenState extends State<GoalProgressScreen> {
   int _selectedIndex = 2; // Statistics active
   late Future<GoalProgress?> _goalFuture;
-  static const hardPercent = 46;
+  static const hardPercent = 60;
 
   @override
   void initState() {
@@ -392,21 +392,13 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                           color: Colors.black87,
                                         ),
                                       ),
-                                      // Text(
-                                      //   "$hardPercent%",
-                                      //   style: TextStyle(
-                                      //     fontSize: 13,
-                                      //     fontWeight: FontWeight.w700,
-                                      //     color: AppTheme.primary,
-                                      //   ),
-                                      // ),
                                     ],
                                   ),
                                   const SizedBox(height: 10),
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: SizedBox(
-                                      height: 10,
+                                      height: 15,
                                       child: PercentageProgressBar(
                                         percent: hardPercent.toDouble(),
                                       ),

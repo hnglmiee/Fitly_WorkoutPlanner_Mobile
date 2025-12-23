@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // ✅ Fetch user info ngay lập tức
+      // Fetch user info ngay lập tức
       try {
         final userInfo = await UserService.getMyInfo();
         print("User full name: ${userInfo.fullName}");
@@ -80,29 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-
-              /// LOGO/ICON
-              // Center(
-              //   child: Container(
-              //     padding: const EdgeInsets.all(20),
-              //     decoration: BoxDecoration(shape: BoxShape.rectangle),
-              //     child: Image.asset(
-              //       'assets/logo/Fitly.png',
-              //       width: 48,
-              //       height: 48,
-              //       fit: BoxFit.contain,
-              //     ),
-              //   ),
-              // ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 52),
 
               /// WELCOME TEXT
               const Text(

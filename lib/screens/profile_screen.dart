@@ -335,7 +335,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios, size: 20),
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TrainingScreen(),
+                            ),
+                          );
+                        },
                       ),
                       const Expanded(
                         child: Center(

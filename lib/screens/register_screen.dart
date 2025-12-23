@@ -43,31 +43,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-
-              /// LOGO/ICON
-              // Center(
-              //   child: Container(
-              //     padding: const EdgeInsets.all(20),
-              //     decoration: BoxDecoration(
-              //       color: AppTheme.primary.withOpacity(0.1),
-              //       shape: BoxShape.circle,
-              //     ),
-              //     child: Icon(
-              //       Icons.fitness_center,
-              //       size: 48,
-              //       color: AppTheme.primary,
-              //     ),
-              //   ),
-              // ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 52),
 
               /// WELCOME TEXT
               const Text(
