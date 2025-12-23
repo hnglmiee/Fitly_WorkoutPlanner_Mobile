@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
+import '../models/exercise_form.dart';
+
 class AddPlanScreen extends StatefulWidget {
   const AddPlanScreen({super.key});
 
@@ -36,8 +38,24 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   final List<String> weight = ['5kg', '10kg', '15kg', '20kg', '25kg'];
   final Set<String> selectedWeight = {};
 
+  /// WEIGHT CONFIG
+  final Map<String, double> muscleMaxWeight = {
+    'Chest': 200,
+    'Back': 300,
+    'Legs': 500,
+    'Core': 100,
+  };
+
+  double get minWeight => 0;
+
+  double get maxWeight {
+    if (selectedMuscle == null) return 100;
+    return muscleMaxWeight[selectedMuscle] ?? 100;
+  }
+
   RangeValues weightRange = const RangeValues(0, 40);
 
+  /// REMINDER
   String reminder = 'Before 1 day';
 
   final List<String> reminderOptions = [
@@ -46,6 +64,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     'Before 3 days',
     'Before 1 week',
   ];
+
+  List<ExerciseForm> exercises = [ExerciseForm()];
 
   @override
   Widget build(BuildContext context) {
@@ -89,29 +109,61 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                     const SizedBox(height: 16),
 
-                    _label('Choose Exercise'),
-                    _exerciseDropdowns(),
+                    // _label('Choose Exercise'),
+                    // _exerciseDropdowns(),
+                    _label('Exercises'),
 
-                    const SizedBox(height: 16),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: exercises.length,
+                      itemBuilder: (context, index) {
+                        return _exerciseItem(index);
+                      },
+                    ),
 
-                    Row(
-                      children: [
-                        Expanded(child: _counter('Sets', sets, _changeSets)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _counter('Reps', reps, _changeReps)),
-                      ],
+                    const SizedBox(height: 12),
+
+                    /// ➕ ADD EXERCISE BUTTON
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppTheme.primary, width: 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          exercises.add(ExerciseForm());
+                        });
+                      },
+                      icon: Icon(Icons.add, color: AppTheme.primary),
+                      label: Text(
+                        'Add Exercise',
+                        style: TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 16),
 
-                    // _label('Repeat'),
-                    // _repeatOptions(),
-                    const SizedBox(height: 16),
-
-                    _weightRangeSlider(),
-
-                    const SizedBox(height: 16),
-
+                    // Row(
+                    //   children: [
+                    //     Expanded(child: _counter('Sets', sets, _changeSets)),
+                    //     const SizedBox(width: 12),
+                    //     Expanded(child: _counter('Reps', reps, _changeReps)),
+                    //   ],
+                    // ),
+                    //
+                    // const SizedBox(height: 16),
+                    //
+                    // const SizedBox(height: 16),
+                    //
+                    // _weightRangeSlider(),
+                    //
+                    // const SizedBox(height: 16),
                     _label('Select Days'),
                     _daySelector(),
 
@@ -370,7 +422,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// LABEL
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -388,15 +439,12 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
             ),
           ],
         ),
-
         const SizedBox(height: 8),
-
-        /// SLIDER
         RangeSlider(
           values: weightRange,
-          min: 0,
-          max: 100,
-          divisions: 20, // mỗi 5kg
+          min: minWeight,
+          max: maxWeight,
+          divisions: (maxWeight / 10).round(),
           labels: RangeLabels(
             '${weightRange.start.round()}kg',
             '${weightRange.end.round()}kg',
@@ -472,6 +520,150 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _exerciseItem(int index) {
+    final item = exercises[index];
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          /// DROPDOWNS
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  // ❌ Xóa key: ObjectKey(item) - đây là nguyên nhân bug
+                  isExpanded: true,
+                  value: item.muscle,
+                  hint: const Text('Muscle group'),
+                  style: const TextStyle(fontSize: 18, color: Colors.black),
+                  items:
+                      exerciseMap.keys
+                          .map(
+                            (e) => DropdownMenuItem(value: e, child: Text(e)),
+                          )
+                          .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      item.muscle = value;
+                      item.exercise = null; // Reset exercise khi đổi muscle
+                      final max = muscleMaxWeight[value] ?? 100;
+                      if (item.weightRange.end > max) {
+                        item.weightRange = RangeValues(0, max);
+                      }
+                    });
+                  },
+                  decoration: _dropdownDecoration(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  // ❌ Xóa key: ObjectKey(item)
+                  isExpanded: true,
+                  value: item.exercise,
+                  hint: const Text('Exercise'),
+                  style: const TextStyle(fontSize: 18, color: Colors.black),
+                  items:
+                      item.muscle == null
+                          ? []
+                          : exerciseMap[item.muscle]!
+                              .map(
+                                (e) =>
+                                    DropdownMenuItem(value: e, child: Text(e)),
+                              )
+                              .toList(),
+                  onChanged: (value) {
+                    setState(() => item.exercise = value);
+                  },
+                  decoration: _dropdownDecoration(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          /// SETS / REPS
+          Row(
+            children: [
+              Expanded(
+                child: _counter('Sets', item.sets, (v) {
+                  if (v < 1) return;
+                  setState(() => item.sets = v);
+                }),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _counter('Reps', item.reps, (v) {
+                  if (v < 1) return;
+                  setState(() => item.reps = v);
+                }),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          /// WEIGHT RANGE
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Weight Range', style: TextStyle(fontSize: 14)),
+                  Text(
+                    '${item.weightRange.start.round()}kg - ${item.weightRange.end.round()}kg',
+                    style: TextStyle(
+                      color: AppTheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              RangeSlider(
+                values: item.weightRange,
+                min: 0,
+                max: muscleMaxWeight[item.muscle] ?? 100,
+                divisions: 10,
+                activeColor: AppTheme.primary,
+                inactiveColor: Colors.grey.shade300,
+                onChanged: (values) {
+                  setState(() => item.weightRange = values);
+                },
+              ),
+            ],
+          ),
+
+          /// 🗑️ DELETE BUTTON (optional - để xóa exercise)
+          if (exercises.length > 1)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    exercises.removeAt(index);
+                  });
+                },
+                icon: const Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: Colors.red,
+                ),
+                label: const Text(
+                  'Remove',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

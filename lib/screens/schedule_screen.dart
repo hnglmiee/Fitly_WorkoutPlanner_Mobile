@@ -3,6 +3,7 @@ import 'package:workout_tracker_mini_project_mobile/screens/plan_progress_screen
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import '../models/schedule_plan.dart';
+import '../services/schedule_service.dart';
 import '../shared/navigation_bar.dart';
 import '../shared/schedule_calendar.dart';
 import '../shared/schedule_plan_item.dart';
@@ -27,7 +28,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   void initState() {
     super.initState();
-    plans = _mockPlans();
+    plans = [];
+    _loadPlans();
+  }
+
+  Future<void> _loadPlans() async {
+    final data = await ScheduleService.fetchMyPlans();
+    setState(() {
+      plans = data;
+    });
   }
 
   void _onNavTapped(int index) {
@@ -58,41 +67,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        transitionDuration: Duration.zero, // 🚫 không animation
+        transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
         pageBuilder: (_, __, ___) => nextScreen,
       ),
     );
-  }
-
-  List<SchedulePlan> _mockPlans() {
-    return [
-      SchedulePlan(
-        date: DateTime(currentMonth.year, currentMonth.month, 10),
-        title: 'Lose weight, gain muscle',
-        description: 'High intensity workout for fat reduction',
-        tag: 'Cardio',
-        backgroundColor: const Color(0xFFE9F9EE),
-        dayLabel: '',
-      ),
-      SchedulePlan(
-        date: DateTime(currentMonth.year, currentMonth.month, 11),
-        title: 'Fat Loss Plan',
-        description: 'High intensity workout for fat reduction',
-        tag: 'Cardio',
-        backgroundColor: const Color(0xFFEAF3FF),
-        outlined: true,
-        dayLabel: '',
-      ),
-      SchedulePlan(
-        date: DateTime(currentMonth.year, currentMonth.month, 12),
-        title: 'High intensity workout',
-        description: 'High intensity workout for fat reduction',
-        tag: 'Cardio',
-        backgroundColor: const Color(0xFFF1EFFF),
-        dayLabel: '',
-      ),
-    ];
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SchedulePlan {
-  final DateTime date; // ✅ THÊM FIELD NÀY
+  final DateTime date;
   final String dayLabel;
   final String title;
   final String description;
@@ -10,7 +10,7 @@ class SchedulePlan {
   final bool outlined;
 
   const SchedulePlan({
-    required this.date, // ✅ LƯU date
+    required this.date,
     required this.dayLabel,
     required this.title,
     required this.description,
