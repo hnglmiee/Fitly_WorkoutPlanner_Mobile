@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/plan_progress_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
+import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/schedule_plan.dart';
 import '../services/schedule_service.dart';
 import '../shared/navigation_bar.dart';
 import '../shared/schedule_calendar.dart';
-import '../shared/schedule_plan_item.dart';
 import 'add_plan.dart';
 import 'goal_progress.dart';
 import 'package:intl/intl.dart';
@@ -95,15 +95,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           onItemTapped: _onNavTapped,
         ),
       ),
-
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// HEADER
-              Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// HEADER
+            Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.white,
+              child: Row(
                 children: const [
                   Icon(Icons.arrow_back_ios_new, size: 18),
                   Expanded(
@@ -120,11 +120,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   SizedBox(width: 24),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 16),
-
-              /// CALENDAR
-              ScheduleCalendar(
+            /// CALENDAR
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ScheduleCalendar(
                 selectedDate: selectedDate,
                 currentMonth: currentMonth,
                 onDateSelected: (date) {
@@ -147,77 +149,218 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   });
                 },
               ),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-              /// ADD PLAN
-              Row(
+            /// ADD PLAN HEADER
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: Colors.white,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Add plan',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  const Text(
+                    'My Plans',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                  SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AddPlanScreen(),
+                  Material(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AddPlanScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
-                      );
-                    },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(
+                              Icons.add_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Add Plan',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
-              /// PLANS
-              Expanded(
-                child:
-                    filteredPlans.isNotEmpty
-                        ? ListView.builder(
-                          itemCount: filteredPlans.length,
-                          itemBuilder: (context, index) {
-                            final plan = filteredPlans[index];
+            /// PLANS
+            Expanded(
+              child:
+                  filteredPlans.isNotEmpty
+                      ? ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredPlans.length,
+                        itemBuilder: (context, index) {
+                          final plan = filteredPlans[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _modernPlanCard(plan),
+                          );
+                        },
+                      )
+                      : ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: _buildPlansByDay(plans),
+                      ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                            return Column(
-                              children: [
-                                InkWell(
-                                  borderRadius: BorderRadius.circular(16),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) =>
-                                                PlanProgressScreen(plan: plan),
-                                      ),
-                                    );
-                                  },
-                                  child: SchedulePlanItem(plan: plan),
-                                ),
-                                if (index != filteredPlans.length - 1)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
-                                    child: Divider(
-                                      height: 1,
-                                      thickness: 0.8,
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
-                        )
-                        : ListView(children: _buildPlansByDay(plans)),
-              ),
-            ],
+  Widget _modernPlanCard(SchedulePlan plan) {
+    // Safely handle missing fields with fallbacks
+    final title = plan.title;
+    final description = plan.description ?? '';
+    final tag = plan.tag ?? '';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => PlanProgressScreen(plan: plan)),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// HEADER
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color:
+                            plan.backgroundColor?.withOpacity(0.1) ??
+                            AppTheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.fitness_center,
+                        size: 20,
+                        color: plan.backgroundColor ?? AppTheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (description.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              description,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (tag.isNotEmpty) _customTag(tag),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _customTag(String tag) {
+    Color tagColor;
+
+    switch (tag.toLowerCase()) {
+      case 'completed':
+        tagColor = Colors.green;
+        break;
+      case 'in progress':
+        tagColor = Colors.orange;
+        break;
+      case 'upcoming':
+        tagColor = Colors.blue;
+        break;
+      default:
+        tagColor = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: tagColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        tag,
+        style: TextStyle(
+          fontSize: 11,
+          color: tagColor,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -236,48 +379,38 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return sortedDates.expand((date) {
       final dayPlans = grouped[date]!;
 
-      return dayPlans.map((plan) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _dayLabel(
-              DateFormat('EEE').format(date),
-              DateFormat('dd').format(date),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PlanProgressScreen(plan: plan),
-                    ),
-                  );
-                },
-                child: SchedulePlanItem(plan: plan),
+      return [
+        Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-          ],
-        );
-      });
-    }).toList();
-  }
-
-  Widget _dayLabel(String day, String date) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6, top: 12),
-      child: SizedBox(
-        width: 28,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(day, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-            Text(date, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                DateFormat('EEEE, MMM dd').format(date),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+        ...dayPlans.map((plan) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _modernPlanCard(plan),
+          );
+        }),
+      ];
+    }).toList();
   }
 }

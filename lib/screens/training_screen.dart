@@ -4,6 +4,7 @@ import 'package:workout_tracker_mini_project_mobile/screens/goal_progress.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
+import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
 import '../models/user_info.dart';
 import '../models/workout_plan.dart';
@@ -18,16 +19,13 @@ class TrainingScreen extends StatefulWidget {
 }
 
 class _TrainingScreenState extends State<TrainingScreen> {
-  int selectedDayIndex = 2; // mặc định là Wednesday
-  int _selectedIndex = 0; // Trạng thái Navigation Bar
+  int selectedDayIndex = 2;
+  int _selectedIndex = 0;
   Future<List<WorkoutPlan>>? _plansFuture;
 
   late PageController _pageController;
 
-  /// Tuần hiện tại
   List<DateTime> weekDates = [];
-
-  /// Tuần đang hiển thị (0 = tuần hiện tại)
   int weekOffset = 0;
 
   final ScrollController _weekScrollController = ScrollController();
@@ -48,7 +46,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
     });
   }
 
-  /// Khởi tạo tuần
   void _initWeek() {
     final now = DateTime.now();
     final monday = now.subtract(
@@ -94,7 +91,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        transitionDuration: Duration.zero, // 🚫 không animation
+        transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
         pageBuilder: (_, __, ___) => nextScreen,
       ),
@@ -146,14 +143,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   Widget build(BuildContext context) {
     if (weekDates.isEmpty) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+      );
     }
 
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
-    final thirdColor = Theme.of(context).colorScheme.background;
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
@@ -162,538 +158,517 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ),
       ),
       body: SafeArea(
-        // THÊM CUỘN DỌC
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Greeting + Profile
-                const SizedBox(height: 20),
-                Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// HEADER
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.white,
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Hello,', style: TextStyle(fontSize: 20)),
+                        Text(
+                          'Hello,',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        // Hiển thị tên
                         Text(
                           isLoadingUser
                               ? 'Loading...'
                               : userInfo?.fullName ?? 'User',
                           style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ],
                     ),
                     GestureDetector(
                       onTap: () => _onNavTapped(3),
-                      child: const CircleAvatar(
-                        radius: 20,
-                        backgroundImage: NetworkImage(
-                          'https://images.unsplash.com/photo-1644845225271-4cd4f76a0631?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.primary.withOpacity(0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: const CircleAvatar(
+                          radius: 22,
+                          backgroundImage: NetworkImage(
+                            'https://images.unsplash.com/photo-1644845225271-4cd4f76a0631?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+              ),
 
-                // Training Plan (Lịch ngày - UI đã được FIX)
-                const Text(
-                  'Training Plan',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 120, // Chiều cao cho phép chấm chỉ báo
-                  child: ListView.builder(
-                    controller: _weekScrollController,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: weekDates.length,
-                    itemBuilder: (context, index) {
-                      final date = weekDates[index];
-                      final isSelected = index == selectedDayIndex;
-                      final isToday = _isToday(date);
+              const SizedBox(height: 16),
 
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedDayIndex = index;
-                          });
-                          _scrollToCenter(index);
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            // Chấm chỉ báo (Dot Indicator)
-                            Container(
-                              height: 5,
-                              width: 5,
-                              margin: const EdgeInsets.only(bottom: 6),
-                              decoration: BoxDecoration(
-                                color:
-                                    isToday
-                                        ? Colors.red
-                                        : isSelected
-                                        ? Colors.blue
-                                        : Colors.transparent,
-
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-
-                            // Thân Lịch Ngày
-                            Container(
-                              width: 60,
-                              margin: const EdgeInsets.only(right: 12),
-                              decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? Colors.blue
-                                        : Colors.blue.shade100,
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Tên ngày trong tuần (Mon, Tue, Wed)
-                                    Text(
-                                      DateFormat('EEE').format(date),
-                                      style: TextStyle(
-                                        color:
-                                            isSelected
-                                                ? Colors.white
-                                                : Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-
-                                    // Ngày (09, 10, 11) trong hình tròn/oval
-                                    Container(
-                                      width: 45,
-                                      height: 45,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(40),
-                                        border: Border.all(
-                                          color:
-                                              isSelected
-                                                  ? Colors.blue
-                                                  : Colors.transparent,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        date.day.toString(),
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // PROGRESS
-                FutureBuilder<List<WorkoutPlan>>(
-                  future: _plansFuture,
-                  builder: (context, snapshot) {
-                    // Loading state
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container(
-                        height: 200,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: thirdColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    // Error state
-                    if (snapshot.hasError) {
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: thirdColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              size: 48,
-                              color: Colors.red,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text('Failed to load workout plans'),
-                            const SizedBox(height: 8),
-                            ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _plansFuture =
-                                      WorkoutPlanService.fetchMyPlans();
-                                });
-                              },
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // No data state
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: thirdColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.fitness_center,
-                              size: 64,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'No workout plans yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // Success - Display first plan
-                    final plan = snapshot.data!.first;
-
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: thirdColor,
-                        borderRadius: BorderRadius.circular(20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// TRAINING PLAN CALENDAR
+                    const Text(
+                      'Training Plan',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        letterSpacing: -0.5,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Dòng "Progress"
-                          const Text(
-                            'Plan Progress',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 120,
+                      child: ListView.builder(
+                        controller: _weekScrollController,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: weekDates.length,
+                        itemBuilder: (context, index) {
+                          final date = weekDates[index];
+                          final isSelected = index == selectedDayIndex;
+                          final isToday = _isToday(date);
 
-                          // Row chứa thông tin và hình ảnh
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedDayIndex = index;
+                              });
+                              _scrollToCenter(index);
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 5,
+                                  width: 5,
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isToday
+                                            ? Colors.red
+                                            : isSelected
+                                            ? Colors.blue
+                                            : Colors.transparent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Container(
+                                  width: 60,
+                                  margin: const EdgeInsets.only(right: 12),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isSelected
+                                            ? Colors.blue
+                                            : Colors.blue.shade100,
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          DateFormat('EEE').format(date),
+                                          style: TextStyle(
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Container(
+                                          width: 45,
+                                          height: 45,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              40,
+                                            ),
+                                            border: Border.all(
+                                              color:
+                                                  isSelected
+                                                      ? Colors.blue
+                                                      : Colors.transparent,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            date.day.toString(),
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// PLAN PROGRESS
+                    FutureBuilder<List<WorkoutPlan>>(
+                      future: _plansFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Container(
+                            height: 200,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primary,
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(height: 12),
+                                const Text('Failed to load workout plans'),
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _plansFuture =
+                                          WorkoutPlanService.fetchMyPlans();
+                                    });
+                                  },
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.fitness_center,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'No workout plans yet',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        final plan = snapshot.data!.first;
+
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
                             children: [
-                              // Phần thông tin Workout
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                      child: const Text(
-                                        'Workout',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  /// LEFT CONTENT
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        /// STATUS BADGE
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primary,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'WORKOUT',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 12),
+
+                                        /// PLAN TITLE
+                                        Text(
+                                          plan.title,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.3,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+
+                                        const SizedBox(height: 6),
+
+                                        /// NOTES
+                                        Text(
+                                          plan.notes.isNotEmpty
+                                              ? plan.notes
+                                              : "No notes",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 16),
+
+                                  /// RIGHT IMAGE
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      width: 90,
+                                      height: 90,
+                                      decoration: const BoxDecoration(
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                            'https://plus.unsplash.com/premium_photo-1661962342128-505f8032ea45?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                                          ),
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      plan.title,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              /// CONTINUE BUTTON
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  minimumSize: const Size(double.infinity, 50),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => const GoalProgressScreen(),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      plan.notes.isNotEmpty
-                                          ? plan.notes
-                                          : 'No notes',
-                                      style: const TextStyle(fontSize: 12),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Continue The Workout',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-
-                              // Hình ảnh
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  image: const DecorationImage(
-                                    image: NetworkImage(
-                                      'https://plus.unsplash.com/premium_photo-1661962342128-505f8032ea45?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                        );
+                      },
+                    ),
 
-                          // Nút "Continue The Workout"
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              minimumSize: const Size(double.infinity, 50),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 15,
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const GoalProgressScreen(),
-                                ),
-                              );
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Continue The Workout',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                // Icon mũi tên trong hình tròn
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.3),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.arrow_forward,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    const SizedBox(height: 24),
+
+                    /// MY ACTIVITIES
+                    const Text(
+                      'My Activities',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      height: 48,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: const [
+                          _ModernActivityChip(
+                            icon: Icons.fitness_center,
+                            label: 'Bench Press',
+                          ),
+                          _ModernActivityChip(
+                            icon: Icons.directions_run,
+                            label: 'Running',
+                          ),
+                          _ModernActivityChip(
+                            icon: Icons.accessibility_new,
+                            label: 'Squat',
+                          ),
+                          _ModernActivityChip(
+                            icon: Icons.fitness_center,
+                            label: 'Deadlift',
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
+                    ),
 
-                const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
-                // My Activities (Đã FIX UI sang dạng cuộn ngang)
-                const Text(
-                  'My Activities',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const SizedBox(height: 10),
-
-                // THAY THẾ: Dùng SizedBox và ListView.builder để cuộn ngang
-                SizedBox(
-                  height: 50, // Chiều cao vừa đủ cho các nút pill
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 4, // Số lượng activities
-                    itemBuilder: (context, index) {
-                      // Lấy màu từ Theme
-                      final primaryColor =
-                          Theme.of(context).colorScheme.primary;
-                      final secondaryColor =
-                          Theme.of(context).colorScheme.secondary;
-                      final thirdColor =
-                          Theme.of(context).colorScheme.background;
-
-                      final activities = [
-                        {'icon': Icons.fitness_center, 'label': 'Bench Press'},
-                        {'icon': Icons.directions_run, 'label': 'Running'},
-                        {'icon': Icons.accessibility_new, 'label': 'Squat'},
-                        {'icon': Icons.fitness_center, 'label': 'Deadlift'},
-                      ];
-
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          right: 12,
-                        ), // Khoảng cách giữa các mục
-                        child: ActivityIcon(
-                          icon: activities[index]['icon'] as IconData,
-                          label: activities[index]['label'] as String,
-                          iconColor: primaryColor,
-                          bgColor:
-                              secondaryColor, // Sử dụng secondaryColor làm màu nền sáng
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Daily Progress
-                const Text(
-                  'Daily Progress',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          // Sử dụng màu nền sáng từ theme
-                          color: Theme.of(context).colorScheme.background,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start, // Căn trái cho các mục
-                          children: [
-                            Row(
-                              mainAxisSize:
-                                  MainAxisSize.min, // Giữ Row vừa đủ nội dung
-                              children: [
-                                // Icon (Thay đổi icon cho gần giống hình mẫu)
-                                Icon(
-                                  Icons
-                                      .local_drink_outlined, // Ví dụ dùng icon cốc/ly
-                                  color: Colors.black, // Màu đen
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                // Label (Calories)
-                                Text(
-                                  'Calories',
-                                  style: Theme.of(context).textTheme.bodyMedium!
-                                      .copyWith(fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ), // Khoảng cách giữa label và giá trị
-                            // Giá trị lớn (1,024 kcal)
-                            Text(
-                              '1,024 kcal',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.headlineMedium!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22, // Kích thước lớn hơn
-                              ),
-                            ),
-                          ],
-                        ),
+                    /// DAILY PROGRESS
+                    const Text(
+                      'Daily Progress',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.background,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start, // Căn trái cho các mục
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Icon (Sử dụng icon gần giống máy chạy bộ)
-                                Icon(
-                                  Icons.directions_run,
-                                  color: Colors.black,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                // Label (Steps)
-                                Text(
-                                  'Streaks',
-                                  style: Theme.of(context).textTheme.bodyMedium!
-                                      .copyWith(fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
+                    const SizedBox(height: 12),
 
-                            // Giá trị lớn (1000 steps)
-                            Text(
-                              '2 days',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.headlineMedium!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                              ),
-                            ),
-                          ],
+                    Row(
+                      children: const [
+                        Expanded(
+                          child: _ProgressCard(
+                            icon: Icons.local_fire_department,
+                            label: 'Calories',
+                            value: '1,024',
+                            unit: 'kcal',
+                            color: Colors.orange,
+                          ),
                         ),
-                      ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: _ProgressCard(
+                            icon: Icons.trending_up,
+                            label: 'Streaks',
+                            value: '2',
+                            unit: 'days',
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
                     ),
+
+                    const SizedBox(height: 16),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -701,50 +676,122 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 }
 
-// SỬA ĐỔI LỚP ActivityIcon
-class ActivityIcon extends StatelessWidget {
+/// MODERN ACTIVITY CHIP
+class _ModernActivityChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color iconColor;
-  final Color bgColor;
 
-  const ActivityIcon({
-    super.key,
+  const _ModernActivityChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppTheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// PROGRESS CARD
+class _ProgressCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String unit;
+  final Color color;
+
+  const _ProgressCard({
     required this.icon,
     required this.label,
-    required this.iconColor,
-    required this.bgColor,
+    required this.value,
+    required this.unit,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    // THAY ĐỔI: Container lớn hơn cho hiệu ứng pill (viên thuốc)
     return Container(
-      // Padding để tạo khoảng trống cho chữ và icon
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: bgColor, // Màu nền sáng (secondary/third)
-        borderRadius: BorderRadius.circular(30), // Bo tròn tối đa
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min, // Giúp Container chỉ rộng bằng nội dung
-        children: [
-          // Container icon tròn nhỏ hơn
-          Container(
-            padding: const EdgeInsets.all(8), // Padding icon nhỏ hơn
-            decoration: BoxDecoration(
-              color: Colors.white, // Nền trắng cho icon
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(icon, size: 18, color: iconColor), // Icon nhỏ hơn
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
-          const SizedBox(width: 8), // Khoảng cách giữa icon và chữ
-
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+          const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(fontSize: 14), // Text style phù hợp
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  unit,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

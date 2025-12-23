@@ -15,8 +15,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
 
-  int sets = 1;
-  int reps = 1;
   bool everyDay = true;
 
   /// EXERCISE DATA
@@ -27,16 +25,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     'Core': ['Plank', 'Crunch', 'Russian Twist'],
   };
 
-  String? selectedMuscle;
-  String? selectedExercise;
-
   /// DAYS
   final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   final Set<String> selectedDays = {};
-
-  /// WEIGHT
-  final List<String> weight = ['5kg', '10kg', '15kg', '20kg', '25kg'];
-  final Set<String> selectedWeight = {};
 
   /// WEIGHT CONFIG
   final Map<String, double> muscleMaxWeight = {
@@ -45,15 +36,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     'Legs': 500,
     'Core': 100,
   };
-
-  double get minWeight => 0;
-
-  double get maxWeight {
-    if (selectedMuscle == null) return 100;
-    return muscleMaxWeight[selectedMuscle] ?? 100;
-  }
-
-  RangeValues weightRange = const RangeValues(0, 40);
 
   /// REMINDER
   String reminder = 'Before 1 day';
@@ -66,6 +48,13 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   ];
 
   List<ExerciseForm> exercises = [ExerciseForm()];
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    notesController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,14 +93,17 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    _label('Plan title'),
-                    _input(controller: titleController),
+                    _label('Plan Title'),
+                    _input(
+                      controller: titleController,
+                      hint: 'e.g. Full Body Workout',
+                    ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                    // _label('Choose Exercise'),
-                    // _exerciseDropdowns(),
-                    _label('Exercises'),
+                    /// EXERCISES SECTION
+                    _sectionHeader('Exercises'),
+                    const SizedBox(height: 12),
 
                     ListView.builder(
                       shrinkWrap: true,
@@ -127,43 +119,34 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     /// ➕ ADD EXERCISE BUTTON
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.primary, width: 1),
+                        side: BorderSide(color: AppTheme.primary, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () {
                         setState(() {
                           exercises.add(ExerciseForm());
                         });
                       },
-                      icon: Icon(Icons.add, color: AppTheme.primary),
+                      icon: Icon(Icons.add_rounded, color: AppTheme.primary),
                       label: Text(
                         'Add Exercise',
                         style: TextStyle(
                           color: AppTheme.primary,
                           fontWeight: FontWeight.w600,
+                          fontSize: 15,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                    // Row(
-                    //   children: [
-                    //     Expanded(child: _counter('Sets', sets, _changeSets)),
-                    //     const SizedBox(width: 12),
-                    //     Expanded(child: _counter('Reps', reps, _changeReps)),
-                    //   ],
-                    // ),
-                    //
-                    // const SizedBox(height: 16),
-                    //
-                    // const SizedBox(height: 16),
-                    //
-                    // _weightRangeSlider(),
-                    //
-                    // const SizedBox(height: 16),
+                    /// SCHEDULE SECTION
+                    _sectionHeader('Schedule'),
+                    const SizedBox(height: 12),
+
                     _label('Select Days'),
                     _daySelector(),
 
@@ -171,19 +154,28 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                     _toggleEveryDay(),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
+
+                    /// REMINDER SECTION
+                    _sectionHeader('Reminder'),
+                    const SizedBox(height: 12),
 
                     _reminderDropdown(),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                    _label('Notes'),
+                    /// NOTES SECTION
+                    _label('Notes (Optional)'),
                     const SizedBox(height: 5),
-                    _input(controller: notesController, maxLines: 3),
+                    _input(
+                      controller: notesController,
+                      maxLines: 4,
+                      hint: 'Add any additional notes here...',
+                    ),
 
                     const SizedBox(height: 24),
 
-                    /// NEXT BUTTON
+                    /// SAVE BUTTON
                     SizedBox(
                       height: 52,
                       child: ElevatedButton(
@@ -192,10 +184,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 0,
                         ),
-                        onPressed: () {},
+                        onPressed: _savePlan,
                         child: const Text(
-                          'Next',
+                          'Save Plan',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -204,6 +197,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -221,90 +216,50 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
       ),
     );
   }
 
-  /// BORDER (mảnh hơn)
+  Widget _sectionHeader(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.black87,
+      ),
+    );
+  }
+
   OutlineInputBorder _border(Color color) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(
-        color: color,
-        width: 1, // 👈 viền mảnh
-      ),
+      borderSide: BorderSide(color: color, width: 1),
     );
   }
 
-  Widget _input({required TextEditingController controller, int maxLines = 1}) {
+  Widget _input({
+    required TextEditingController controller,
+    int maxLines = 1,
+    String? hint,
+  }) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
       decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         contentPadding: const EdgeInsets.all(14),
         enabledBorder: _border(Colors.grey.shade300),
         focusedBorder: _border(AppTheme.primary),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
-    );
-  }
-
-  /// EXERCISE DROPDOWNS
-  Widget _exerciseDropdowns() {
-    return Row(
-      children: [
-        /// MUSCLE GROUP
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            style: const TextStyle(
-              fontSize: 18, // ← chỉnh size ở đây
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-            hint: const Text('Muscle group'),
-            value: selectedMuscle,
-            items:
-                exerciseMap.keys
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedMuscle = value;
-                selectedExercise = null;
-              });
-            },
-            decoration: _dropdownDecoration(),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        /// EXERCISE NAME
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            isExpanded: true,
-            style: const TextStyle(
-              fontSize: 18, // ← chỉnh size ở đây
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-            hint: const Text('Exercise name'),
-            value: selectedExercise,
-            items:
-                selectedMuscle == null
-                    ? []
-                    : exerciseMap[selectedMuscle]!
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-            onChanged: (value) {
-              setState(() => selectedExercise = value);
-            },
-            decoration: _dropdownDecoration(),
-          ),
-        ),
-      ],
     );
   }
 
@@ -333,13 +288,21 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.remove),
+                icon: Icon(Icons.remove, color: Colors.grey.shade700),
                 onPressed: () => onChange(value - 1),
+                padding: EdgeInsets.zero,
               ),
-              Text(value.toString(), style: const TextStyle(fontSize: 16)),
+              Text(
+                value.toString(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               IconButton(
-                icon: const Icon(Icons.add),
+                icon: Icon(Icons.add, color: Colors.grey.shade700),
                 onPressed: () => onChange(value + 1),
+                padding: EdgeInsets.zero,
               ),
             ],
           ),
@@ -348,37 +311,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  void _changeSets(int v) {
-    if (v < 1) return;
-    setState(() => sets = v);
-  }
-
-  void _changeReps(int v) {
-    if (v < 1) return;
-    setState(() => reps = v);
-  }
-
-  /// REPEAT OPTIONS
-  Widget _repeatOptions() {
-    final options = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
-    return Wrap(
-      spacing: 8,
-      children:
-          options
-              .map(
-                (e) => Chip(
-                  label: Text(e),
-                  backgroundColor: AppTheme.primary.withOpacity(0.15),
-                ),
-              )
-              .toList(),
-    );
-  }
-
   /// DAY SELECTOR
   Widget _daySelector() {
     return Wrap(
       spacing: 8,
+      runSpacing: 8,
       children:
           days.map((day) {
             final selected = selectedDays.contains(day);
@@ -386,23 +323,19 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
             return ChoiceChip(
               label: Text(day),
               selected: selected,
-
               selectedColor: AppTheme.primary.withOpacity(0.15),
               backgroundColor: Colors.white,
-
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
                   color: selected ? AppTheme.primary : Colors.grey.shade300,
-                  width: 1, // 👈 viền mảnh
+                  width: 1,
                 ),
               ),
-
               labelStyle: TextStyle(
                 color: selected ? AppTheme.primary : Colors.black87,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
               ),
-
               onSelected:
                   everyDay
                       ? null
@@ -418,108 +351,81 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  Widget _weightRangeSlider() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Weight Range',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-            Text(
-              '${weightRange.start.round()}kg - ${weightRange.end.round()}kg',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.primary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        RangeSlider(
-          values: weightRange,
-          min: minWeight,
-          max: maxWeight,
-          divisions: (maxWeight / 10).round(),
-          labels: RangeLabels(
-            '${weightRange.start.round()}kg',
-            '${weightRange.end.round()}kg',
-          ),
-          activeColor: AppTheme.primary,
-          inactiveColor: Colors.grey.shade300,
-          onChanged: (values) {
-            setState(() => weightRange = values);
-          },
-        ),
-      ],
-    );
-  }
-
   /// EVERY DAY TOGGLE
   Widget _toggleEveryDay() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Every Days',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        Switch(
-          value: everyDay,
-          activeColor: AppTheme.primary,
-          onChanged: (value) {
-            setState(() {
-              everyDay = value;
-              if (value) selectedDays.clear();
-            });
-          },
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Repeat Every Day',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+          Switch(
+            value: everyDay,
+            activeColor: AppTheme.primary,
+            onChanged: (value) {
+              setState(() {
+                everyDay = value;
+                if (value) selectedDays.clear();
+              });
+            },
+          ),
+        ],
+      ),
     );
   }
 
   Widget _reminderDropdown() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'Reminder',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-
-        SizedBox(
-          width: 180,
-          child: DropdownButtonFormField<String>(
-            value: reminder,
-            style: const TextStyle(
-              fontSize: 18, // ← chỉnh size ở đây
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-            items:
-                reminderOptions
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-            onChanged: (value) {
-              if (value == null) return;
-              setState(() => reminder = value);
-            },
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.notifications_outlined,
+            color: Colors.grey.shade600,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              value: reminder,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: Colors.black87,
               ),
-              enabledBorder: _border(Colors.grey.shade300),
-              focusedBorder: _border(AppTheme.primary),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              items:
+                  reminderOptions
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => reminder = value);
+              },
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -527,68 +433,152 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     final item = exercises[index];
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+        color: Colors.white,
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// HEADER WITH NUMBER
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '#${index + 1}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Exercise',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+              if (exercises.length > 1)
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      exercises.removeAt(index);
+                    });
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
           /// DROPDOWNS
           Row(
             children: [
               Expanded(
-                child: DropdownButtonFormField<String>(
-                  // ❌ Xóa key: ObjectKey(item) - đây là nguyên nhân bug
-                  isExpanded: true,
-                  value: item.muscle,
-                  hint: const Text('Muscle group'),
-                  style: const TextStyle(fontSize: 18, color: Colors.black),
-                  items:
-                      exerciseMap.keys
-                          .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      item.muscle = value;
-                      item.exercise = null; // Reset exercise khi đổi muscle
-                      final max = muscleMaxWeight[value] ?? 100;
-                      if (item.weightRange.end > max) {
-                        item.weightRange = RangeValues(0, max);
-                      }
-                    });
-                  },
-                  decoration: _dropdownDecoration(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  // ❌ Xóa key: ObjectKey(item)
-                  isExpanded: true,
-                  value: item.exercise,
-                  hint: const Text('Exercise'),
-                  style: const TextStyle(fontSize: 18, color: Colors.black),
-                  items:
-                      item.muscle == null
-                          ? []
-                          : exerciseMap[item.muscle]!
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label('Muscle Group'),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: item.muscle,
+                      hint: const Text('Select'),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                      ),
+                      items:
+                          exerciseMap.keys
                               .map(
                                 (e) =>
                                     DropdownMenuItem(value: e, child: Text(e)),
                               )
                               .toList(),
-                  onChanged: (value) {
-                    setState(() => item.exercise = value);
-                  },
-                  decoration: _dropdownDecoration(),
+                      onChanged: (value) {
+                        setState(() {
+                          item.muscle = value;
+                          item.exercise = null;
+                          final max = muscleMaxWeight[value] ?? 100;
+                          if (item.weightRange.end > max) {
+                            item.weightRange = RangeValues(0, max);
+                          }
+                        });
+                      },
+                      decoration: _dropdownDecoration(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label('Exercise'),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: item.exercise,
+                      hint: const Text('Select'),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                      ),
+                      items:
+                          item.muscle == null
+                              ? []
+                              : exerciseMap[item.muscle]!
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
+                                  .toList(),
+                      onChanged: (value) {
+                        setState(() => item.exercise = value);
+                      },
+                      decoration: _dropdownDecoration(),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+
+          const SizedBox(height: 16),
 
           /// SETS / REPS
           Row(
@@ -608,7 +598,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+
+          const SizedBox(height: 16),
 
           /// WEIGHT RANGE
           Column(
@@ -617,16 +608,18 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Weight Range', style: TextStyle(fontSize: 14)),
+                  _label('Weight Range'),
                   Text(
                     '${item.weightRange.start.round()}kg - ${item.weightRange.end.round()}kg',
                     style: TextStyle(
                       color: AppTheme.primary,
                       fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
               RangeSlider(
                 values: item.weightRange,
                 min: 0,
@@ -640,29 +633,82 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               ),
             ],
           ),
-
-          /// 🗑️ DELETE BUTTON (optional - để xóa exercise)
-          if (exercises.length > 1)
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    exercises.removeAt(index);
-                  });
-                },
-                icon: const Icon(
-                  Icons.delete_outline,
-                  size: 18,
-                  color: Colors.red,
-                ),
-                label: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ),
         ],
+      ),
+    );
+  }
+
+  /// ================= SAVE FUNCTION =================
+
+  void _savePlan() {
+    // Validate
+    if (titleController.text.isEmpty) {
+      _showError('Please enter a plan title');
+      return;
+    }
+
+    if (exercises.isEmpty) {
+      _showError('Please add at least one exercise');
+      return;
+    }
+
+    for (var i = 0; i < exercises.length; i++) {
+      if (exercises[i].muscle == null || exercises[i].exercise == null) {
+        _showError('Please complete exercise #${i + 1}');
+        return;
+      }
+    }
+
+    if (!everyDay && selectedDays.isEmpty) {
+      _showError('Please select at least one day');
+      return;
+    }
+
+    // TODO: Save to database
+    final planData = {
+      'title': titleController.text,
+      'exercises':
+          exercises
+              .map(
+                (e) => {
+                  'muscle': e.muscle,
+                  'exercise': e.exercise,
+                  'sets': e.sets,
+                  'reps': e.reps,
+                  'weightRange': {
+                    'min': e.weightRange.start.round(),
+                    'max': e.weightRange.end.round(),
+                  },
+                },
+              )
+              .toList(),
+      'everyDay': everyDay,
+      'days': everyDay ? [] : selectedDays.toList(),
+      'reminder': reminder,
+      'notes': notesController.text,
+    };
+
+    print('Saving plan: $planData');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Plan saved successfully!'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+
+    Navigator.pop(context);
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
