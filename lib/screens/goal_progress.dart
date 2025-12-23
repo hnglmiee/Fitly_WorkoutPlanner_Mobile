@@ -5,6 +5,8 @@ import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart
 import 'package:workout_tracker_mini_project_mobile/shared/percentage_progress_bar.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
+import '../models/goal_progress.dart';
+import '../services/goal_service.dart';
 import '../shared/navigation_bar.dart';
 import 'history_goal.dart';
 
@@ -17,6 +19,14 @@ class GoalProgressScreen extends StatefulWidget {
 
 class _GoalProgressScreenState extends State<GoalProgressScreen> {
   int _selectedIndex = 2; // Statistics active
+  late Future<GoalProgress?> _goalFuture;
+  static const hardPercent = 46;
+
+  @override
+  void initState() {
+    super.initState();
+    _goalFuture = GoalService.fetchGoalProgress();
+  }
 
   void _onNavTapped(int index) {
     if (index == _selectedIndex) return;
@@ -193,82 +203,137 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
               ),
               const SizedBox(height: 12),
 
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.third,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    /// LEFT
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
+              FutureBuilder<GoalProgress?>(
+                future: _goalFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(
+                      height: 120,
+                      alignment: Alignment.center,
+                      child: const CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.third,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text("No goal progress data"),
+                    );
+                  }
+
+                  final goal = snapshot.data!;
+
+                  return Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                /// LEFT CONTENT
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      /// TAG / STATUS
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primary,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          goal.status,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 12),
+
+                                      /// GOAL NAME
+                                      Text(
+                                        goal.goal.goalName,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      /// NOTES
+                                      Text(
+                                        goal.goal.notes.isNotEmpty
+                                            ? goal.goal.notes
+                                            : "No notes",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(width: 16),
+
+                                /// RIGHT IMAGE
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    width: 90,
+                                    height: 90,
+                                    decoration: const BoxDecoration(
+                                      image: DecorationImage(
+                                        image: NetworkImage(
+                                          "https://plus.unsplash.com/premium_photo-1661265933107-85a5dbd815af",
+                                        ),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              "Cardio",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
+
+                            const SizedBox(height: 16),
+
+                            /// PROGRESS BAR
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: SizedBox(
+                                height: 14,
+                                child: PercentageProgressBar(
+                                  percent: hardPercent.toDouble(),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            "Lose weight, gain muscle",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Heavy weight for strength",
-                            style: TextStyle(fontSize: 11, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            "In progress",
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: PercentageProgressBar(percent: 30),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    /// IMAGE
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        image: const DecorationImage(
-                          image: NetworkImage(
-                            "https://plus.unsplash.com/premium_photo-1661265933107-85a5dbd815af?q=80&w=1118&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                          ),
-                          fit: BoxFit.cover,
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 24),
