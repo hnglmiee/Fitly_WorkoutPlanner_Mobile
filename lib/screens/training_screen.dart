@@ -6,7 +6,9 @@ import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 
 import '../models/user_info.dart';
+import '../models/workout_plan.dart';
 import '../services/user_service.dart';
+import '../services/workout_plan_service.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -18,6 +20,7 @@ class TrainingScreen extends StatefulWidget {
 class _TrainingScreenState extends State<TrainingScreen> {
   int selectedDayIndex = 2; // mặc định là Wednesday
   int _selectedIndex = 0; // Trạng thái Navigation Bar
+  Future<List<WorkoutPlan>>? _plansFuture;
 
   late PageController _pageController;
 
@@ -35,14 +38,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
     _initWeek();
+    _pageController = PageController(initialPage: 0);
+    _plansFuture = WorkoutPlanService.fetchMyPlans();
+    _fetchUserInfo();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCenter(selectedDayIndex);
     });
-
-    _fetchUserInfo();
   }
 
   /// Khởi tạo tuần
@@ -313,137 +316,229 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
                 const SizedBox(height: 20),
 
-                // Workout Card (UI đã được FIX)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: thirdColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Dòng "Progress"
-                      const Text(
-                        'Progress',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
+                // PROGRESS
+                FutureBuilder<List<WorkoutPlan>>(
+                  future: _plansFuture,
+                  builder: (context, snapshot) {
+                    // Loading state
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        height: 200,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: thirdColor,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ),
-                      const SizedBox(height: 8),
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    }
 
-                      // Row chứa thông tin và hình ảnh
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Phần thông tin Workout
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  child: const Text(
-                                    'Cardio',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'Lower Body',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Heavy weight for strength',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-
-                          // Hình ảnh
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              image: const DecorationImage(
-                                image: NetworkImage(
-                                  'https://plus.unsplash.com/premium_photo-1661962342128-505f8032ea45?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Nút "Continue The Workout"
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          minimumSize: const Size(double.infinity, 50),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                    // Error state
+                    if (snapshot.hasError) {
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: thirdColor,
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const GoalProgressScreen(),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'Continue The Workout',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
+                            const Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: Colors.red,
                             ),
-                            // Icon mũi tên trong hình tròn
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white,
-                                size: 20,
+                            const SizedBox(height: 12),
+                            const Text('Failed to load workout plans'),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _plansFuture =
+                                      WorkoutPlanService.fetchMyPlans();
+                                });
+                              },
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // No data state
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: thirdColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.fitness_center,
+                              size: 64,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No workout plans yet',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
+                      );
+                    }
+
+                    // Success - Display first plan
+                    final plan = snapshot.data!.first;
+
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: thirdColor,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Dòng "Progress"
+                          const Text(
+                            'Plan Progress',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Row chứa thông tin và hình ảnh
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Phần thông tin Workout
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.circular(50),
+                                      ),
+                                      child: const Text(
+                                        'Workout',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      plan.title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      plan.notes.isNotEmpty
+                                          ? plan.notes
+                                          : 'No notes',
+                                      style: const TextStyle(fontSize: 12),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+
+                              // Hình ảnh
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  image: const DecorationImage(
+                                    image: NetworkImage(
+                                      'https://plus.unsplash.com/premium_photo-1661962342128-505f8032ea45?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Nút "Continue The Workout"
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              minimumSize: const Size(double.infinity, 50),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const GoalProgressScreen(),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Continue The Workout',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                // Icon mũi tên trong hình tròn
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
+
                 const SizedBox(height: 20),
 
                 // My Activities (Đã FIX UI sang dạng cuộn ngang)
