@@ -10,6 +10,7 @@ import '../models/user_info.dart';
 import '../services/auth_service.dart';
 import '../services/user_inbody_service.dart';
 import '../services/user_service.dart';
+import '../theme/gradient_scaffold.dart';
 import 'goal_progress.dart';
 import 'inbody_screen.dart';
 import 'login_screen.dart';
@@ -309,7 +310,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: FutureBuilder<UserInfo>(
           future: _userFuture,
@@ -331,7 +331,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 /// HEADER
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  color: Colors.transparent,
                   child: Row(
                     children: [
                       IconButton(

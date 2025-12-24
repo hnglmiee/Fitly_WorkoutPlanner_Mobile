@@ -570,7 +570,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
 
     // TODO: Update to database or state management
     final updatedInBodyData = {
-      'id': widget.inBodyData['id'], // Keep the original ID
+      'id': widget.inBodyData['id'],
       'date': selectedDate,
       'time': selectedTime,
       'goal': selectedGoal,

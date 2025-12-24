@@ -5,11 +5,13 @@ import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart'
 import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
+import 'package:workout_tracker_mini_project_mobile/theme/gradient_scaffold.dart';
 
 import '../models/user_info.dart';
 import '../models/workout_plan.dart';
 import '../services/user_service.dart';
 import '../services/workout_plan_service.dart';
+import 'notification_screen.dart';
 
 class TrainingScreen extends StatefulWidget {
   const TrainingScreen({super.key});
@@ -21,6 +23,7 @@ class TrainingScreen extends StatefulWidget {
 class _TrainingScreenState extends State<TrainingScreen> {
   int selectedDayIndex = 2;
   int _selectedIndex = 0;
+  int unreadNotifications = 3;
   Future<List<WorkoutPlan>>? _plansFuture;
 
   late PageController _pageController;
@@ -160,8 +163,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: Padding(
+      bottomNavigationBar: Container(
+        color: Colors.transparent,
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
           selectedIndex: _selectedIndex,
@@ -177,7 +180,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               /// HEADER
               Container(
                 padding: const EdgeInsets.all(16),
-                color: Colors.white,
+                color: Colors.transparent,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -204,23 +207,84 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         ),
                       ],
                     ),
-                    GestureDetector(
-                      onTap: () => _onNavTapped(3),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.primary.withOpacity(0.3),
-                            width: 2,
+
+                    // NOTIFICATION & AVATAR ROW
+                    Row(
+                      children: [
+                        Stack(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const NotificationScreen(),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.notifications_outlined,
+                                size: 32,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                            // Unread badge
+                            if (unreadNotifications > 0)
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      unreadNotifications > 9
+                                          ? '9+'
+                                          : unreadNotifications.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () => _onNavTapped(3),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.primary.withOpacity(0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: const CircleAvatar(
+                              radius: 22,
+                              backgroundImage: NetworkImage(
+                                'https://images.unsplash.com/photo-1644845225271-4cd4f76a0631?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                              ),
+                            ),
                           ),
                         ),
-                        child: const CircleAvatar(
-                          radius: 22,
-                          backgroundImage: NetworkImage(
-                            'https://images.unsplash.com/photo-1644845225271-4cd4f76a0631?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -741,8 +805,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         ],
                       ),
                     ),
-
-                    // const SizedBox(height: 16),
                   ],
                 ),
               ),

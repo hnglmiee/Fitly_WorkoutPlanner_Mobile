@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/goal_history_item.dart';
+import 'goal_detail_screen.dart';
 
 class GoalHistoryScreen extends StatelessWidget {
   const GoalHistoryScreen({super.key});
@@ -39,7 +40,7 @@ class GoalHistoryScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.lightBackground,
 
       /// ===== Body with Custom Header =====
       body: SafeArea(
@@ -48,7 +49,7 @@ class GoalHistoryScreen extends StatelessWidget {
             /// ===== Header =====
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Colors.white,
+              color: Colors.transparent,
               child: Row(
                 children: [
                   IconButton(
@@ -118,112 +119,120 @@ class GoalHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// LEFT CONTENT
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// TYPE BADGE
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    goal.type.toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => GoalDetailScreen(goal: goal)),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// LEFT CONTENT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// TYPE BADGE
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                /// TITLE
-                Text(
-                  goal.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const SizedBox(height: 8),
-
-                /// STATUS with icon
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: goal.statusColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        goal.status == GoalStatus.completed
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        size: 14,
-                        color: goal.statusColor,
-                      ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      goal.statusText,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: goal.statusColor,
+                    child: Text(
+                      goal.type.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  /// TITLE
+                  Text(
+                    goal.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  /// STATUS with icon
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: goal.statusColor.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          goal.status == GoalStatus.completed
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          size: 14,
+                          color: goal.statusColor,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        goal.statusText,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: goal.statusColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(width: 16),
+            const SizedBox(width: 16),
 
-          /// RIGHT IMAGE
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(goal.imageUrl),
-                  fit: BoxFit.cover,
+            /// RIGHT IMAGE
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(goal.imageUrl),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

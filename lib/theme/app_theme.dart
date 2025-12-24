@@ -17,6 +17,93 @@ class AppTheme {
   ); // Darker for better contrast
   static const Color darkText = Color(0xFFF6F8F1);
 
+  /// =====================================================
+  /// GRADIENT DEFINITIONS
+  /// =====================================================
+
+  /// Light Mode Gradient
+  static BoxDecoration get lightGradientBackground {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          primary.withOpacity(0.05),
+          secondary.withOpacity(0.15),
+          third.withOpacity(0.1),
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      ),
+    );
+  }
+
+  /// Dark Mode Gradient
+  static BoxDecoration get darkGradientBackground {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          darkThird.withOpacity(0.3),
+          darkSecondary.withOpacity(0.5),
+          darkBackground,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      ),
+    );
+  }
+
+  /// Subtle Light Gradient
+  static BoxDecoration get subtleLightGradient {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white, lightBackground],
+      ),
+    );
+  }
+
+  /// Card Gradient
+  static BoxDecoration cardGradient({Color? startColor, Color? endColor}) {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [startColor ?? primary, endColor ?? secondary],
+      ),
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: (startColor ?? primary).withOpacity(0.3),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    );
+  }
+
+  /// Button Gradient
+  static BoxDecoration get buttonGradient {
+    return BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFF0091FF), Color(0xFF00D4FF)],
+      ),
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: primary.withOpacity(0.3),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+
+  /// =====================================================
+  /// THEMES
+  /// =====================================================
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

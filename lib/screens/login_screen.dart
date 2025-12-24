@@ -3,6 +3,7 @@ import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart
 import '../services/auth_service.dart';
 import '../services/user_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/gradient_scaffold.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -80,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightBackground,
+      // backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

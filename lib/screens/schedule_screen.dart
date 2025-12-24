@@ -103,7 +103,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             /// HEADER
             Container(
               padding: const EdgeInsets.all(16),
-              color: Colors.white,
+              color: Colors.transparent,
               child: Row(
                 children: [
                   IconButton(
