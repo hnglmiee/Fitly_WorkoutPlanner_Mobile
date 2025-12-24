@@ -171,10 +171,6 @@ We welcome contributions! Please follow these steps:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## Contact
-
-Project Link: [https://github.com/yourusername/fitly-workout-tracker](https://github.com/yourusername/fitly-workout-tracker)
-
 ## Acknowledgments
 
 - PaddlePaddle OCR for text recognition capabilities
