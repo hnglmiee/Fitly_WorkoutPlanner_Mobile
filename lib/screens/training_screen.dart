@@ -33,6 +33,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
   UserInfo? userInfo;
   bool isLoadingUser = true;
 
+  // Sample workout data for chart
+  final List<Map<String, dynamic>> workoutData = [
+    {'day': 'Mon', 'sessions': 2},
+    {'day': 'Tue', 'sessions': 1},
+    {'day': 'Wed', 'sessions': 3},
+    {'day': 'Thu', 'sessions': 0},
+    {'day': 'Fri', 'sessions': 2},
+    {'day': 'Sat', 'sessions': 1},
+    {'day': 'Sun', 'sessions': 0},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -159,6 +170,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -664,13 +676,174 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
+
+                    // ✅ WORKOUT SESSIONS CHART
+                    const Text(
+                      'Weekly Workout Sessions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Sessions',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '${workoutData.fold<int>(0, (sum, item) => sum + (item['sessions'] as int))} sessions',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          _WorkoutBarChart(data: workoutData),
+                        ],
+                      ),
+                    ),
+
+                    // const SizedBox(height: 16),
                   ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _WorkoutBarChart extends StatelessWidget {
+  final List<Map<String, dynamic>> data;
+
+  const _WorkoutBarChart({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final maxSessions = data.fold<int>(
+      0,
+      (max, item) => (item['sessions'] as int) > max ? item['sessions'] : max,
+    );
+
+    return SizedBox(
+      height: 200,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children:
+            data.map((item) {
+              final sessions = item['sessions'] as int;
+              final day = item['day'] as String;
+              final barHeight =
+                  maxSessions > 0 ? (sessions / maxSessions) * 140 : 0.0;
+              final isToday = day == DateFormat('EEE').format(DateTime.now());
+
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Session count label
+                      SizedBox(
+                        height: 20,
+                        child:
+                            sessions > 0
+                                ? Text(
+                                  sessions.toString(),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primary,
+                                  ),
+                                )
+                                : const SizedBox.shrink(),
+                      ),
+
+                      const SizedBox(height: 4),
+                      // Bar
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        height: barHeight < 20 && sessions > 0 ? 20 : barHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors:
+                                sessions > 0
+                                    ? [
+                                      AppTheme.primary,
+                                      AppTheme.primary.withOpacity(0.6),
+                                    ]
+                                    : [
+                                      Colors.grey.shade200,
+                                      Colors.grey.shade200,
+                                    ],
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(8),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Day label
+                      Text(
+                        day,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              isToday ? FontWeight.w700 : FontWeight.w500,
+                          color: isToday ? AppTheme.primary : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
       ),
     );
   }

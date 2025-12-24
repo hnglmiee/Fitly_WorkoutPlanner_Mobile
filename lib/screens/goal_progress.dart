@@ -8,6 +8,7 @@ import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/goal_progress.dart';
 import '../services/goal_service.dart';
 import '../shared/navigation_bar.dart';
+import 'edit_goal_screen.dart';
 import 'history_goal.dart';
 
 class GoalProgressScreen extends StatefulWidget {
@@ -207,6 +208,29 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         ),
                       ),
                     ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 22,
+                      color: AppTheme.primary,
+                    ),
+                    onPressed: () async {
+                      // Get current goal data
+                      final currentGoal = await _goalFuture;
+                      if (currentGoal != null) {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditGoalScreen(goal: currentGoal),
+                          ),
+                        );
+                        // Reload after editing
+                        setState(() {
+                          _goalFuture = GoalService.fetchGoalProgress();
+                        });
+                      }
+                    },
                   ),
                   IconButton(
                     icon: const Icon(Icons.history, size: 22),

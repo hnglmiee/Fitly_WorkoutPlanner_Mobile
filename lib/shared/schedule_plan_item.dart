@@ -44,30 +44,39 @@ class SchedulePlanItem extends StatelessWidget {
                           plan.title,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          plan.description,
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                        // ✅ Only show description if not empty
+                        if (plan.description != null &&
+                            plan.description!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            plan.description!, // ✅ Use ! operator
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
                       ],
                     ),
                   ),
 
                   /// TAG
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                  // ✅ Only show tag if not empty
+                  if (plan.tag != null && plan.tag!.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        plan.tag!, // ✅ Use ! operator
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      plan.tag,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-                  ),
                 ],
               ),
             ),

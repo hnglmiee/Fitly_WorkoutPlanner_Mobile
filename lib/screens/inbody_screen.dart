@@ -6,6 +6,7 @@ import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
 import '../shared/navigation_bar.dart';
 import 'add_in_body.dart';
+import 'edit_in_body.dart';
 import 'goal_progress.dart';
 
 class InBodyScreen extends StatelessWidget {
@@ -571,7 +572,41 @@ class InBodyScreen extends StatelessWidget {
       children: [
         Expanded(
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (_) => const EditInBodyScreen(
+                        inBodyData: {
+                          'id': 1,
+                          // 'date': DateTime.now(),
+                          // 'time': TimeOfDay.now(),
+                          'goal': 'Build Muscle',
+                          'height': 170.0,
+                          'weight': 65.0,
+                          'gender': 'Male',
+                          'bodyFatPercentage': 14.0,
+                          'muscleMass': 75.0,
+                          'totalBodyWater': 28.1,
+                          'notes': 'Feeling great!',
+                          'uploadedFileName': null,
+                        },
+                      ),
+                ),
+              ).then((result) {
+                // Handle update or delete result
+                if (result != null) {
+                  if (result['deleted'] == true) {
+                    // Handle delete
+                    print('Record deleted: ${result['id']}');
+                  } else {
+                    // Handle update
+                    print('Record updated: $result');
+                  }
+                }
+              });
+            },
             icon: const Icon(Icons.edit_outlined, size: 20),
             label: const Text(
               'Edit Record',

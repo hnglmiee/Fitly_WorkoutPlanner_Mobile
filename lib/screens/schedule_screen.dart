@@ -8,6 +8,7 @@ import '../services/schedule_service.dart';
 import '../shared/navigation_bar.dart';
 import '../shared/schedule_calendar.dart';
 import 'add_plan.dart';
+import 'edit_plan_screen.dart';
 import 'goal_progress.dart';
 import 'package:intl/intl.dart';
 
@@ -104,9 +105,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               padding: const EdgeInsets.all(16),
               color: Colors.white,
               child: Row(
-                children: const [
-                  Icon(Icons.arrow_back_ios_new, size: 18),
-                  Expanded(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TrainingScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Schedule',
@@ -117,7 +128,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 24),
+                  const SizedBox(width: 24),
                 ],
               ),
             ),
@@ -173,13 +184,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => const AddPlanScreen(),
                           ),
                         );
+                        _loadPlans(); // Reload after adding
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -240,91 +252,242 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
+  // ✅ Updated plan card with Dismissible & Edit button
   Widget _modernPlanCard(SchedulePlan plan) {
-    // Safely handle missing fields with fallbacks
     final title = plan.title;
     final description = plan.description ?? '';
     final tag = plan.tag ?? '';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return Dismissible(
+      key: Key(plan.id.toString()),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.red.shade400, Colors.red.shade700],
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => PlanProgressScreen(plan: plan)),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// HEADER
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color:
-                            plan.backgroundColor?.withOpacity(0.1) ??
-                            AppTheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.fitness_center,
-                        size: 20,
-                        color: plan.backgroundColor ?? AppTheme.primary,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.delete_outline, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: Row(
+                  children: const [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.orange,
+                      size: 28,
+                    ),
+                    SizedBox(width: 12),
+                    Text('Delete Plan'),
+                  ],
+                ),
+                content: Text(
+                  'Are you sure you want to delete "${plan.title}"? This action cannot be undone.',
+                  style: const TextStyle(fontSize: 15),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.3,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (description.isNotEmpty) ...[
-                            const SizedBox(height: 2),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+        );
+      },
+      onDismissed: (direction) {
+        final deletedPlan = plan;
+        final deletedIndex = plans.indexOf(plan);
+
+        setState(() {
+          plans.removeWhere((p) => p.id == plan.id);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${plan.title} deleted',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Undo',
+              textColor: Colors.white,
+              onPressed: () {
+                setState(() {
+                  plans.insert(deletedIndex, deletedPlan);
+                });
+              },
+            ),
+          ),
+        );
+
+        // TODO: Call API to delete
+        // ScheduleService.deletePlan(plan.id);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PlanProgressScreen(plan: plan),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// HEADER
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color:
+                              plan.backgroundColor?.withOpacity(0.1) ??
+                              AppTheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.fitness_center,
+                          size: 20,
+                          color: plan.backgroundColor ?? AppTheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              description,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w400,
+                              title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            if (description.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                description,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                    if (tag.isNotEmpty) _customTag(tag),
-                  ],
-                ),
-              ],
+                      // ✅ Edit button
+                      IconButton(
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          size: 20,
+                          color: AppTheme.primary,
+                        ),
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditPlanScreen(plan: plan),
+                            ),
+                          );
+                          _loadPlans(); // Reload after editing
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      if (tag.isNotEmpty) _customTag(tag),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

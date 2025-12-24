@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/profile_edit_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
@@ -384,42 +385,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Column(
                             children: [
+                              // In ProfileScreen, find the Stack with avatar and edit button:
                               Stack(
                                 children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: AppTheme.primary.withOpacity(
-                                          0.3,
-                                        ),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const CircleAvatar(
-                                      radius: 40,
-                                      backgroundImage: NetworkImage(
-                                        'https://images.unsplash.com/photo-1644845225271-4cd4f76a0631?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                                  // Avatar
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.grey.shade200,
+                                    child: Text(
+                                      user.fullName.isNotEmpty
+                                          ? user.fullName[0].toUpperCase()
+                                          : '?',
+                                      style: const TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
+
+                                  // Edit button with navigation
                                   Positioned(
                                     bottom: 0,
                                     right: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.primary,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => ProfileEditScreen(
+                                                  userInfo: user,
+                                                ),
+                                          ),
+                                        );
+                                        // Reload profile data
+                                        setState(() {
+                                          _userFuture = UserService.getMyInfo();
+                                        });
+                                      },
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
                                         ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        size: 12,
-                                        color: Colors.white,
+                                        child: const Icon(
+                                          Icons.edit,
+                                          size: 12,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -524,16 +543,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        _buildModernMenuItem(
-                          Icons.fitness_center,
-                          "Workout Plan",
-                          "Manage your workout routines",
-                        ),
-                        _buildModernMenuItem(
-                          Icons.calendar_today,
-                          "Workout Schedule",
-                          "View and edit your schedule",
-                        ),
+                        // _buildModernMenuItem(
+                        //   Icons.fitness_center,
+                        //   "Workout Plan",
+                        //   "Manage your workout routines",
+                        // ),
+                        // _buildModernMenuItem(
+                        //   Icons.calendar_today,
+                        //   "Workout Schedule",
+                        //   "View and edit your schedule",
+                        // ),
                         _buildModernMenuItem(
                           Icons.assessment_outlined,
                           "In Body",
@@ -547,11 +566,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        _buildModernMenuItem(
-                          Icons.flag_outlined,
-                          "Goal",
-                          "Set and track your fitness goals",
-                        ),
+                        // _buildModernMenuItem(
+                        //   Icons.flag_outlined,
+                        //   "Goal",
+                        //   "Set and track your fitness goals",
+                        // ),
                         _buildModernMenuItem(
                           Icons.logout_rounded,
                           "Logout",
