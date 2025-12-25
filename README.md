@@ -63,7 +63,7 @@ Fitly is a full-featured workout tracking application that empowers users to tak
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/fitly-workout-tracker.git
+git clone https://github.com/hnglmiee/Fitly_WorkoutPlanner_Mobile.git
 cd fitly-workout-tracker/backend
 ```
 
