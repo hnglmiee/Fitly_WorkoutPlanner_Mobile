@@ -5,7 +5,6 @@ import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart'
 import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/shared/navigation_bar.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
-import 'package:workout_tracker_mini_project_mobile/theme/gradient_scaffold.dart';
 
 import '../models/user_info.dart';
 import '../models/workout_plan.dart';
@@ -509,163 +508,33 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           );
                         }
 
-                        final plan = snapshot.data!.first;
+                        final plans = snapshot.data!;
 
-                        return Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  /// LEFT CONTENT
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        /// STATUS BADGE
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.primary,
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'WORKOUT',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 12),
-
-                                        /// PLAN TITLE
-                                        Text(
-                                          plan.title,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: -0.3,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-
-                                        const SizedBox(height: 6),
-
-                                        /// NOTES
-                                        Text(
-                                          plan.notes.isNotEmpty
-                                              ? plan.notes
-                                              : "No notes",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
+                        if (plans.length >= 2) {
+                          return SizedBox(
+                            height: 230,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: plans.length,
+                              itemBuilder: (context, index) {
+                                final plan = plans[index];
+                                return Container(
+                                  width: MediaQuery.of(context).size.width - 32,
+                                  margin: EdgeInsets.only(
+                                    right: index < plans.length - 1 ? 12 : 0,
                                   ),
+                                  child: _PlanCard(plan: plan),
+                                );
+                              },
+                            ),
+                          );
+                        }
 
-                                  const SizedBox(width: 16),
-
-                                  /// RIGHT IMAGE
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      width: 90,
-                                      height: 90,
-                                      decoration: const BoxDecoration(
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                            'https://plus.unsplash.com/premium_photo-1661962342128-505f8032ea45?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              /// CONTINUE BUTTON
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                  minimumSize: const Size(double.infinity, 50),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (_) => const GoalProgressScreen(),
-                                    ),
-                                  );
-                                },
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      'Continue The Workout',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.3),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.arrow_forward,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
+                        return _PlanCard(plan: plans.first);
                       },
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 10),
 
                     /// MY ACTIVITIES
                     const Text(
@@ -811,6 +680,154 @@ class _TrainingScreenState extends State<TrainingScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ✅ NEW: Extracted Plan Card Widget
+class _PlanCard extends StatelessWidget {
+  final WorkoutPlan plan;
+
+  const _PlanCard({required this.plan});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// LEFT CONTENT
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// STATUS BADGE
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'WORKOUT',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    /// PLAN TITLE
+                    Text(
+                      plan.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    /// NOTES
+                    Text(
+                      plan.notes.isNotEmpty ? plan.notes : "No notes",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              /// RIGHT IMAGE
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(
+                        'https://plus.unsplash.com/premium_photo-1661962342128-505f8032ea45?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                      ),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          /// CONTINUE BUTTON
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              minimumSize: const Size(double.infinity, 50),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const GoalProgressScreen()),
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Continue The Workout',
+                  style: TextStyle(color: Colors.white, fontSize: 15),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
