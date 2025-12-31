@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/exercise_form.dart';
-import '../models/schedule_plan.dart';
+import '../models/workout_plan.dart';
 
 class EditPlanScreen extends StatefulWidget {
-  final SchedulePlan plan;
+  final WorkoutPlan plan;
 
   const EditPlanScreen({super.key, required this.plan});
 
@@ -55,13 +55,8 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Pre-fill with existing plan data
     titleController = TextEditingController(text: widget.plan.title);
-    notesController = TextEditingController(
-      text: widget.plan.description ?? '',
-    );
-
-    // TODO: Load existing exercises, days, etc. from plan
+    notesController = TextEditingController(text: widget.plan.notes);
   }
 
   @override
@@ -656,7 +651,6 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
   /// ================= UPDATE FUNCTION =================
 
   void _updatePlan() {
-    // Validate
     if (titleController.text.isEmpty) {
       _showError('Please enter a plan title');
       return;
@@ -679,10 +673,11 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
       return;
     }
 
-    // TODO: Update to database
+    // TODO: Update to API
     final planData = {
       'id': widget.plan.id,
       'title': titleController.text,
+      'notes': notesController.text,
       'exercises':
           exercises
               .map(
@@ -701,10 +696,9 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
       'everyDay': everyDay,
       'days': everyDay ? [] : selectedDays.toList(),
       'reminder': reminder,
-      'notes': notesController.text,
     };
 
-    print('Updating plan: $planData');
+    debugPrint('Updating plan: $planData');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

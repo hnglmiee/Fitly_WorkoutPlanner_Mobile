@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../models/WorkoutMock.dart';
 import '../models/exercise_log.dart';
-import '../models/schedule_plan.dart';
+import '../models/workout_plan.dart';
 import '../shared/workout_card.dart';
 import '../theme/app_theme.dart';
 
 class PlanProgressScreen extends StatefulWidget {
-  final SchedulePlan plan;
+  final WorkoutPlan plan;
   const PlanProgressScreen({super.key, required this.plan});
 
   @override
@@ -368,10 +368,10 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
+                                  children: [
                                     Text(
-                                      "Lose Weight, Gain Muscle",
-                                      style: TextStyle(
+                                      widget.plan.title,
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: -0.3,
@@ -379,7 +379,9 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      "Full Body Workout",
+                                      widget.plan.notes.isNotEmpty
+                                          ? widget.plan.notes
+                                          : "No description",
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: Colors.black54,

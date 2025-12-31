@@ -58,7 +58,6 @@ class SchedulePlanItem extends StatelessWidget {
                   ),
 
                   /// TAG
-                  // ✅ Only show tag if not empty
                   if (plan.tag != null && plan.tag!.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(

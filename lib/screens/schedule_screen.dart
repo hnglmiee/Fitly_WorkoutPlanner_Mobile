@@ -3,8 +3,8 @@ import 'package:workout_tracker_mini_project_mobile/screens/plan_progress_screen
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
-import '../models/schedule_plan.dart';
-import '../services/schedule_service.dart';
+import '../models/workout_plan.dart';
+import '../services/workout_plan_service.dart';
 import '../shared/navigation_bar.dart';
 import '../shared/schedule_calendar.dart';
 import 'add_plan.dart';
@@ -24,20 +24,31 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   DateTime currentMonth = DateTime.now();
   int _selectedIndex = 1;
 
-  late List<SchedulePlan> plans;
+  List<WorkoutPlan> plans = [];
 
   @override
   void initState() {
     super.initState();
-    plans = [];
     _loadPlans();
   }
 
   Future<void> _loadPlans() async {
-    final data = await ScheduleService.fetchMyPlans();
-    setState(() {
-      plans = data;
-    });
+    try {
+      final data = await WorkoutPlanService.fetchMyPlans();
+      setState(() {
+        plans = data;
+      });
+    } catch (e) {
+      debugPrint('Error loading plans: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading plans: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _onNavTapped(int index) {
@@ -77,16 +88,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredPlans =
-        plans
-            .where(
-              (p) =>
-                  p.date.year == selectedDate.year &&
-                  p.date.month == selectedDate.month &&
-                  p.date.day == selectedDate.day,
-            )
-            .toList();
-
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: Padding(
@@ -226,20 +227,38 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
             const SizedBox(height: 8),
 
-            /// PLANS
+            /// PLANS - Group by date
             Expanded(
               child:
-                  filteredPlans.isNotEmpty
-                      ? ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: filteredPlans.length,
-                        itemBuilder: (context, index) {
-                          final plan = filteredPlans[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _modernPlanCard(plan),
-                          );
-                        },
+                  plans.isEmpty
+                      ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.fitness_center_outlined,
+                              size: 64,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No workout plans yet',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap "Add Plan" to create your first plan',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                       : ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -252,11 +271,63 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  // ✅ Updated plan card with Dismissible & Edit button
-  Widget _modernPlanCard(SchedulePlan plan) {
+  // ✅ Group plans by createdAt date
+  List<Widget> _buildPlansByDay(List<WorkoutPlan> plans) {
+    final Map<DateTime, List<WorkoutPlan>> grouped = {};
+
+    for (final plan in plans) {
+      // Group by createdAt date (or use current date if null)
+      final date = plan.createdAt ?? DateTime.now();
+      final dateKey = DateTime(date.year, date.month, date.day);
+      grouped.putIfAbsent(dateKey, () => []).add(plan);
+    }
+
+    final sortedDates =
+        grouped.keys.toList()..sort((a, b) => b.compareTo(a)); // Latest first
+
+    return sortedDates.expand((date) {
+      final dayPlans = grouped[date]!;
+
+      return [
+        // Date header
+        Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                DateFormat('EEEE, MMM dd').format(date),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Plans for this date
+        ...dayPlans.map((plan) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _modernPlanCard(plan),
+          );
+        }),
+      ];
+    }).toList();
+  }
+
+  Widget _modernPlanCard(WorkoutPlan plan) {
     final title = plan.title;
-    final description = plan.description ?? '';
-    final tag = plan.tag ?? '';
+    final description = plan.notes;
 
     return Dismissible(
       key: Key(plan.id.toString()),
@@ -340,7 +411,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
         );
       },
-      onDismissed: (direction) {
+      onDismissed: (direction) async {
         final deletedPlan = plan;
         final deletedIndex = plans.indexOf(plan);
 
@@ -380,8 +451,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
         );
 
-        // TODO: Call API to delete
-        // ScheduleService.deletePlan(plan.id);
+        // ✅ Call API to delete
+        try {
+          await WorkoutPlanService.deletePlan(plan.id);
+        } catch (e) {
+          debugPrint('Error deleting plan: $e');
+          if (mounted) {
+            setState(() {
+              plans.insert(deletedIndex, deletedPlan);
+            });
+          }
+        }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -406,6 +486,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   builder: (_) => PlanProgressScreen(plan: plan),
                 ),
               );
+              debugPrint('Tapped plan: ${plan.title}');
             },
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -418,15 +499,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color:
-                              plan.backgroundColor?.withOpacity(0.1) ??
-                              AppTheme.primary.withOpacity(0.1),
+                          color: AppTheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           Icons.fitness_center,
                           size: 20,
-                          color: plan.backgroundColor ?? AppTheme.primary,
+                          color: AppTheme.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -460,7 +539,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ],
                         ),
                       ),
-                      // ✅ Edit button
+                      // Edit button routing
                       IconButton(
                         icon: Icon(
                           Icons.edit_outlined,
@@ -474,6 +553,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               builder: (_) => EditPlanScreen(plan: plan),
                             ),
                           );
+                          debugPrint('Edit plan: ${plan.title}');
                           _loadPlans(); // Reload after editing
                         },
                         padding: EdgeInsets.zero,
@@ -483,7 +563,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      if (tag.isNotEmpty) _customTag(tag),
+                      _customTag('Pending'),
                     ],
                   ),
                 ],
@@ -527,53 +607,5 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       ),
     );
-  }
-
-  List<Widget> _buildPlansByDay(List<SchedulePlan> plans) {
-    final Map<DateTime, List<SchedulePlan>> grouped = {};
-
-    for (final plan in plans) {
-      final dateKey = DateTime(plan.date.year, plan.date.month, plan.date.day);
-      grouped.putIfAbsent(dateKey, () => []).add(plan);
-    }
-
-    final sortedDates = grouped.keys.toList()..sort();
-
-    return sortedDates.expand((date) {
-      final dayPlans = grouped[date]!;
-
-      return [
-        Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 4,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                DateFormat('EEEE, MMM dd').format(date),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-        ...dayPlans.map((plan) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _modernPlanCard(plan),
-          );
-        }),
-      ];
-    }).toList();
   }
 }

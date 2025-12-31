@@ -4,9 +4,9 @@ class SchedulePlan {
   final int id;
   final DateTime date;
   final String title;
-  final String? description; // ✅ Nullable
-  final String? tag; // ✅ Nullable
-  final Color? backgroundColor; // ✅ Nullable
+  final String? description;
+  final String? tag;
+  final Color? backgroundColor;
   final String dayLabel;
   final bool outlined;
 
@@ -14,10 +14,10 @@ class SchedulePlan {
     required this.id,
     required this.date,
     required this.title,
-    this.description, // ✅ Optional
-    this.tag, // ✅ Optional
-    this.backgroundColor, // ✅ Optional
-    this.dayLabel = '', // ✅ Default value
+    this.description,
+    this.tag,
+    this.backgroundColor,
+    this.dayLabel = '',
     this.outlined = false,
   });
 }
