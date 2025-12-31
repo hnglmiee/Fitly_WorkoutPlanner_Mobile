@@ -1,18 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
+import '../models/in_body_data.dart';
+import '../services/in_body_service.dart';
 import '../shared/navigation_bar.dart';
 import 'add_in_body.dart';
 import 'edit_in_body.dart';
 import 'goal_progress.dart';
+import 'in_body_history_screen.dart';
 
-class InBodyScreen extends StatelessWidget {
+class InBodyScreen extends StatefulWidget {
   const InBodyScreen({super.key});
 
-  void _onNavTapped(BuildContext context, int index) {
+  @override
+  State<InBodyScreen> createState() => _InBodyScreenState();
+}
+
+class _InBodyScreenState extends State<InBodyScreen> {
+  Future<InBodyData?>? _latestRecordFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLatestRecord();
+  }
+
+  void _loadLatestRecord() {
+    setState(() {
+      _latestRecordFuture = InBodyService.fetchLatestInBodyRecord();
+    });
+  }
+
+  void _onNavTapped(int index) {
     Widget nextScreen;
 
     switch (index) {
@@ -51,19 +74,47 @@ class InBodyScreen extends StatelessWidget {
           children: [
             _header(context),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  const SizedBox(height: 20),
-                  _latestRecordCard(context),
-                  const SizedBox(height: 24),
-                  _statisticsSection(),
-                  const SizedBox(height: 24),
-                  _exerciseSuggestion(),
-                  const SizedBox(height: 24),
-                  _actionButtons(context),
-                  const SizedBox(height: 24),
-                ],
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  _loadLatestRecord();
+                },
+                child: FutureBuilder<InBodyData?>(
+                  future: _latestRecordFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.primary,
+                        ),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return _buildErrorState();
+                    }
+
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return _buildEmptyState();
+                    }
+
+                    final record = snapshot.data!;
+
+                    return ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        const SizedBox(height: 20),
+                        _latestRecordCard(context, record),
+                        const SizedBox(height: 24),
+                        _statisticsSection(record),
+                        const SizedBox(height: 24),
+                        _exerciseSuggestion(),
+                        const SizedBox(height: 24),
+                        _actionButtons(context, record),
+                        const SizedBox(height: 24),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -73,7 +124,7 @@ class InBodyScreen extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
           selectedIndex: 3,
-          onItemTapped: (index) => _onNavTapped(context, index),
+          onItemTapped: _onNavTapped,
         ),
       ),
     );
@@ -94,17 +145,126 @@ class InBodyScreen extends StatelessWidget {
           const Spacer(),
           Text('In Body', style: textTheme.headlineMedium),
           const Spacer(),
-          const Opacity(
-            opacity: 0,
-            child: Icon(Icons.arrow_back_ios, size: 20),
+          FutureBuilder<List<InBodyData>>(
+            future: InBodyService.fetchMyInBodyRecords(),
+            builder: (context, snapshot) {
+              final hasMultiple =
+                  snapshot.hasData && (snapshot.data?.length ?? 0) > 1;
+
+              if (!hasMultiple) {
+                return const Opacity(
+                  opacity: 0,
+                  child: Icon(Icons.history, size: 20),
+                );
+              }
+
+              return IconButton(
+                icon: Icon(Icons.history, size: 24, color: AppTheme.primary),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const InBodyHistoryScreen(),
+                    ),
+                  );
+                  // Reload if user selected a record
+                  if (result != null) {
+                    _loadLatestRecord();
+                  }
+                },
+              );
+            },
           ),
         ],
       ),
     );
   }
 
+  // ================= ERROR STATE =================
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            const SizedBox(height: 16),
+            const Text(
+              'Failed to load data',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _loadLatestRecord,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= EMPTY STATE =================
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.fitness_center, size: 64, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text(
+              'No InBody records yet',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap "New Record" to add your first measurement',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddInBodyScreen()),
+                );
+                _loadLatestRecord();
+              },
+              icon: const Icon(Icons.add_rounded, size: 22),
+              label: const Text(
+                'New Record',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ================= LATEST RECORD CARD =================
-  Widget _latestRecordCard(BuildContext context) {
+  Widget _latestRecordCard(BuildContext context, InBodyData record) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -123,7 +283,11 @@ class InBodyScreen extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            // Navigate to detail
+            // Navigate to detail or history
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const InBodyHistoryScreen()),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -145,11 +309,11 @@ class InBodyScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Latest Record',
                             style: TextStyle(
                               fontSize: 12,
@@ -157,10 +321,10 @@ class InBodyScreen extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            'Lose Fat & Gain Muscle',
-                            style: TextStyle(
+                            record.fullName,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
@@ -210,7 +374,7 @@ class InBodyScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '05.30.2025',
+                      DateFormat('MM.dd.yyyy').format(record.measuredAt),
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade600,
@@ -225,7 +389,7 @@ class InBodyScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '11:30',
+                      DateFormat('HH:mm').format(record.measuredAt),
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade600,
@@ -240,21 +404,21 @@ class InBodyScreen extends StatelessWidget {
                     _modernInfoChip(
                       icon: Icons.height_rounded,
                       label: 'Height',
-                      value: '170',
+                      value: record.height.toStringAsFixed(1),
                       unit: 'cm',
                     ),
                     const SizedBox(width: 12),
                     _modernInfoChip(
                       icon: Icons.monitor_weight_outlined,
                       label: 'Weight',
-                      value: '40',
+                      value: record.weight.toStringAsFixed(1),
                       unit: 'kg',
                     ),
                     const SizedBox(width: 12),
                     _modernInfoChip(
-                      icon: Icons.person_outline_rounded,
-                      label: 'Gender',
-                      value: 'Female',
+                      icon: Icons.analytics_outlined,
+                      label: 'BMI',
+                      value: record.bmi.toStringAsFixed(1),
                       unit: '',
                     ),
                   ],
@@ -335,7 +499,7 @@ class InBodyScreen extends StatelessWidget {
   }
 
   // ================= STATISTICS =================
-  Widget _statisticsSection() {
+  Widget _statisticsSection(InBodyData record) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -353,7 +517,7 @@ class InBodyScreen extends StatelessWidget {
             _modernStatCard(
               icon: Icons.local_fire_department_rounded,
               title: 'Body Fat',
-              value: '14',
+              value: record.bodyFatPercentage.toStringAsFixed(1),
               unit: '%',
               color: Colors.orange,
             ),
@@ -361,14 +525,14 @@ class InBodyScreen extends StatelessWidget {
             _modernStatCard(
               icon: Icons.fitness_center,
               title: 'Muscle Mass',
-              value: '75',
+              value: record.muscleMass.toStringAsFixed(1),
               unit: '%',
               color: Colors.blue,
             ),
           ],
         ),
         const SizedBox(height: 12),
-        _waterCard(),
+        _waterCard(record),
       ],
     );
   }
@@ -446,7 +610,7 @@ class InBodyScreen extends StatelessWidget {
     );
   }
 
-  Widget _waterCard() {
+  Widget _waterCard(InBodyData record) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -487,7 +651,7 @@ class InBodyScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Hydration level',
+                  'Estimated from lean mass',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
@@ -496,9 +660,9 @@ class InBodyScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                '28.1',
-                style: TextStyle(
+              Text(
+                record.estimatedTotalBodyWater.toStringAsFixed(1),
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
@@ -567,45 +731,30 @@ class InBodyScreen extends StatelessWidget {
   }
 
   // ================= ACTION BUTTONS =================
-  Widget _actionButtons(BuildContext context) {
+  Widget _actionButtons(BuildContext context, InBodyData record) {
     return Row(
       children: [
         Expanded(
           child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder:
-                      (_) => const EditInBodyScreen(
+                      (_) => EditInBodyScreen(
                         inBodyData: {
-                          'id': 1,
-                          // 'date': DateTime.now(),
-                          // 'time': TimeOfDay.now(),
-                          'goal': 'Build Muscle',
-                          'height': 170.0,
-                          'weight': 65.0,
-                          'gender': 'Male',
-                          'bodyFatPercentage': 14.0,
-                          'muscleMass': 75.0,
-                          'totalBodyWater': 28.1,
-                          'notes': 'Feeling great!',
-                          'uploadedFileName': null,
+                          'id': record.id,
+                          'measuredAt': record.measuredAt,
+                          'height': record.height,
+                          'weight': record.weight,
+                          'bodyFatPercentage': record.bodyFatPercentage,
+                          'muscleMass': record.muscleMass,
+                          'notes': record.notes ?? '',
                         },
                       ),
                 ),
-              ).then((result) {
-                // Handle update or delete result
-                if (result != null) {
-                  if (result['deleted'] == true) {
-                    // Handle delete
-                    print('Record deleted: ${result['id']}');
-                  } else {
-                    // Handle update
-                    print('Record updated: $result');
-                  }
-                }
-              });
+              );
+              _loadLatestRecord();
             },
             icon: const Icon(Icons.edit_outlined, size: 20),
             label: const Text(
@@ -625,11 +774,12 @@ class InBodyScreen extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AddInBodyScreen()),
               );
+              _loadLatestRecord();
             },
             icon: const Icon(Icons.add_rounded, size: 22),
             label: const Text(
