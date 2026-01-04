@@ -1,178 +1,345 @@
 # Fitly - Workout Tracker
 
-A comprehensive mobile application designed to help users schedule workouts, create training plans, and track their fitness progress effectively.
+A comprehensive mobile application designed to help users schedule workouts, create training plans, and track their fitness progress effectively with intelligent InBody data extraction.
 
-## Overview
+## Index
 
-Fitly is a full-featured workout tracking application that empowers users to take control of their fitness journey. With intuitive scheduling, personalized workout plans, and intelligent progress tracking, Fitly makes it easy to stay motivated and achieve your fitness goals.
+- [About](#about)
+- [Usage](#usage)
+  - [Installation](#installation)
+  - [Commands](#commands)
+- [Development](#development)
+  - [Pre-Requisites](#pre-requisites)
+  - [Development Environment](#development-environment)
+  - [File Structure](#file-structure)
+  - [Build](#build)  
+  - [Deployment](#deployment)  
+  - [Guideline](#guideline)  
+- [FAQ](#faq)
+- [Resources](#resources)
+- [Gallery](#gallery)
 
-## Key Features
+## About
 
-- **Workout Scheduling**: Plan and organize your training sessions with an intuitive calendar interface
-- **Custom Training Plans**: Create personalized workout routines tailored to your fitness goals
-- **Progress Tracking**: Monitor your fitness journey with detailed analytics and historical data
-- **InBody Data Integration**: Automatically extract body composition data from InBody reports using OCR technology
-- **Performance Metrics**: Track key metrics including weight, body fat percentage, muscle mass, and more
-- **Workout History**: Review past workouts and analyze your performance over time
+Fitly is a full-featured workout tracking mobile application that empowers users to take complete control of their fitness journey. Built with Flutter for cross-platform compatibility and powered by a robust Spring Boot backend, Fitly provides an intuitive and comprehensive solution for fitness enthusiasts of all levels.
 
-## Technology Stack
+**Key Highlights:**
+- Schedule and organize training sessions with an intelligent calendar interface
+- Create personalized workout plans with a diverse exercise library
+- Track progress with detailed analytics and historical data
+- Automatically extract body composition data from InBody reports using advanced OCR technology
+- Perfect for beginners who need guidance and support in reading fitness reports
+- Seamless integration between workout planning and body composition tracking
 
-### Backend
-- **Java Spring Boot**: Robust and scalable REST API framework
-- **MySQL**: Relational database for secure data storage and management
-- **PaddlePaddle OCR**: Advanced optical character recognition for extracting data from InBody scan documents
+The application leverages PaddlePaddle OCR to eliminate the time-consuming process of manually reading InBody reports, making it especially suitable for newcomers who need assistance in understanding their fitness metrics.
 
-### Mobile Application
-- **Flutter**: Cross-platform mobile development framework for iOS and Android
-- Dart programming language
-- Material Design UI components
+## Usage
 
-## Architecture
+Fitly is designed for both iOS and Android platforms, providing a seamless fitness tracking experience across devices.
 
-```
-┌─────────────────┐
-│  Flutter App    │
-│   (Mobile UI)   │
-└────────┬────────┘
-         │
-         │ REST API
-         │
-┌────────▼────────┐
-│  Spring Boot    │
-│    Backend      │
-└────────┬────────┘
-         │
-    ┌────┴────┐
-    │         │
-┌───▼───┐ ┌──▼──────────┐
-│ MySQL │ │ PaddleOCR   │
-│  DB   │ │  Service    │
-└───────┘ └─────────────┘
-```
+### Installation
 
-## Getting Started
+**For End Users:**
 
-### Prerequisites
+1. **Android:**
+   - Download the APK from the releases page
+   - Enable "Install from Unknown Sources" in your device settings
+   - Install the APK file
+   - Open Fitly and create your account
 
-- Java JDK 11 or higher
-- MySQL 8.0 or higher
-- Flutter SDK 3.0+
-- PaddlePaddle OCR dependencies
+2. **iOS:**
+   - Download from TestFlight (development) or App Store (when available)
+   - Open the app and register
 
-### Backend Setup
+**For Developers:**
 
 1. Clone the repository:
 ```bash
 git clone https://github.com/hnglmiee/Fitly_WorkoutPlanner_Mobile.git
-cd fitly-workout-tracker/backend
+cd Fitly_WorkoutPlanner_Mobile
 ```
 
-2. Configure database connection in `application.properties`:
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/fitly_db
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
-
-3. Install dependencies and run:
+2. **Backend Setup:**
 ```bash
+cd backend
+# Configure application.properties with your MySQL credentials
 ./mvnw clean install
 ./mvnw spring-boot:run
 ```
 
-### Mobile App Setup
-
-1. Navigate to the Flutter app directory:
+3. **Mobile App Setup:**
 ```bash
-cd fitly-workout-tracker/mobile
+cd mobile
+flutter pub get
+# Configure API endpoint in lib/config/api_config.dart
+flutter run
 ```
 
-2. Install dependencies:
+### Commands
+
+**Backend Commands:**
 ```bash
-flutter pub get
+# Start the Spring Boot server
+./mvnw spring-boot:run
+
+# Run tests
+./mvnw test
+
+# Build production JAR
+./mvnw clean package
+```
+
+**Mobile App Commands:**
+```bash
+# Run on connected device/emulator
+flutter run
+
+# Build APK for Android
+flutter build apk --release
+
+# Build iOS app
+flutter build ios --release
+
+# Run tests
+flutter test
+```
+
+## Development
+
+We welcome developers who want to contribute to making fitness tracking more accessible and intelligent.
+
+### Pre-Requisites
+
+**Backend Development:**
+- Java JDK 11 or higher
+- Maven 3.6+
+- MySQL 8.0 or higher
+- PaddlePaddle OCR dependencies
+- IDE (IntelliJ IDEA, Eclipse, or VS Code)
+
+**Mobile Development:**
+- Flutter SDK 3.0+
+- Dart SDK (included with Flutter)
+- Android Studio (for Android development)
+- Xcode (for iOS development, macOS only)
+- An Android/iOS device or emulator
+
+### Development Environment
+
+**Setting up Backend:**
+
+1. Install Java JDK 11+
+2. Install MySQL and create database:
+```sql
+CREATE DATABASE fitly_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+3. Configure `application.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/fitly_db
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+spring.jpa.hibernate.ddl-auto=update
+```
+
+4. Install PaddlePaddle OCR dependencies:
+```bash
+pip install paddlepaddle paddleocr
+```
+
+**Setting up Mobile App:**
+
+1. Install Flutter SDK from [flutter.dev](https://flutter.dev)
+2. Run Flutter doctor to verify installation:
+```bash
+flutter doctor
 ```
 
 3. Configure API endpoint in `lib/config/api_config.dart`:
 ```dart
-static const String baseUrl = 'http://your-api-url:8080';
+class ApiConfig {
+  static const String baseUrl = 'http://localhost:8080/api/v1';
+  // Use 10.0.2.2 for Android emulator
+  // Use actual IP for physical devices
+}
 ```
 
-4. Run the app:
+4. Install dependencies:
 ```bash
-flutter run
+flutter pub get
 ```
 
-## Core Functionalities
+### File Structure
 
-### Workout Management
-- Create, edit, and delete custom workouts
-- Set exercise routines with sets, reps, and weights
-- Schedule workouts on specific dates and times
+**Backend Structure:**
 
-### Progress Tracking
-- Visual charts and graphs for progress monitoring
-- Body measurement tracking
-- Workout completion statistics
-- Personal records (PRs) tracking
+```
+backend/
+├── src/main/java/com/fitly/     # Main application package
+│   ├── controllers/              # REST API endpoints
+│   ├── services/                 # Business logic layer
+│   ├── repositories/             # Data access layer
+│   ├── models/                   # Database entity models
+│   ├── config/                   # Configuration classes
+│   └── ocr/                      # PaddleOCR integration service
+├── src/main/resources/
+│   └── application.properties    # Application configuration
+└── pom.xml                       # Maven dependencies
+```
 
-### InBody Integration
-- Upload InBody scan reports (PDF/Image format)
-- Automatic data extraction using PaddleOCR
-- Historical body composition tracking
-- Trend analysis for key metrics
+**Mobile App Structure:**
 
-## API Endpoints
+```
+mobile/
+├── lib/
+│   ├── main.dart                 # Application entry point
+│   ├── screens/                  # UI screens and pages
+│   ├── widgets/                  # Reusable UI components
+│   ├── models/                   # Data models
+│   ├── services/                 # API and business logic services
+│   ├── providers/                # State management
+│   ├── config/                   # App configuration
+│   └── utils/                    # Helper functions and utilities
+├── assets/                       # Images, fonts, and other assets
+├── android/                      # Android-specific files
+├── ios/                          # iOS-specific files
+└── pubspec.yaml                  # Flutter dependencies
+```
 
-### Authentication
-- `POST /api/v1/users` - User registration
-- `POST /api/v1/auth` - User login
+### Build
 
-### Workout Plans
-- `GET /api/v1/workouts/my-plan` - Get all workout plans
-- `POST /api/v1/workout-plans` - Create new workout
-- `PUT /api/v1/workout-plans/{id}` - Update workout
-- `DELETE /api/v1/workout-plans/{id}` - Delete workout
+**Backend Build:**
+```bash
+# Development build
+./mvnw clean install
 
-### Goal Progress
-- `GET /api/v1/goal/progress` - Get user goal progress data
-- `POST /api/v1/goal` - Create workout goal
+# Production build (creates executable JAR)
+./mvnw clean package -DskipTests
+# Output: target/fitly-backend-1.0.0.jar
+```
 
-### InBody
-- `POST /api/v1/user-in-body/import/upload` - Upload InBody scan
-- `GET /api/v1/user-in-body/my-in-body` - Get InBody history
+**Mobile App Build:**
 
-## Database Schema
+```bash
+# Android APK
+flutter build apk --release
+# Output: build/app/outputs/flutter-apk/app-release.apk
 
-Key tables include:
-- `users` - User account information
-- `workout-schedule` - Workout definitions and schedules
-- `workout-exercises` - Exercise library
-- `workout_logs` - Completed workout records
-- `user-in-body` - Body composition and measurements
-- `sms-notification` - SMS reminder
+# Android App Bundle (for Google Play)
+flutter build appbundle --release
 
-## OCR Integration
+# iOS
+flutter build ios --release
+# Then archive in Xcode for App Store distribution
+```
 
-The application uses PaddlePaddle OCR to automatically extract data from InBody reports:
+### Deployment
 
-1. User uploads InBody scan (PDF or image)
-2. Backend processes the document using PaddleOCR
-3. Text recognition identifies key metrics (weight, body fat %, muscle mass, etc.)
-4. Extracted data is parsed and stored in the database
-5. User can review and confirm the imported data
+**Backend Deployment:**
 
-## Contributing
+1. **Using JAR file:**
+```bash
+java -jar target/fitly-backend-1.0.0.jar
+```
 
-We welcome contributions! Please follow these steps:
+2. **Using Docker:**
+```dockerfile
+FROM openjdk:11-jre-slim
+COPY target/fitly-backend-1.0.0.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app.jar"]
+```
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. **Cloud Deployment:**
+   - Deploy to AWS Elastic Beanstalk, Google Cloud Platform, or Heroku
+   - Configure environment variables for database and OCR service
+   - Set up MySQL instance (AWS RDS, Cloud SQL, etc.)
 
-## Acknowledgments
+**Mobile App Deployment:**
 
-- PaddlePaddle OCR for text recognition capabilities
-- Flutter community for excellent documentation and packages
-- Spring Boot framework for backend reliability
+1. **Android:**
+   - Upload APK/AAB to Google Play Console
+   - Configure store listing and screenshots
+   - Submit for review
+
+2. **iOS:**
+   - Archive app in Xcode
+   - Upload to App Store Connect
+   - Complete app information and submit for review
+
+### Guideline
+
+**Code Style Guidelines:**
+
+- **Backend (Java):** Follow standard Java conventions, use meaningful variable names, add JavaDoc comments for public methods
+- **Mobile (Dart/Flutter):** Follow [Effective Dart](https://dart.dev/guides/language/effective-dart) style guide, use proper naming conventions
+- Write unit tests for new features
+- Ensure code is properly formatted before committing
+- Write clear commit messages following conventional commits format
+
+**API Development:**
+- Use RESTful conventions
+- Include proper error handling and status codes
+- Document new endpoints in API documentation
+- Validate input data
+
+**UI/UX:**
+- Follow Material Design guidelines
+- Ensure responsive design for different screen sizes
+- Maintain accessibility standards
+- Test on both iOS and Android platforms
+
+## FAQ
+
+**Q: Does Fitly work offline?**  
+A: The app requires internet connection for syncing data and accessing the OCR service. However, you can view previously loaded workout plans offline.
+
+**Q: What InBody file formats are supported?**  
+A: Currently, we support PDF and image formats (JPG, PNG) for InBody report uploads.
+
+**Q: Is my fitness data secure?**  
+A: Yes, all data is encrypted during transmission and stored securely in our database. We follow industry-standard security practices.
+
+**Q: Can I export my workout history?**  
+A: Yes, you can export your workout logs and progress data in CSV format from the app settings.
+
+**Q: How accurate is the OCR extraction?**  
+A: The PaddleOCR technology provides high accuracy for InBody reports. However, we recommend reviewing the extracted data before saving.
+
+**Q: Is Fitly free to use?**  
+A: Yes, Fitly is currently free to use with all features available.
+
+## Resources
+
+**Official Documentation:**
+- [Flutter Documentation](https://flutter.dev/docs)
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [PaddleOCR Documentation](https://github.com/PaddlePaddle/PaddleOCR)
+- [MySQL Documentation](https://dev.mysql.com/doc/)
+
+**Learning Resources:**
+- [REST API Best Practices](https://restfulapi.net/)
+- [Flutter State Management](https://flutter.dev/docs/development/data-and-backend/state-mgmt)
+- [MySQL Database Design](https://dev.mysql.com/doc/workbench/en/wb-getting-started-tutorial-creating-a-model.html)
+
+**Project Repository:**
+- [GitHub Repository](https://github.com/hnglmiee/Fitly_WorkoutPlanner_Mobile)
+
+## Gallery
+
+[Project screenshots and images will be displayed here]
+
+**Coming soon:**
+- Dashboard overview
+- Workout scheduling interface
+- Exercise library
+- InBody upload and extraction
+- Progress tracking charts
+- Mobile app screenshots (iOS and Android)
+
+**Technologies Used:**
+- Flutter & Dart
+- Spring Boot & Java
+- MySQL
+- PaddlePaddle OCR
+- Material Design
