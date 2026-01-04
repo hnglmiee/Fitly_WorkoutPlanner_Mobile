@@ -24,6 +24,7 @@ A comprehensive mobile application designed to help users schedule workouts, cre
 Fitly is a full-featured workout tracking mobile application that empowers users to take complete control of their fitness journey. Built with Flutter for cross-platform compatibility and powered by a robust Spring Boot backend, Fitly provides an intuitive and comprehensive solution for fitness enthusiasts of all levels.
 
 **Key Highlights:**
+- Goal-Oriented Training: Set personalized fitness goals and let the app help you create structured schedules and plans to achieve them
 - Schedule and organize training sessions with an intelligent calendar interface
 - Create personalized workout plans with a diverse exercise library
 - Track progress with detailed analytics and historical data
@@ -31,11 +32,11 @@ Fitly is a full-featured workout tracking mobile application that empowers users
 - Perfect for beginners who need guidance and support in reading fitness reports
 - Seamless integration between workout planning and body composition tracking
 
-The application leverages PaddlePaddle OCR to eliminate the time-consuming process of manually reading InBody reports, making it especially suitable for newcomers who need assistance in understanding their fitness metrics.
+The application leverages PaddlePaddle OCR to eliminate the time-consuming process of manually reading InBody reports, making it especially suitable for newcomers who need assistance in understanding their fitness metrics. With the goal-setting feature, users can define their fitness objectives (weight loss, muscle gain, endurance improvement, etc.) and receive guided support in creating appropriate workout schedules and training plans to achieve those goals.
 
 ## Usage
 
-Fitly is designed for both iOS and Android platforms, providing a seamless fitness tracking experience across devices.
+Fitly is designed for Android platforms, providing a seamless fitness tracking experience across devices.
 
 ### Installation
 
@@ -46,10 +47,6 @@ Fitly is designed for both iOS and Android platforms, providing a seamless fitne
    - Enable "Install from Unknown Sources" in your device settings
    - Install the APK file
    - Open Fitly and create your account
-
-2. **iOS:**
-   - Download from TestFlight (development) or App Store (when available)
-   - Open the app and register
 
 **For Developers:**
 
@@ -97,9 +94,6 @@ flutter run
 # Build APK for Android
 flutter build apk --release
 
-# Build iOS app
-flutter build ios --release
-
 # Run tests
 flutter test
 ```
@@ -121,8 +115,7 @@ We welcome developers who want to contribute to making fitness tracking more acc
 - Flutter SDK 3.0+
 - Dart SDK (included with Flutter)
 - Android Studio (for Android development)
-- Xcode (for iOS development, macOS only)
-- An Android/iOS device or emulator
+- An Android device or emulator
 
 ### Development Environment
 
@@ -202,7 +195,6 @@ mobile/
 │   └── utils/                    # Helper functions and utilities
 ├── assets/                       # Images, fonts, and other assets
 ├── android/                      # Android-specific files
-├── ios/                          # iOS-specific files
 └── pubspec.yaml                  # Flutter dependencies
 ```
 
@@ -228,9 +220,6 @@ flutter build apk --release
 # Android App Bundle (for Google Play)
 flutter build appbundle --release
 
-# iOS
-flutter build ios --release
-# Then archive in Xcode for App Store distribution
 ```
 
 ### Deployment
@@ -250,22 +239,13 @@ EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app.jar"]
 ```
 
-3. **Cloud Deployment:**
-   - Deploy to AWS Elastic Beanstalk, Google Cloud Platform, or Heroku
-   - Configure environment variables for database and OCR service
-   - Set up MySQL instance (AWS RDS, Cloud SQL, etc.)
-
 **Mobile App Deployment:**
 
-1. **Android:**
-   - Upload APK/AAB to Google Play Console
-   - Configure store listing and screenshots
-   - Submit for review
+**Android:**
 
-2. **iOS:**
-   - Archive app in Xcode
-   - Upload to App Store Connect
-   - Complete app information and submit for review
+- Upload APK/AAB to Google Play Console
+- Configure store listing and screenshots
+- Submit for review
 
 ### Guideline
 
