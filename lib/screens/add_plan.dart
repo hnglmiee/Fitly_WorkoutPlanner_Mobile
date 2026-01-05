@@ -6,6 +6,7 @@ import '../models/exercise_models.dart';
 import '../models/exercise_form.dart';
 import '../models/workout_plan.dart';
 import '../services/exercise_service.dart';
+import '../services/workout_exercise_service.dart';
 import '../services/workout_plan_service.dart';
 import '../services/workout_schedule_service.dart'; // 🔥 IMPORT SERVICE MỚI
 
@@ -134,6 +135,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
+
               /// HEADER
               Row(
                 children: [
@@ -160,7 +162,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
               /// 🔥 HIỂN THỊ NGÀY ĐÃ CHỌN
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppTheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -179,7 +182,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Schedule for: ${DateFormat('EEEE, MMM dd, yyyy').format(widget.selectedDate)}',
+                        'Schedule for: ${DateFormat('EEEE, MMM dd, yyyy')
+                            .format(widget.selectedDate)}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -731,10 +735,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                       ),
                       items: categories
                           .map(
-                            (cat) => DropdownMenuItem(
-                          value: cat.id,
-                          child: Text(cat.name),
-                        ),
+                            (cat) =>
+                            DropdownMenuItem(
+                              value: cat.id,
+                              child: Text(cat.name),
+                            ),
                       )
                           .toList(),
                       onChanged: (value) {
@@ -773,10 +778,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                       ),
                       items: categoryExercises
                           .map(
-                            (ex) => DropdownMenuItem(
-                          value: ex.id,
-                          child: Text(ex.name),
-                        ),
+                            (ex) =>
+                            DropdownMenuItem(
+                              value: ex.id,
+                              child: Text(ex.name),
+                            ),
                       )
                           .toList(),
                       onChanged: item.categoryId == null
@@ -827,7 +833,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                 children: [
                   _label('Weight Range'),
                   Text(
-                    '${item.weightRange.start.round()}kg - ${item.weightRange.end.round()}kg',
+                    '${item.weightRange.start.round()}kg - ${item.weightRange
+                        .end.round()}kg',
                     style: TextStyle(
                       color: AppTheme.primary,
                       fontWeight: FontWeight.w600,
@@ -855,10 +862,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  /// ================= SAVE FUNCTION =================
+  /// ================= SAVE FUNCTION  =================
 
   Future<void> _savePlan() async {
-    // VALIDATION
     if (titleController.text.trim().isEmpty) {
       _showError('Please enter a plan title');
       return;
@@ -881,45 +887,45 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      // Convert exercises
-      final exerciseList = exercises
-          .map(
-            (e) => Exercise(
-          muscle: e.muscle!,
-          exercise: e.exercise!,
-          sets: e.sets,
-          reps: e.reps,
-          weightRange: WeightRange(
-            min: e.weightRange.start.round(),
-            max: e.weightRange.end.round(),
-          ),
-        ),
-      )
-          .toList();
-
-      debugPrint('🔵 Step 1: Creating workout plan...');
-
-      // 🔥 STEP 1: TẠO WORKOUT PLAN
+      // STEP 1: CREATE PLAN
       final createdPlan = await WorkoutPlanService.createPlan(
         title: titleController.text.trim(),
         notes: notesController.text.trim(),
-        exercises: exerciseList,
+        exercises: [],
         everyDay: everyDay,
         days: everyDay ? [] : selectedDays.toList(),
         reminder: reminder,
       );
 
-      debugPrint('✅ Plan created with ID: ${createdPlan.id}');
+      // STEP 2: CREATE WORKOUT EXERCISES
+      final workoutExercisesData = exercises.map((e) {
+        final avgWeight =
+        ((e.weightRange.start + e.weightRange.end) / 2).round();
 
-      // 🔥 STEP 2: TẠO SCHEDULE CHO PLAN
-      debugPrint('🔵 Step 2: Creating schedule for date: ${widget.selectedDate}');
+        return {
+          'exerciseId': e.exerciseId!,
+          'sets': e.sets,
+          'reps': e.reps,
+          'weight': avgWeight, // 🔥 int
+          'comments': null,
+        };
+      }).toList();
 
-      // Convert TimeOfDay to DateTime nếu có
+      final createdExercises =
+      await WorkoutExerciseService.createMultipleWorkoutExercises(
+        planId: createdPlan.id,
+        exercises: workoutExercisesData,
+      );
+
+      // 🔥 GUARD: KHÔNG TẠO SCHEDULE NẾU EXERCISE FAIL
+      if (createdExercises.isEmpty) {
+        throw Exception('No exercises were created');
+      }
+
+      // STEP 3: CREATE SCHEDULE
       DateTime? scheduledDateTime;
       if (selectedTime != null) {
         scheduledDateTime = DateTime(
@@ -937,70 +943,40 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
         scheduledTime: scheduledDateTime,
       );
 
-      debugPrint('✅ Schedule created successfully!');
-
       if (!mounted) return;
 
-      // SHOW SUCCESS
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle, color: Colors.white),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Plan scheduled for ${DateFormat('MMM dd').format(widget.selectedDate)}!',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
+        const SnackBar(
+          content: Text('Plan created successfully'),
           backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          duration: const Duration(seconds: 2),
         ),
       );
 
-      // NAVIGATE BACK
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-
-      debugPrint('❌ Error saving plan: $e');
-
-      String errorMessage = 'Failed to save plan';
-
-      if (e.toString().contains('SocketException')) {
-        errorMessage = 'No internet connection';
-      } else if (e.toString().contains('TimeoutException')) {
-        errorMessage = 'Request timeout. Please try again';
-      } else if (e.toString().contains('401')) {
-        errorMessage = 'Unauthorized. Please login again';
-      } else if (e.toString().contains('Exception:')) {
-        errorMessage = e.toString().replaceAll('Exception:', '').trim();
-      }
-
-      _showError(errorMessage);
+      _showError(e.toString().replaceAll('Exception:', '').trim());
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
+
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
