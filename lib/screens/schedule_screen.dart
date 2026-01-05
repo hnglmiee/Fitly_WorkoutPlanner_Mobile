@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:workout_tracker_mini_project_mobile/screens/plan_progress_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/plan_progress_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
+import '../models/workout_schedule.dart';
 import '../models/workout_plan.dart';
+import '../services/workout_schedule_service.dart';
 import '../services/workout_plan_service.dart';
 import '../shared/navigation_bar.dart';
 import '../shared/schedule_calendar.dart';
 import 'add_plan.dart';
-import 'edit_plan_screen.dart';
 import 'goal_progress.dart';
 import 'package:intl/intl.dart';
 
@@ -24,26 +25,58 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   DateTime currentMonth = DateTime.now();
   int _selectedIndex = 1;
 
-  List<WorkoutPlan> plans = [];
+  List<WorkoutSchedule> schedules = [];
+  List<WorkoutPlan> cachedPlans = []; // ✅ Cache plans để tái sử dụng
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPlans();
+    _loadSchedules();
+    _loadPlans(); // ✅ Load plans một lần
   }
 
+  /// ✅ Load và cache plans
   Future<void> _loadPlans() async {
     try {
-      final data = await WorkoutPlanService.fetchMyPlans();
-      setState(() {
-        plans = data;
-      });
+      final plans = await WorkoutPlanService.fetchMyPlans();
+      if (mounted) {
+        setState(() {
+          cachedPlans = plans;
+        });
+      }
+      debugPrint('✅ Cached ${plans.length} plans');
     } catch (e) {
-      debugPrint('Error loading plans: $e');
+      debugPrint('⚠️ Error caching plans: $e');
+      // Không cần hiển thị error, vì có thể fetch lại khi navigate
+    }
+  }
+
+  Future<void> _loadSchedules() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final data = await WorkoutScheduleService.getAllSchedules();
+
+      setState(() {
+        schedules = data;
+        _isLoading = false;
+      });
+
+      debugPrint('✅ Loaded ${schedules.length} schedules');
+    } catch (e) {
+      debugPrint('❌ Error loading schedules: $e');
+
+      setState(() {
+        _isLoading = false;
+      });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading plans: $e'),
+            content: Text('Error loading schedules: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -64,14 +97,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       case 0:
         nextScreen = const TrainingScreen();
         break;
+      case 1:
+        nextScreen = const ScheduleScreen();
+        break; // ✅ Đã thêm break
       case 2:
         nextScreen = const GoalProgressScreen();
         break;
       case 3:
         nextScreen = const ProfileScreen();
         break;
-      case 1:
-        nextScreen = const ScheduleScreen();
       default:
         return;
     }
@@ -84,6 +118,128 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         pageBuilder: (_, __, ___) => nextScreen,
       ),
     );
+  }
+
+  /// ✅ Navigate to Plan Progress Screen
+  Future<void> _navigateToPlanProgress(WorkoutSchedule schedule) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: AppTheme.primary),
+              const SizedBox(height: 16),
+              const Text(
+                'Loading plan...',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      WorkoutPlan? matchedPlan;
+
+      // ✅ Tìm trong cache trước
+      try {
+        matchedPlan = cachedPlans.firstWhere(
+              (plan) => plan.title == schedule.planName,
+        );
+        debugPrint('✅ Found plan in cache: ${matchedPlan.title}');
+      } catch (e) {
+        debugPrint('⚠️ Plan not found in cache, fetching from API...');
+
+        // ✅ Nếu không có trong cache, fetch lại từ API
+        final allPlans = await WorkoutPlanService.fetchMyPlans();
+
+        // Update cache
+        if (mounted) {
+          setState(() {
+            cachedPlans = allPlans;
+          });
+        }
+
+        matchedPlan = allPlans.firstWhere(
+              (plan) => plan.title == schedule.planName,
+          orElse: () => throw Exception('Plan not found: ${schedule.planName}'),
+        );
+
+        debugPrint('✅ Found plan from API: ${matchedPlan.title}');
+      }
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Navigate to PlanProgressScreen
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlanProgressScreen(
+              plan: matchedPlan!,
+            ),
+          ),
+        );
+
+        // Reload schedules when returning
+        _loadSchedules();
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading plan: $e');
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Failed to load plan: ${e.toString()}',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -186,13 +342,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () async {
-                        await Navigator.push(
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AddPlanScreen(),
+                            builder: (_) => AddPlanScreen(
+                              selectedDate: selectedDate,
+                            ),
                           ),
                         );
-                        _loadPlans(); // Reload after adding
+
+                        if (result == true) {
+                          _loadSchedules();
+                          _loadPlans(); // ✅ Refresh cache sau khi thêm plan mới
+                        }
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -227,43 +389,44 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
             const SizedBox(height: 8),
 
-            /// PLANS - Group by date
+            /// SCHEDULES LIST
             Expanded(
-              child:
-                  plans.isEmpty
-                      ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.fitness_center_outlined,
-                              size: 64,
-                              color: Colors.grey.shade300,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No workout plans yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tap "Add Plan" to create your first plan',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      : ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: _buildPlansByDay(plans),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : schedules.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.fitness_center_outlined,
+                      size: 64,
+                      color: Colors.grey.shade300,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No workout plans yet',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tap "Add Plan" to create your first plan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+                  : ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: _buildSchedulesByDay(schedules),
+              ),
             ),
           ],
         ),
@@ -271,25 +434,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  // ✅ Group plans by createdAt date
-  List<Widget> _buildPlansByDay(List<WorkoutPlan> plans) {
-    final Map<DateTime, List<WorkoutPlan>> grouped = {};
+  List<Widget> _buildSchedulesByDay(List<WorkoutSchedule> schedules) {
+    final Map<DateTime, List<WorkoutSchedule>> grouped = {};
 
-    for (final plan in plans) {
-      // Group by createdAt date (or use current date if null)
-      final date = plan.createdAt ?? DateTime.now();
+    for (final schedule in schedules) {
+      final date = schedule.scheduledDate;
       final dateKey = DateTime(date.year, date.month, date.day);
-      grouped.putIfAbsent(dateKey, () => []).add(plan);
+      grouped.putIfAbsent(dateKey, () => []).add(schedule);
     }
 
-    final sortedDates =
-        grouped.keys.toList()..sort((a, b) => b.compareTo(a)); // Latest first
+    final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return sortedDates.expand((date) {
-      final dayPlans = grouped[date]!;
+      final daySchedules = grouped[date]!;
 
       return [
-        // Date header
         Padding(
           padding: const EdgeInsets.only(top: 16, bottom: 12),
           child: Row(
@@ -314,23 +473,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ],
           ),
         ),
-        // Plans for this date
-        ...dayPlans.map((plan) {
+        ...daySchedules.map((schedule) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _modernPlanCard(plan),
+            child: _scheduleCard(schedule),
           );
         }),
       ];
     }).toList();
   }
 
-  Widget _modernPlanCard(WorkoutPlan plan) {
-    final title = plan.title;
-    final description = plan.notes;
-
+  Widget _scheduleCard(WorkoutSchedule schedule) {
     return Dismissible(
-      key: Key(plan.id.toString()),
+      key: Key(schedule.id.toString()),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
@@ -360,75 +515,74 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: const [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.orange,
+                  size: 28,
                 ),
-                title: Row(
-                  children: const [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: Colors.orange,
-                      size: 28,
-                    ),
-                    SizedBox(width: 12),
-                    Text('Delete Plan'),
-                  ],
-                ),
-                content: Text(
-                  'Are you sure you want to delete "${plan.title}"? This action cannot be undone.',
-                  style: const TextStyle(fontSize: 15),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                SizedBox(width: 12),
+                Text('Delete Schedule'),
+              ],
+            ),
+            content: const Text(
+              'Are you sure you want to delete this schedule?',
+              style: TextStyle(fontSize: 15),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
                   ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
       onDismissed: (direction) async {
-        final deletedPlan = plan;
-        final deletedIndex = plans.indexOf(plan);
+        final deletedSchedule = schedule;
+        final deletedIndex = schedules.indexOf(schedule);
 
         setState(() {
-          plans.removeWhere((p) => p.id == plan.id);
+          schedules.removeWhere((s) => s.id == schedule.id);
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
+            content: const Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '${plan.title} deleted',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    'Schedule deleted',
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -444,21 +598,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               textColor: Colors.white,
               onPressed: () {
                 setState(() {
-                  plans.insert(deletedIndex, deletedPlan);
+                  schedules.insert(deletedIndex, deletedSchedule);
                 });
               },
             ),
           ),
         );
 
-        // ✅ Call API to delete
         try {
-          await WorkoutPlanService.deletePlan(plan.id);
+          await WorkoutScheduleService.deleteSchedule(schedule.id);
         } catch (e) {
-          debugPrint('Error deleting plan: $e');
+          debugPrint('Error deleting schedule: $e');
           if (mounted) {
             setState(() {
-              plans.insert(deletedIndex, deletedPlan);
+              schedules.insert(deletedIndex, deletedSchedule);
             });
           }
         }
@@ -479,92 +632,70 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PlanProgressScreen(plan: plan),
-                ),
-              );
-              debugPrint('Tapped plan: ${plan.title}');
-            },
+            onTap: () => _navigateToPlanProgress(schedule),
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  /// HEADER
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.fitness_center,
+                      size: 20,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          schedule.planName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        child: Icon(
-                          Icons.fitness_center,
-                          size: 20,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
+                        if (schedule.scheduledTime != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 14,
+                                color: Colors.grey.shade600,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (description.isNotEmpty) ...[
-                              const SizedBox(height: 2),
+                              const SizedBox(width: 4),
                               Text(
-                                description,
+                                DateFormat('HH:mm')
+                                    .format(schedule.scheduledTime!),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
                                   fontWeight: FontWeight.w400,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
-                          ],
-                        ),
-                      ),
-                      // Edit button routing
-                      IconButton(
-                        icon: Icon(
-                          Icons.edit_outlined,
-                          size: 20,
-                          color: AppTheme.primary,
-                        ),
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EditPlanScreen(plan: plan),
-                            ),
-                          );
-                          debugPrint('Edit plan: ${plan.title}');
-                          _loadPlans(); // Reload after editing
-                        },
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      _customTag('Pending'),
-                    ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _statusTag(schedule.status),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey.shade400,
+                    size: 20,
                   ),
                 ],
               ),
@@ -575,18 +706,26 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _customTag(String tag) {
+  Widget _statusTag(String status) {
     Color tagColor;
+    String displayText = status;
 
-    switch (tag.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'completed':
         tagColor = Colors.green;
+        displayText = 'Completed';
         break;
-      case 'in progress':
-        tagColor = Colors.orange;
+      case 'pending':
+        tagColor = Colors.grey;
+        displayText = 'Pending';
         break;
       case 'upcoming':
         tagColor = Colors.blue;
+        displayText = 'Upcoming';
+        break;
+      case 'skipped':
+        tagColor = Colors.orange;
+        displayText = 'Skipped';
         break;
       default:
         tagColor = Colors.grey;
@@ -599,7 +738,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        tag,
+        displayText,
         style: TextStyle(
           fontSize: 11,
           color: tagColor,

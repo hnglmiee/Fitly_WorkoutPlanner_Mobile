@@ -171,7 +171,6 @@ class WorkoutPlanService {
     }
   }
 
-  // ✅ THÊM MỚI - Get plan by ID
   static Future<WorkoutPlan> getPlanById(int planId) async {
     try {
       debugPrint('🔵 Fetching workout plan $planId...');
