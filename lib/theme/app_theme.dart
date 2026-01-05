@@ -107,6 +107,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      splashFactory: InkRipple.splashFactory,
       colorScheme: const ColorScheme(
         brightness: Brightness.light,
         primary: primary,
@@ -200,7 +201,7 @@ class AppTheme {
         elevation: 0,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: darkSecondary,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

@@ -18,7 +18,7 @@ class WorkoutPlanService {
 
       // Parse response
       final data =
-          response.data is String ? jsonDecode(response.data) : response.data;
+      response.data is String ? jsonDecode(response.data) : response.data;
 
       debugPrint('🔵 Parsed data: $data');
 
@@ -37,11 +37,10 @@ class WorkoutPlanService {
         return []; // ✅ Return empty list (not error)
       }
 
-      final plans =
-          list.map((e) {
-            debugPrint('🔵 Parsing plan: $e');
-            return WorkoutPlan.fromJson(e);
-          }).toList();
+      final plans = list.map((e) {
+        debugPrint('🔵 Parsing plan: $e');
+        return WorkoutPlan.fromJson(e);
+      }).toList();
 
       debugPrint('✅ Successfully fetched ${plans.length} plans');
       return plans;
@@ -52,24 +51,41 @@ class WorkoutPlanService {
     }
   }
 
-  // ✅ THÊM MỚI - Create new plan
+  // ✅ CẬP NHẬT - Create new plan với đầy đủ thông tin
   static Future<WorkoutPlan> createPlan({
     required String title,
     required String notes,
+    required List<Exercise> exercises,
+    required bool everyDay,
+    required List<String> days,
+    required String reminder,
   }) async {
     try {
       debugPrint('🔵 Creating workout plan...');
 
       final dio = DioClient.dio;
+
+      // Chuẩn bị data theo format backend expect
+      final requestData = {
+        'title': title,
+        'notes': notes,
+        'exercises': exercises.map((e) => e.toJson()).toList(),
+        'everyDay': everyDay,
+        'days': days,
+        'reminder': reminder,
+      };
+
+      debugPrint('🔵 Request data: $requestData');
+
       final response = await dio.post(
         '/workout-plans',
-        data: {'title': title, 'notes': notes},
+        data: requestData,
       );
 
       debugPrint('🔵 Create response: ${response.data}');
 
       final data =
-          response.data is String ? jsonDecode(response.data) : response.data;
+      response.data is String ? jsonDecode(response.data) : response.data;
 
       if (data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to create plan');
@@ -77,29 +93,47 @@ class WorkoutPlanService {
 
       debugPrint('✅ Plan created successfully');
       return WorkoutPlan.fromJson(data['result']);
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('❌ createPlan error: $e');
+      debugPrintStack(stackTrace: stack);
       rethrow;
     }
   }
 
-  // ✅ THÊM MỚI - Update plan
+  // ✅ CẬP NHẬT - Update plan với đầy đủ thông tin
   static Future<WorkoutPlan> updatePlan({
     required int planId,
     required String title,
     required String notes,
+    List<Exercise>? exercises,
+    bool? everyDay,
+    List<String>? days,
+    String? reminder,
   }) async {
     try {
       debugPrint('🔵 Updating workout plan $planId...');
 
       final dio = DioClient.dio;
+
+      final requestData = {
+        'title': title,
+        'notes': notes,
+        if (exercises != null)
+          'exercises': exercises.map((e) => e.toJson()).toList(),
+        if (everyDay != null) 'everyDay': everyDay,
+        if (days != null) 'days': days,
+        if (reminder != null) 'reminder': reminder,
+      };
+
+      debugPrint('🔵 Update request data: $requestData');
+
       final response = await dio.put(
         '/workout-plans/$planId',
-        data: {'title': title, 'notes': notes},
+        data: requestData,
       );
 
       final data =
-          response.data is String ? jsonDecode(response.data) : response.data;
+      response.data is String ? jsonDecode(response.data) : response.data;
 
       if (data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to update plan');
@@ -107,8 +141,9 @@ class WorkoutPlanService {
 
       debugPrint('✅ Plan updated successfully');
       return WorkoutPlan.fromJson(data['result']);
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('❌ updatePlan error: $e');
+      debugPrintStack(stackTrace: stack);
       rethrow;
     }
   }
@@ -122,15 +157,16 @@ class WorkoutPlanService {
       final response = await dio.delete('/workout-plans/$planId');
 
       final data =
-          response.data is String ? jsonDecode(response.data) : response.data;
+      response.data is String ? jsonDecode(response.data) : response.data;
 
       if (data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to delete plan');
       }
 
       debugPrint('✅ Plan deleted successfully');
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('❌ deletePlan error: $e');
+      debugPrintStack(stackTrace: stack);
       rethrow;
     }
   }
@@ -144,7 +180,7 @@ class WorkoutPlanService {
       final response = await dio.get('/workout-plans/$planId');
 
       final data =
-          response.data is String ? jsonDecode(response.data) : response.data;
+      response.data is String ? jsonDecode(response.data) : response.data;
 
       if (data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to get plan');
@@ -152,8 +188,9 @@ class WorkoutPlanService {
 
       debugPrint('✅ Plan fetched successfully');
       return WorkoutPlan.fromJson(data['result']);
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('❌ getPlanById error: $e');
+      debugPrintStack(stackTrace: stack);
       rethrow;
     }
   }
