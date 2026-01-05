@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
+import 'package:intl/intl.dart';
 
 import '../models/exercise_models.dart';
 import '../models/exercise_form.dart';
 import '../models/workout_plan.dart';
 import '../services/exercise_service.dart';
 import '../services/workout_plan_service.dart';
+import '../services/workout_schedule_service.dart'; // 🔥 IMPORT SERVICE MỚI
 
 class AddPlanScreen extends StatefulWidget {
-  const AddPlanScreen({super.key});
+  final DateTime selectedDate;
 
+  const AddPlanScreen({
+    super.key,
+    required this.selectedDate,
+  });
 
   @override
   State<AddPlanScreen> createState() => _AddPlanScreenState();
@@ -24,7 +30,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   bool _isLoadingExercises = true;
   bool everyDay = true;
 
-  /// EXERCISE DATA - Sẽ được load từ API
+  /// EXERCISE DATA
   List<ExerciseCategory> categories = [];
   List<ExerciseData> allExercises = [];
   Map<int, List<ExerciseData>> exercisesByCategory = {};
@@ -53,19 +59,15 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
   List<ExerciseForm> exercises = [ExerciseForm()];
 
+  // 🔥 THÊM TIME PICKER
+  TimeOfDay? selectedTime;
+
   @override
   void initState() {
     super.initState();
     _loadExerciseData();
   }
 
-  /// Load exercise categories và exercises từ API
-  // Thay thế method _loadExerciseData trong add_plan_screen.dart
-
-  /// Load exercise categories và exercises từ API
-  // Thay thế method _loadExerciseData trong add_plan_screen.dart
-
-  /// Load exercise categories và exercises từ API
   Future<void> _loadExerciseData() async {
     setState(() {
       _isLoadingExercises = true;
@@ -74,7 +76,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     try {
       debugPrint('🔵 Loading exercise data...');
 
-      // Load categories và exercises song song
       final results = await Future.wait([
         ExerciseService.fetchExerciseCategories(),
         ExerciseService.fetchExercises(),
@@ -86,12 +87,10 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       debugPrint('✅ Loaded ${categories.length} categories');
       debugPrint('✅ Loaded ${allExercises.length} exercises');
 
-      // Match category names với category IDs
       for (var exercise in allExercises) {
         exercise.matchCategoryId(categories);
       }
 
-      // Group exercises by category ID
       exercisesByCategory.clear();
 
       for (var exercise in allExercises) {
@@ -100,18 +99,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
             exercisesByCategory[exercise.categoryId!] = [];
           }
           exercisesByCategory[exercise.categoryId!]!.add(exercise);
-        } else {
-          debugPrint('⚠️ Exercise ${exercise.name} has no matching category');
         }
       }
-
-      debugPrint('✅ Grouped into ${exercisesByCategory.length} categories');
-
-      // In ra chi tiết grouping
-      exercisesByCategory.forEach((categoryId, exercises) {
-        final catName = categories.firstWhere((c) => c.id == categoryId).name;
-        debugPrint('  Category $categoryId ($catName): ${exercises.length} exercises');
-      });
 
       setState(() {
         _isLoadingExercises = false;
@@ -124,7 +113,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
         setState(() {
           _isLoadingExercises = false;
         });
-
         _showError('Failed to load exercises: ${e.toString()}');
       }
     }
@@ -168,9 +156,43 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                 ],
               ),
 
+              const SizedBox(height: 8),
+
+              /// 🔥 HIỂN THỊ NGÀY ĐÃ CHỌN
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primary.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      size: 18,
+                      color: AppTheme.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Schedule for: ${DateFormat('EEEE, MMM dd, yyyy').format(widget.selectedDate)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 16),
 
-              /// LOADING INDICATOR
               if (_isLoadingExercises)
                 const Expanded(
                   child: Center(
@@ -191,7 +213,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                   ),
                 )
               else
-              /// FORM
                 Expanded(
                   child: ListView(
                     children: [
@@ -218,11 +239,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                       const SizedBox(height: 12),
 
-                      /// ➕ ADD EXERCISE BUTTON
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          side:
-                          BorderSide(color: AppTheme.primary, width: 1.5),
+                          side: BorderSide(color: AppTheme.primary, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -246,8 +265,16 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                       const SizedBox(height: 20),
 
+                      /// SCHEDULE TIME (Optional)
+                      _sectionHeader('Schedule Time (Optional)'),
+                      const SizedBox(height: 12),
+
+                      _timePickerButton(),
+
+                      const SizedBox(height: 20),
+
                       /// SCHEDULE SECTION
-                      _sectionHeader('Schedule'),
+                      _sectionHeader('Repeat Schedule'),
                       const SizedBox(height: 12),
 
                       _label('Select Days'),
@@ -386,7 +413,67 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  /// SET / REP COUNTER
+  // 🔥 TIME PICKER BUTTON
+  Widget _timePickerButton() {
+    return InkWell(
+      onTap: () async {
+        final time = await showTimePicker(
+          context: context,
+          initialTime: selectedTime ?? TimeOfDay.now(),
+        );
+        if (time != null) {
+          setState(() {
+            selectedTime = time;
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.access_time,
+              color: Colors.grey.shade600,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selectedTime != null
+                    ? selectedTime!.format(context)
+                    : 'Select time (optional)',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: selectedTime != null
+                      ? Colors.black87
+                      : Colors.grey.shade400,
+                  fontWeight: selectedTime != null
+                      ? FontWeight.w500
+                      : FontWeight.w400,
+                ),
+              ),
+            ),
+            if (selectedTime != null)
+              IconButton(
+                icon: Icon(Icons.clear, size: 20, color: Colors.grey.shade600),
+                onPressed: () {
+                  setState(() {
+                    selectedTime = null;
+                  });
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _counter(String label, int value, Function(int) onChange) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,7 +513,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  /// DAY SELECTOR
   Widget _daySelector() {
     return Wrap(
       spacing: 8,
@@ -462,7 +548,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  /// EVERY DAY TOGGLE
   Widget _toggleEveryDay() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -542,7 +627,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   Widget _exerciseItem(int index) {
     final item = exercises[index];
 
-    // Lấy category hiện tại nếu có
     ExerciseCategory? selectedCategory;
     if (item.categoryId != null) {
       try {
@@ -554,7 +638,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       }
     }
 
-    // Lấy danh sách exercises cho category hiện tại
     final categoryExercises = item.categoryId != null
         ? (exercisesByCategory[item.categoryId] ?? [])
         : <ExerciseData>[];
@@ -577,7 +660,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// HEADER WITH NUMBER
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -632,7 +714,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
           const SizedBox(height: 16),
 
-          /// DROPDOWNS
           Row(
             children: [
               Expanded(
@@ -665,7 +746,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                               .name;
                           item.exercise = null;
 
-                          // Update weight range based on category
                           final max = muscleMaxWeight[item.muscle] ?? 100;
                           if (item.weightRange.end > max) {
                             item.weightRange = RangeValues(0, max);
@@ -719,7 +799,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
           const SizedBox(height: 16),
 
-          /// SETS / REPS
           Row(
             children: [
               Expanded(
@@ -740,7 +819,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
           const SizedBox(height: 16),
 
-          /// WEIGHT RANGE
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -780,7 +858,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   /// ================= SAVE FUNCTION =================
 
   Future<void> _savePlan() async {
-    // ===== VALIDATION =====
+    // VALIDATION
     if (titleController.text.trim().isEmpty) {
       _showError('Please enter a plan title');
       return;
@@ -791,7 +869,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       return;
     }
 
-    // Validate từng exercise
     for (var i = 0; i < exercises.length; i++) {
       if (exercises[i].categoryId == null || exercises[i].exerciseId == null) {
         _showError('Please complete exercise #${i + 1}');
@@ -804,13 +881,12 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       return;
     }
 
-    // ===== START LOADING =====
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Chuyển đổi exercises từ ExerciseForm sang Exercise model
+      // Convert exercises
       final exerciseList = exercises
           .map(
             (e) => Exercise(
@@ -826,9 +902,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       )
           .toList();
 
-      debugPrint('🔵 Saving plan with ${exerciseList.length} exercises');
+      debugPrint('🔵 Step 1: Creating workout plan...');
 
-      // ===== CALL API =====
+      // 🔥 STEP 1: TẠO WORKOUT PLAN
       final createdPlan = await WorkoutPlanService.createPlan(
         title: titleController.text.trim(),
         notes: notesController.text.trim(),
@@ -838,21 +914,44 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
         reminder: reminder,
       );
 
+      debugPrint('✅ Plan created with ID: ${createdPlan.id}');
+
+      // 🔥 STEP 2: TẠO SCHEDULE CHO PLAN
+      debugPrint('🔵 Step 2: Creating schedule for date: ${widget.selectedDate}');
+
+      // Convert TimeOfDay to DateTime nếu có
+      DateTime? scheduledDateTime;
+      if (selectedTime != null) {
+        scheduledDateTime = DateTime(
+          widget.selectedDate.year,
+          widget.selectedDate.month,
+          widget.selectedDate.day,
+          selectedTime!.hour,
+          selectedTime!.minute,
+        );
+      }
+
+      await WorkoutScheduleService.createSchedule(
+        planId: createdPlan.id,
+        scheduledDate: widget.selectedDate,
+        scheduledTime: scheduledDateTime,
+      );
+
+      debugPrint('✅ Schedule created successfully!');
+
       if (!mounted) return;
 
-      debugPrint('✅ Plan created: ${createdPlan.toString()}');
-
-      // ===== SHOW SUCCESS =====
+      // SHOW SUCCESS
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 12),
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Plan saved successfully!',
-                  style: TextStyle(fontWeight: FontWeight.w500),
+                  'Plan scheduled for ${DateFormat('MMM dd').format(widget.selectedDate)}!',
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -866,14 +965,13 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
         ),
       );
 
-      // ===== NAVIGATE BACK =====
-      Navigator.pop(context, createdPlan);
+      // NAVIGATE BACK
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
 
       debugPrint('❌ Error saving plan: $e');
 
-      // ===== SHOW ERROR =====
       String errorMessage = 'Failed to save plan';
 
       if (e.toString().contains('SocketException')) {
