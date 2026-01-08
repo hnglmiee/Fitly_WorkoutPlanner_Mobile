@@ -26,17 +26,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   int _selectedIndex = 1;
 
   List<WorkoutSchedule> schedules = [];
-  List<WorkoutPlan> cachedPlans = []; // ✅ Cache plans để tái sử dụng
+  List<WorkoutPlan> cachedPlans = [];
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _loadSchedules();
-    _loadPlans(); // ✅ Load plans một lần
+    _loadPlans();
   }
 
-  /// ✅ Load và cache plans
   Future<void> _loadPlans() async {
     try {
       final plans = await WorkoutPlanService.fetchMyPlans();
@@ -48,7 +47,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       debugPrint('✅ Cached ${plans.length} plans');
     } catch (e) {
       debugPrint('⚠️ Error caching plans: $e');
-      // Không cần hiển thị error, vì có thể fetch lại khi navigate
     }
   }
 
@@ -99,7 +97,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         break;
       case 1:
         nextScreen = const ScheduleScreen();
-        break; // ✅ Đã thêm break
+        break;
       case 2:
         nextScreen = const GoalProgressScreen();
         break;
@@ -120,9 +118,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  /// ✅ Navigate to Plan Progress Screen
+  /// Navigate to Plan Progress Screen
   Future<void> _navigateToPlanProgress(WorkoutSchedule schedule) async {
-    // Show loading indicator
+    if (schedule.id == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid schedule ID'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Show loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -160,7 +168,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     try {
       WorkoutPlan? matchedPlan;
 
-      // ✅ Tìm trong cache trước
+      // ✅ Try to find in cache first
       try {
         matchedPlan = cachedPlans.firstWhere(
               (plan) => plan.title == schedule.planName,
@@ -169,7 +177,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       } catch (e) {
         debugPrint('⚠️ Plan not found in cache, fetching from API...');
 
-        // ✅ Nếu không có trong cache, fetch lại từ API
+        // Fetch from API if not in cache
         final allPlans = await WorkoutPlanService.fetchMyPlans();
 
         // Update cache
@@ -192,18 +200,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         Navigator.pop(context);
       }
 
-      // Navigate to PlanProgressScreen
+      // ✅ CRITICAL: Navigate with BOTH plan and scheduleId
       if (mounted) {
+        debugPrint('🔵 Navigating to PlanProgressScreen');
+        debugPrint('  Plan ID: ${matchedPlan.id}');
+        debugPrint('  Plan Title: ${matchedPlan.title}');
+        debugPrint('  Schedule ID: ${schedule.id}'); // ← IMPORTANT
+
         await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => PlanProgressScreen(
               plan: matchedPlan!,
+              scheduleId: schedule.id,
             ),
           ),
         );
 
-        // Reload schedules when returning
+        // Reload after returning
         _loadSchedules();
       }
     } catch (e) {
@@ -214,7 +228,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         Navigator.pop(context);
       }
 
-      // Show error message
+      // Show error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -266,7 +280,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios, size: 20),
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const TrainingScreen(),
@@ -353,7 +367,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                         if (result == true) {
                           _loadSchedules();
-                          _loadPlans(); // ✅ Refresh cache sau khi thêm plan mới
+                          _loadPlans();
                         }
                       },
                       child: Container(

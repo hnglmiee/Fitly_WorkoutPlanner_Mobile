@@ -3,14 +3,20 @@ import 'package:flutter/material.dart';
 import '../models/WorkoutMock.dart';
 import '../models/exercise_log.dart';
 import '../models/workout_plan.dart';
-import '../models/workout_exercise.dart';
 import '../services/workout_exercise_service.dart';
+import '../services/workout_log_service.dart';
 import '../shared/workout_card.dart';
 import '../theme/app_theme.dart';
 
 class PlanProgressScreen extends StatefulWidget {
   final WorkoutPlan plan;
-  const PlanProgressScreen({super.key, required this.plan});
+  final int scheduleId; // 🔥 THÊM SCHEDULE ID
+
+  const PlanProgressScreen({
+    super.key,
+    required this.plan,
+    required this.scheduleId, // 🔥 REQUIRED
+  });
 
   @override
   State<PlanProgressScreen> createState() => _PlanProgressScreenState();
@@ -18,22 +24,26 @@ class PlanProgressScreen extends StatefulWidget {
 
 class _PlanProgressScreenState extends State<PlanProgressScreen> {
   int activeWorkoutIndex = 0;
-  List<WorkoutMock> workouts =
-      []; // ✅ Không còn late final, sẽ được load từ API
+  List<WorkoutMock> workouts = [];
   Set<int> completedWorkouts = {};
   Map<int, ExerciseLog?> exerciseLogs = {};
 
-  // ✅ Thêm state để quản lý loading
+  // ✅ Map index -> exerciseId (MASTER TABLE, không phải workoutExerciseId)
+  Map<int, int> exerciseIdMap = {};
+
   bool isLoading = true;
   String? errorMessage;
 
   @override
   void initState() {
     super.initState();
+    debugPrint('🔵 PlanProgressScreen initialized');
+    debugPrint('  Plan ID: ${widget.plan.id}');
+    debugPrint('  Schedule ID: ${widget.scheduleId}'); // 🔥 Log schedule ID
     _loadExercises();
   }
 
-  /// ✅ Load exercises từ API theo planId
+  /// Load exercises và tạo mapping
   Future<void> _loadExercises() async {
     try {
       setState(() {
@@ -41,42 +51,73 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
         errorMessage = null;
       });
 
-      // Fetch tất cả exercises của user
-      final allExercises =
-          await WorkoutExerciseService.fetchMyWorkoutExercises();
-
-      // ✅ LỌC EXERCISES THEO PLAN ID - QUAN TRỌNG
+      final allExercises = await WorkoutExerciseService.fetchMyWorkoutExercises();
       final planExercises = WorkoutExerciseService.filterExercisesByPlanId(
         allExercises,
         widget.plan.id,
       );
 
-      // Convert sang WorkoutMock format để dùng với UI hiện tại
-      final List<WorkoutMock> loadedWorkouts =
-          planExercises.map((exercise) {
-            return WorkoutMock(
-              image:
-                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4_YJj0WHX1lBkMo9uY5jytsD6VjEFXy41Q&s',
-              title: exercise.exerciseName,
-              sets: '${exercise.sets} sets',
-              reps: '${exercise.reps} reps',
-            );
-          }).toList();
+      // ✅ LOAD EXISTING LOGS FROM API
+      final logsFromAPI = await WorkoutLogService.fetchLogsBySchedule(widget.scheduleId);
+      debugPrint('✅ Loaded ${logsFromAPI.length} existing logs from API for schedule ${widget.scheduleId}');
+
+      // Convert và tạo mapping
+      final List<WorkoutMock> loadedWorkouts = [];
+      exerciseIdMap.clear();
+      exerciseLogs.clear();
+      completedWorkouts.clear();
+
+      for (int i = 0; i < planExercises.length; i++) {
+        final exercise = planExercises[i];
+
+        loadedWorkouts.add(WorkoutMock(
+          image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh4_YJj0WHX1lBkMo9uY5jytsD6VjEFXy41Q&s',
+          title: exercise.exerciseName,
+          sets: '${exercise.sets} sets',
+          reps: '${exercise.reps} reps',
+        ));
+
+        debugPrint('=== Exercise $i Debug ===');
+        debugPrint('  JSON: ${exercise.toJson()}');
+        debugPrint('  workoutExerciseId: ${exercise.workoutExerciseId}');
+        debugPrint('  exerciseId (MASTER): ${exercise.exerciseId}');
+        debugPrint('  exerciseName: ${exercise.exerciseName}');
+
+        // ✅ Map index -> exerciseId (MASTER TABLE ID)
+        exerciseIdMap[i] = exercise.exerciseId;
+
+        // ✅ CHECK IF THIS EXERCISE HAS EXISTING LOG
+        if (logsFromAPI.containsKey(exercise.exerciseId)) {
+          final apiLog = logsFromAPI[exercise.exerciseId]!;
+
+          exerciseLogs[i] = ExerciseLog(
+            sets: apiLog.actualSets,
+            reps: apiLog.actualReps,
+            weight: apiLog.actualWeight,
+            notes: apiLog.notes,
+            loggedAt: apiLog.loggedAt,
+          );
+
+          completedWorkouts.add(i);
+          debugPrint('  ✅ Exercise $i already logged:');
+          debugPrint('     Name: ${exercise.exerciseName}');
+          debugPrint('     Sets: ${apiLog.actualSets}, Reps: ${apiLog.actualReps}, Weight: ${apiLog.actualWeight}kg');
+        }
+      }
 
       setState(() {
         workouts = loadedWorkouts;
         isLoading = false;
       });
 
-      debugPrint(
-        '✅ Loaded ${workouts.length} exercises for plan ID: ${widget.plan.id}',
-      );
+      debugPrint('✅ Loaded ${workouts.length} exercises for plan ID: ${widget.plan.id}');
+      debugPrint('✅ Exercise ID mapping: $exerciseIdMap');
+      debugPrint('✅ Completed: ${completedWorkouts.length} exercises');
     } catch (e) {
       debugPrint('❌ Error loading exercises: $e');
       setState(() {
         isLoading = false;
         errorMessage = 'Failed to load exercises: $e';
-        // Fallback to empty list
         workouts = [];
       });
     }
@@ -87,6 +128,118 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
   double get progressPercentage =>
       totalWorkouts > 0 ? (completedCount / totalWorkouts) * 100 : 0;
 
+  /// ✅ Log exercise với CORRECT scheduleId và exerciseId
+  Future<void> _logExercise({
+    required int index,
+    required int sets,
+    required int reps,
+    required double weight,
+    required String notes,
+  }) async {
+    try {
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: const [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text('Saving workout log...'),
+              ],
+            ),
+            duration: const Duration(seconds: 30),
+            backgroundColor: Colors.blue,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      final exerciseId = exerciseIdMap[index];
+      if (exerciseId == null) {
+        throw Exception('Exercise ID not found for index $index');
+      }
+
+      debugPrint('🔵 Logging exercise at index $index');
+      debugPrint('  Schedule ID: ${widget.scheduleId}'); // ✅ CORRECT
+      debugPrint('  Exercise ID (master): $exerciseId'); // ✅ CORRECT
+
+      // ✅ Call API with CORRECT IDs
+      final response = await WorkoutLogService.logWorkout(
+        scheduleId: widget.scheduleId, // 🔥 USE SCHEDULE ID, NOT PLAN ID
+        exerciseId: exerciseId,        // 🔥 USE EXERCISE ID, NOT WORKOUT_EXERCISE ID
+        actualSets: sets,
+        actualReps: reps,
+        actualWeight: weight,
+        notes: notes,
+      );
+
+      debugPrint('✅ Workout logged: ${response.toString()}');
+
+      // Hide loading snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+
+      // Update local state
+      setState(() {
+        exerciseLogs[index] = ExerciseLog(
+          sets: sets,
+          reps: reps,
+          weight: weight,
+          notes: notes,
+          loggedAt: response.loggedAt,
+        );
+        completedWorkouts.add(index);
+
+        // Move to next exercise
+        if (index < workouts.length - 1) {
+          activeWorkoutIndex = index + 1;
+        }
+      });
+
+      // Show success
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Text('Exercise logged successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error logging exercise: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to log exercise: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Dialog để log exercise (giữ nguyên)
   void _showExerciseLogDialog(int index, {ExerciseLog? existingLog}) {
     final setsController = TextEditingController(
       text: existingLog?.sets.toString() ?? '',
@@ -103,174 +256,163 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
                     children: [
-                      // Header
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  existingLog == null
-                                      ? 'Log Exercise'
-                                      : 'Edit Exercise Log',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  workouts[index].title,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              existingLog == null
+                                  ? 'Log Exercise'
+                                  : 'Edit Exercise Log',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close, size: 20),
-                            onPressed: () => Navigator.pop(context),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Actual Sets
-                      _dialogLabel('Actual Sets'),
-                      _dialogNumberInput(
-                        controller: setsController,
-                        hint: 'e.g. 3',
-                        suffix: 'sets',
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Actual Reps
-                      _dialogLabel('Actual Reps'),
-                      _dialogNumberInput(
-                        controller: repsController,
-                        hint: 'e.g. 12',
-                        suffix: 'reps',
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Actual Weight
-                      _dialogLabel('Weight (kg)'),
-                      _dialogNumberInput(
-                        controller: weightController,
-                        hint: 'e.g. 20',
-                        suffix: 'kg',
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Notes
-                      _dialogLabel('Notes (Optional)'),
-                      const SizedBox(height: 5),
-                      TextField(
-                        controller: notesController,
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          hintText: 'Add any notes about this exercise...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade400,
-                            fontSize: 14,
-                          ),
-                          contentPadding: const EdgeInsets.all(14),
-                          enabledBorder: _dialogBorder(Colors.grey.shade300),
-                          focusedBorder: _dialogBorder(AppTheme.primary),
-                          errorBorder: _dialogBorder(Colors.red),
-                          focusedErrorBorder: _dialogBorder(Colors.red),
+                            const SizedBox(height: 4),
+                            Text(
+                              workouts[index].title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-
-                      const SizedBox(height: 24),
-
-                      // Submit Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (setsController.text.isEmpty ||
-                                repsController.text.isEmpty ||
-                                weightController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text(
-                                    'Please fill all required fields',
-                                  ),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                              return;
-                            }
-
-                            setState(() {
-                              exerciseLogs[index] = ExerciseLog(
-                                sets: int.parse(setsController.text),
-                                reps: int.parse(repsController.text),
-                                weight: double.parse(weightController.text),
-                                notes: notesController.text,
-                              );
-                              completedWorkouts.add(index);
-                              if (index < workouts.length - 1) {
-                                activeWorkoutIndex = index + 1;
-                              }
-                            });
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            existingLog == null
-                                ? 'Save Record'
-                                : 'Update Record',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                ),
+
+                  const SizedBox(height: 24),
+
+                  // Form fields
+                  _dialogLabel('Actual Sets'),
+                  _dialogNumberInput(
+                    controller: setsController,
+                    hint: 'e.g. 3',
+                    suffix: 'sets',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _dialogLabel('Actual Reps'),
+                  _dialogNumberInput(
+                    controller: repsController,
+                    hint: 'e.g. 12',
+                    suffix: 'reps',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _dialogLabel('Weight (kg)'),
+                  _dialogNumberInput(
+                    controller: weightController,
+                    hint: 'e.g. 20',
+                    suffix: 'kg',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _dialogLabel('Notes (Optional)'),
+                  const SizedBox(height: 5),
+                  TextField(
+                    controller: notesController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Add any notes about this exercise...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 14,
+                      ),
+                      contentPadding: const EdgeInsets.all(14),
+                      enabledBorder: _dialogBorder(Colors.grey.shade300),
+                      focusedBorder: _dialogBorder(AppTheme.primary),
+                      errorBorder: _dialogBorder(Colors.red),
+                      focusedErrorBorder: _dialogBorder(Colors.red),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        // Validation
+                        if (setsController.text.isEmpty ||
+                            repsController.text.isEmpty ||
+                            weightController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content:
+                              const Text('Please fill all required fields'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+
+                        // Close dialog first
+                        Navigator.pop(context);
+
+                        // Call API to log exercise
+                        await _logExercise(
+                          index: index,
+                          sets: int.parse(setsController.text),
+                          reps: int.parse(repsController.text),
+                          weight: double.parse(weightController.text),
+                          notes: notesController.text,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        existingLog == null ? 'Save Record' : 'Update Record',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -350,14 +492,13 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
 
             /// CONTENT
             Expanded(
-              child:
-                  isLoading
-                      ? _buildLoadingState()
-                      : errorMessage != null
-                      ? _buildErrorState()
-                      : workouts.isEmpty
-                      ? _buildEmptyState()
-                      : _buildContentState(),
+              child: isLoading
+                  ? _buildLoadingState()
+                  : errorMessage != null
+                  ? _buildErrorState()
+                  : workouts.isEmpty
+                  ? _buildEmptyState()
+                  : _buildContentState(),
             ),
           ],
         ),
@@ -365,7 +506,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     );
   }
 
-  /// ✅ Loading State
+  /// Loading State
   Widget _buildLoadingState() {
     return Center(
       child: Column(
@@ -382,7 +523,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     );
   }
 
-  /// ✅ Error State
+  /// Error State
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -410,13 +551,12 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
             ElevatedButton.icon(
               onPressed: _loadExercises,
               icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('Retry', style: TextStyle(color: Colors.white)),
+              label:
+              const Text('Retry', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -428,7 +568,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     );
   }
 
-  /// ✅ Empty State
+  /// Empty State
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -458,7 +598,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     );
   }
 
-  /// ✅ Content State với exercises
+  /// Content State (giữ nguyên phần còn lại)
   Widget _buildContentState() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -563,9 +703,8 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                       child: LinearProgressIndicator(
                         value: progressPercentage / 100,
                         backgroundColor: Colors.grey.shade200,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppTheme.primary,
-                        ),
+                        valueColor:
+                        AlwaysStoppedAnimation<Color>(AppTheme.primary),
                         minHeight: 8,
                       ),
                     ),
@@ -590,10 +729,8 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppTheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -643,12 +780,11 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                       });
                     }
                   },
-                  onEdit:
-                      log != null
-                          ? () {
-                            _showExerciseLogDialog(index, existingLog: log);
-                          }
-                          : null,
+                  onEdit: log != null
+                      ? () {
+                    _showExerciseLogDialog(index, existingLog: log);
+                  }
+                      : null,
                 ),
               );
             },

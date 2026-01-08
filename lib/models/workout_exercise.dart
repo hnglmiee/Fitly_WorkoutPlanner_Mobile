@@ -28,7 +28,7 @@ class WorkoutExercise {
       workoutExerciseId: json['workoutExerciseId'],
       planId: json['planId'],
       planTitle: json['planTitle'],
-      exerciseId: json['exerciseId'],
+      exerciseId: json['exerciseId'] ?? 0,
       exerciseName: json['exerciseName'],
       sets: json['sets'],
       reps: json['reps'],
