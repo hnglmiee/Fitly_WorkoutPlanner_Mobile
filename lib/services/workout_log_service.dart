@@ -239,7 +239,6 @@ class WorkoutLogService {
         return {};
       }
 
-      // ✅ Parse all logs
       final List<WorkoutLogResponse> allLogs = [];
       for (var i = 0; i < list.length; i++) {
         try {

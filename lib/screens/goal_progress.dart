@@ -1,3 +1,5 @@
+// lib/screens/goal_progress_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/schedule_screen.dart';
@@ -6,8 +8,10 @@ import 'package:workout_tracker_mini_project_mobile/shared/percentage_progress_b
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
 import '../models/goal_progress.dart';
+import '../models/goal.dart';
 import '../services/goal_service.dart';
 import '../shared/navigation_bar.dart';
+import 'create_goal_screen.dart';
 import 'edit_goal_screen.dart';
 import 'history_goal.dart';
 
@@ -21,12 +25,49 @@ class GoalProgressScreen extends StatefulWidget {
 class _GoalProgressScreenState extends State<GoalProgressScreen> {
   int _selectedIndex = 2; // Statistics active
   late Future<GoalProgress?> _goalFuture;
-  static const hardPercent = 60;
 
   @override
   void initState() {
     super.initState();
     _goalFuture = GoalService.fetchGoalProgress();
+  }
+
+  // ✅ Helper methods for formatting
+  String _formatDouble(double? value, {int decimals = 1}) {
+    return value?.toStringAsFixed(decimals) ?? "-";
+  }
+
+  String _formatDoubleWithUnit(double? value, String unit, {int decimals = 1}) {
+    if (value == null) return "-";
+    return "${value.toStringAsFixed(decimals)}$unit";
+  }
+
+  String _formatTarget(double? target, String unit) {
+    if (target == null) return "";
+    return "Target: ${target.toStringAsFixed(1)}$unit";
+  }
+
+  // ✅ Calculate progress percentage
+  double _calculateProgress(GoalProgress goalProgress) {
+    final inBody = goalProgress.lastestInBody;
+    final goal = goalProgress.goal;
+
+    if (inBody == null || goal.targetWeight == null) {
+      return 0;
+    }
+
+    final start = goal.startDate;
+    final end = goal.endDate;
+
+    // Calculate days
+    final totalDays = end.difference(start).inDays;
+    final daysPassed = DateTime.now().difference(start).inDays;
+
+    if (totalDays <= 0) return 0;
+
+    // Time-based progress
+    final timeProgress = (daysPassed / totalDays * 100).clamp(0, 100).toDouble();
+    return timeProgress;
   }
 
   void _onNavTapped(int index) {
@@ -198,6 +239,29 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     icon: const Icon(Icons.arrow_back_ios_new, size: 18),
                     onPressed: () => Navigator.pop(context),
                   ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.add_circle_outline,
+                      size: 22,
+                      color: AppTheme.primary,
+                    ),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreateGoalScreen(),
+                        ),
+                      );
+
+                      // Reload if goal was created
+                      if (result == true && mounted) {
+                        setState(() {
+                          _goalFuture = GoalService.fetchGoalProgress();
+                        });
+                      }
+                    },
+                    tooltip: 'Create Goal',
+                  ),
                   const Expanded(
                     child: Center(
                       child: Text(
@@ -283,8 +347,9 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         }
 
                         if (!snapshot.hasData || snapshot.data == null) {
+                          // ✅ EMPTY STATE WITH CREATE GOAL BUTTON
                           return Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(32),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -296,11 +361,120 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                 ),
                               ],
                             ),
-                            child: const Text("No goal progress data"),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Empty state icon
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primary.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.flag_outlined,
+                                    size: 48,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Title
+                                const Text(
+                                  'No Active Goal',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Description
+                                Text(
+                                  'Create your first fitness goal to start\ntracking your progress',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                    height: 1.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 28),
+
+                                // Create Goal Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                          const CreateGoalScreen(),
+                                        ),
+                                      );
+
+                                      // Reload if goal was created successfully
+                                      if (result == true && mounted) {
+                                        setState(() {
+                                          _goalFuture =
+                                              GoalService.fetchGoalProgress();
+                                        });
+                                      }
+                                    },
+                                    icon: const Icon(Icons.add_circle_outline,
+                                        color: Colors.white, size: 22),
+                                    label: const Text(
+                                      'Create Goal',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      elevation: 0,
+                                      shadowColor:
+                                      AppTheme.primary.withOpacity(0.3),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                // Secondary info
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 14,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Set targets for weight, body fat, and more',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           );
                         }
 
                         final goal = snapshot.data!;
+                        final progressPercent = _calculateProgress(goal);
 
                         return Container(
                           padding: const EdgeInsets.all(20),
@@ -324,7 +498,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
                                       children: [
                                         /// STATUS BADGE
                                         Container(
@@ -334,9 +508,8 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: AppTheme.primary,
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
+                                            borderRadius:
+                                            BorderRadius.circular(20),
                                           ),
                                           child: Text(
                                             goal.status,
@@ -406,7 +579,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                 children: [
                                   Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text(
                                         "Progress",
@@ -414,6 +587,14 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.black87,
+                                        ),
+                                      ),
+                                      Text(
+                                        "${progressPercent.toStringAsFixed(0)}%",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.primary,
                                         ),
                                       ),
                                     ],
@@ -424,7 +605,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                     child: SizedBox(
                                       height: 15,
                                       child: PercentageProgressBar(
-                                        percent: hardPercent.toDouble(),
+                                        percent: progressPercent,
                                       ),
                                     ),
                                   ),
@@ -487,53 +668,80 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    Row(
-                      children: const [
-                        Expanded(
-                          child: _ModernStatCard(
-                            title: "Workout Sessions",
-                            value: "2",
-                            sub: "/week",
-                            icon: Icons.fitness_center,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _ModernStatCard(
-                            title: "Weight",
-                            value: "75",
-                            unit: "kg",
-                            icon: Icons.monitor_weight_outlined,
-                            color: Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
+                    // ✅ Use real data from API
+                    FutureBuilder<GoalProgress?>(
+                      future: _goalFuture,
+                      builder: (context, snapshot) {
+                        final goalProgress = snapshot.data;
+                        final inBody = goalProgress?.lastestInBody;
+                        final goal = goalProgress?.goal;
 
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: const [
-                        _MiniTarget(
-                          label: "Body Fat",
-                          value: "17%",
-                          icon: Icons.local_fire_department,
-                          color: Colors.orange,
-                        ),
-                        _MiniTarget(
-                          label: "Muscle",
-                          value: "17%",
-                          icon: Icons.fitness_center,
-                          color: Colors.blue,
-                        ),
-                        _MiniTarget(
-                          label: "Calories",
-                          value: "1700",
-                          icon: Icons.restaurant,
-                          color: Colors.green,
-                        ),
-                      ],
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ModernStatCard(
+                                    title: "Workout Sessions",
+                                    value: goalProgress?.workoutSessionThisWeek
+                                        .toString() ??
+                                        "-",
+                                    sub: goal?.targetWorkoutSessionsPerWeek !=
+                                        null
+                                        ? "/${goal!.targetWorkoutSessionsPerWeek}"
+                                        : "/week",
+                                    icon: Icons.fitness_center,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _ModernStatCard(
+                                    title: "Weight",
+                                    value: _formatDouble(inBody?.weight),
+                                    unit: "kg",
+                                    icon: Icons.monitor_weight_outlined,
+                                    color: Colors.orange,
+                                    subtitle: goal?.targetWeight != null
+                                        ? _formatTarget(
+                                        goal!.targetWeight, "kg")
+                                        : null,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                _MiniTarget(
+                                  label: "Body Fat",
+                                  value: _formatDoubleWithUnit(
+                                      inBody?.bodyFatPercentage, "%"),
+                                  icon: Icons.local_fire_department,
+                                  color: Colors.orange,
+                                  target: goal?.targetBodyFatPercentage,
+                                ),
+                                _MiniTarget(
+                                  label: "Muscle",
+                                  value: _formatDoubleWithUnit(
+                                      inBody?.muscleMass, "%"),
+                                  icon: Icons.fitness_center,
+                                  color: Colors.blue,
+                                  target: goal?.targetMuscleMass,
+                                ),
+                                _MiniTarget(
+                                  label: "Calories",
+                                  value: goal?.targetCaloriesPerDay
+                                      ?.toString() ??
+                                      "-",
+                                  icon: Icons.restaurant,
+                                  color: Colors.green,
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 24),
@@ -647,7 +855,8 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red, width: 1.5),
+                          side:
+                          const BorderSide(color: Colors.red, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -712,14 +921,16 @@ class _ModernStatCard extends StatelessWidget {
   final String value;
   final String? sub;
   final String? unit;
+  final String? subtitle;
   final IconData icon;
   final Color color;
 
-  const _ModernStatCard({
+  _ModernStatCard({
     required this.title,
     required this.value,
     this.sub,
     this.unit,
+    this.subtitle,
     required this.icon,
     required this.color,
   });
@@ -798,6 +1009,17 @@ class _ModernStatCard extends StatelessWidget {
                 ),
             ],
           ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              subtitle!,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -809,12 +1031,14 @@ class _MiniTarget extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
+  final double? target;
 
   const _MiniTarget({
     required this.label,
     required this.value,
     required this.icon,
     required this.color,
+    this.target,
   });
 
   @override
@@ -857,8 +1081,22 @@ class _MiniTarget extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
             ),
+            if (target != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                "→ ${target!.toStringAsFixed(1)}%",
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey.shade500,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
         ),
       ),
