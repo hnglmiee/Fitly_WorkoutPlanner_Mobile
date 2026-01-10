@@ -1,7 +1,8 @@
-// screens/profile_edit.dart
+// screens/profile_edit_screen.dart
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/user_info.dart';
+import '../services/user_service.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final UserInfo userInfo;
@@ -26,13 +27,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   @override
   void initState() {
     super.initState();
+
     // Pre-fill with existing data
     fullNameController = TextEditingController(text: widget.userInfo.fullName);
     emailController = TextEditingController(text: widget.userInfo.email);
-    phoneController = TextEditingController(text: '');
+    phoneController = TextEditingController(text: widget.userInfo.phoneNumber ?? '');
 
-    dateOfBirth = DateTime.now().subtract(const Duration(days: 365 * 25));
-    // avatarUrl = widget.userInfo.avatarUrl;
+    // Map gender from database format
+    selectedGender = _mapGenderFromApi(widget.userInfo.gender);
+
+    // Set birthday from existing data
+    dateOfBirth = widget.userInfo.birthday ??
+        DateTime.now().subtract(const Duration(days: 365 * 25));
+
+    // avatarUrl = widget.userInfo.avatarUrl; // If available
   }
 
   @override
@@ -94,21 +102,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                 width: 3,
                               ),
                               image:
-                                  avatarUrl != null
-                                      ? DecorationImage(
-                                        image: NetworkImage(avatarUrl!),
-                                        fit: BoxFit.cover,
-                                      )
-                                      : null,
+                              avatarUrl != null
+                                  ? DecorationImage(
+                                image: NetworkImage(avatarUrl!),
+                                fit: BoxFit.cover,
+                              )
+                                  : null,
                             ),
                             child:
-                                avatarUrl == null
-                                    ? Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.grey.shade400,
-                                    )
-                                    : null,
+                            avatarUrl == null
+                                ? Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.grey.shade400,
+                            )
+                                : null,
                           ),
                           Positioned(
                             bottom: 0,
@@ -169,10 +177,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
                     _label('Email'),
                     _input(
-                      controller: emailController,
-                      hint: 'Enter your email',
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
+                    controller: emailController,
+                    hint: 'Enter your email',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    enabled: false
                     ),
 
                     const SizedBox(height: 16),
@@ -274,17 +283,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     String? hint,
     IconData? icon,
     TextInputType? keyboardType,
+    bool enabled = true
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      enabled: enabled,
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400),
         prefixIcon:
-            icon != null
-                ? Icon(icon, color: Colors.grey.shade600, size: 20)
-                : null,
+        icon != null
+            ? Icon(icon, color: Colors.grey.shade600, size: 20)
+            : null,
         contentPadding: const EdgeInsets.all(14),
         enabledBorder: _border(Colors.grey.shade300),
         focusedBorder: _border(AppTheme.primary),
@@ -300,7 +311,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         final picked = await showDatePicker(
           context: context,
           initialDate:
-              dateOfBirth ??
+          dateOfBirth ??
               DateTime.now().subtract(const Duration(days: 365 * 25)),
           firstDate: DateTime(1900),
           lastDate: DateTime.now(),
@@ -322,10 +333,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         children: [
           _label('Date of Birth'),
           Container(
-            height: 48, // ✅ Thêm chiều cao cố định
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-            ), // ✅ Đổi thành symmetric
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.grey.shade300),
@@ -346,9 +355,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color:
-                        dateOfBirth != null
-                            ? Colors.black87
-                            : Colors.grey.shade400,
+                    dateOfBirth != null
+                        ? Colors.black87
+                        : Colors.grey.shade400,
                   ),
                 ),
               ],
@@ -365,56 +374,77 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       children: [
         _label('Gender'),
         Container(
-          height: 48, // ✅ Thêm chiều cao cố định
-          padding: const EdgeInsets.symmetric(horizontal: 14), // ✅ Giữ nguyên
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Row(
-            children: [
-              Icon(Icons.people_outline, size: 16, color: Colors.grey.shade600),
-              const SizedBox(width: 8),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: selectedGender,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  items:
-                      genders
-                          .map(
-                            (gender) => DropdownMenuItem(
-                              value: gender,
-                              child: Text(gender),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => selectedGender = value);
-                    }
-                  },
-                ),
+          child: DropdownButtonFormField<String>(
+            value: selectedGender,
+            isExpanded: true,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            items:
+            genders
+                .map(
+                  (gender) => DropdownMenuItem(
+                value: gender,
+                child: Text(gender),
               ),
-            ],
+            )
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() => selectedGender = value);
+              }
+            },
           ),
         ),
       ],
     );
   }
 
+  /// ================= HELPER METHODS =================
+
+  String _mapGenderFromApi(String? apiGender) {
+    if (apiGender == null) return 'Male';
+
+    switch (apiGender.toUpperCase()) {
+      case 'MALE':
+        return 'Male';
+      case 'FEMALE':
+        return 'Female';
+      case 'OTHER':
+        return 'Other';
+      default:
+        return 'Prefer not to say';
+    }
+  }
+
+  String _mapGenderToApi(String uiGender) {
+    switch (uiGender) {
+      case 'Male':
+        return 'MALE';
+      case 'Female':
+        return 'FEMALE';
+      case 'Other':
+        return 'OTHER';
+      default:
+        return 'OTHER';
+    }
+  }
+
   /// ================= ACTIONS =================
 
   void _pickAvatar() {
-    // TODO: Implement image picker
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -422,117 +452,145 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
       builder:
           (context) => Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Change Profile Photo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 20),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Icons.camera_alt, color: AppTheme.primary),
-                  ),
-                  title: const Text('Take Photo'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // TODO: Open camera
-                    _showInfo('Camera feature coming soon');
-                  },
-                ),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.photo_library, color: Colors.blue),
-                  ),
-                  title: const Text('Choose from Gallery'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // TODO: Open gallery
-                    _showInfo('Gallery feature coming soon');
-                  },
-                ),
-                if (avatarUrl != null)
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.delete, color: Colors.red),
-                    ),
-                    title: const Text('Remove Photo'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() => avatarUrl = null);
-                    },
-                  ),
-              ],
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
+            const SizedBox(height: 20),
+            const Text(
+              'Change Profile Photo',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.camera_alt, color: AppTheme.primary),
+              ),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _showInfo('Camera feature coming soon');
+              },
+            ),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.photo_library, color: Colors.blue),
+              ),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _showInfo('Gallery feature coming soon');
+              },
+            ),
+            if (avatarUrl != null)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.delete, color: Colors.red),
+                ),
+                title: const Text('Remove Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() => avatarUrl = null);
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  void _updateProfile() {
+  void _updateProfile() async {
     // Validate
-    if (fullNameController.text.isEmpty) {
+    if (fullNameController.text.trim().isEmpty) {
       _showError('Please enter your full name');
       return;
     }
 
-    if (emailController.text.isEmpty) {
+    if (emailController.text.trim().isEmpty) {
       _showError('Please enter your email');
       return;
     }
 
-    if (!_isValidEmail(emailController.text)) {
+    if (!_isValidEmail(emailController.text.trim())) {
       _showError('Please enter a valid email');
       return;
     }
 
-    // TODO: Update to database
-    final profileData = {
-      'fullName': fullNameController.text,
-      'email': emailController.text,
-      'phone': phoneController.text,
-      'dateOfBirth': dateOfBirth?.toIso8601String(),
-      'gender': selectedGender,
-      'avatarUrl': avatarUrl,
-    };
-
-    print('Updating profile: $profileData');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Profile updated successfully!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    // Show loading indicator
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
       ),
     );
 
-    Navigator.pop(context);
+    try {
+      debugPrint('🔵 Updating profile for user ID: ${widget.userInfo.id}');
+
+      // Call API to update profile
+      await UserService.updateProfile(
+        userId: widget.userInfo.id,
+        fullName: fullNameController.text.trim(),
+        email: emailController.text.trim(),
+        phoneNumber: phoneController.text.trim().isNotEmpty
+            ? phoneController.text.trim()
+            : null,
+        gender: _mapGenderToApi(selectedGender),
+        birthday: dateOfBirth,
+      );
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Profile updated successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Return to previous screen with success flag
+      Navigator.pop(context, true);
+
+    } catch (e) {
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      // Show error
+      _showError('Failed to update profile: ${e.toString()}');
+      debugPrint('❌ Update profile error: $e');
+    }
   }
 
   bool _isValidEmail(String email) {
