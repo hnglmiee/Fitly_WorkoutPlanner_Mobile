@@ -1,7 +1,8 @@
-// screens/edit_goal_screen.dart
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/goal_progress.dart';
+import '../models/goal_request.dart';
+import '../services/goal_service.dart';
 
 class EditGoalScreen extends StatefulWidget {
   final GoalProgress goal;
@@ -53,17 +54,32 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill with existing data
-    goalNameController = TextEditingController(text: widget.goal.goal.goalName);
-    targetWeightController = TextEditingController(text: '75');
-    currentWeightController = TextEditingController(text: '80');
-    bodyFatController = TextEditingController(text: '17');
-    muscleMassController = TextEditingController(text: '17');
-    caloriesController = TextEditingController(text: '1700');
-    notesController = TextEditingController(text: widget.goal.goal.notes);
 
-    startDate = DateTime.now();
-    targetDate = DateTime.now().add(const Duration(days: 90));
+    final goal = widget.goal.goal;
+
+    // Pre-fill with existing data from goal
+    goalNameController = TextEditingController(text: goal.goalName);
+    targetWeightController = TextEditingController(
+        text: goal.targetWeight?.toString() ?? '0'
+    );
+    currentWeightController = TextEditingController(text: '80'); // Default or fetch from user profile
+    bodyFatController = TextEditingController(
+        text: goal.targetBodyFatPercentage?.toString() ?? '0'
+    );
+    muscleMassController = TextEditingController(
+        text: goal.targetMuscleMass?.toString() ?? '0'
+    );
+    caloriesController = TextEditingController(
+        text: goal.targetCaloriesPerDay?.toString() ?? '0'
+    );
+    notesController = TextEditingController(text: goal.notes);
+
+    // Set dates from existing goal (already DateTime objects)
+    startDate = goal.startDate;
+    targetDate = goal.endDate;
+
+    // Set workout sessions from existing goal
+    workoutSessionsPerWeek = goal.targetWorkoutSessionsPerWeek ?? 2;
   }
 
   @override
@@ -240,7 +256,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: _updateGoal,
+                        onPressed: _confirmUpdate,
                         child: const Text(
                           'Update Goal',
                           style: TextStyle(
@@ -365,9 +381,9 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
           contentPadding: EdgeInsets.zero,
         ),
         items:
-            categories
-                .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                .toList(),
+        categories
+            .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+            .toList(),
         onChanged: (value) {
           if (value != null) {
             setState(() => selectedCategory = value);
@@ -505,80 +521,184 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
       spacing: 8,
       runSpacing: 8,
       children:
-          activities.map((activity) {
-            final isSelected = selectedActivities.contains(activity);
-            return ChoiceChip(
-              label: Text(activity),
-              selected: isSelected,
-              selectedColor: AppTheme.primary.withOpacity(0.15),
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? AppTheme.primary : Colors.grey.shade300,
-                  width: 1,
-                ),
-              ),
-              labelStyle: TextStyle(
-                color: isSelected ? AppTheme.primary : Colors.black87,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    selectedActivities.add(activity);
-                  } else {
-                    selectedActivities.remove(activity);
-                  }
-                });
-              },
-            );
-          }).toList(),
+      activities.map((activity) {
+        final isSelected = selectedActivities.contains(activity);
+        return ChoiceChip(
+          label: Text(activity),
+          selected: isSelected,
+          selectedColor: AppTheme.primary.withOpacity(0.15),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: isSelected ? AppTheme.primary : Colors.grey.shade300,
+              width: 1,
+            ),
+          ),
+          labelStyle: TextStyle(
+            color: isSelected ? AppTheme.primary : Colors.black87,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          ),
+          onSelected: (selected) {
+            setState(() {
+              if (selected) {
+                selectedActivities.add(activity);
+              } else {
+                selectedActivities.remove(activity);
+              }
+            });
+          },
+        );
+      }).toList(),
     );
   }
 
-  /// ================= UPDATE FUNCTION =================
+  /// ================= UPDATE FUNCTIONS =================
 
-  void _updateGoal() {
-    // Validate
-    if (goalNameController.text.isEmpty) {
+  void _confirmUpdate() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update Goal'),
+        content: const Text('Are you sure you want to update this goal?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              _updateGoal();
+            },
+            child: const Text(
+              'Update',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateGoal() async {
+    // Validate goal name
+    if (goalNameController.text.trim().isEmpty) {
       _showError('Please enter a goal name');
       return;
     }
 
-    if (selectedActivities.isEmpty) {
-      _showError('Please select at least one activity');
+    // Validate dates
+    if (startDate == null || targetDate == null) {
+      _showError('Please select start and target dates');
       return;
     }
 
-    // TODO: Update to database
-    final goalData = {
-      'goalName': goalNameController.text,
-      'category': selectedCategory,
-      'currentWeight': currentWeightController.text,
-      'targetWeight': targetWeightController.text,
-      'bodyFat': bodyFatController.text,
-      'muscleMass': muscleMassController.text,
-      'calories': caloriesController.text,
-      'workoutSessionsPerWeek': workoutSessionsPerWeek,
-      'startDate': startDate?.toIso8601String(),
-      'targetDate': targetDate?.toIso8601String(),
-      'activities': selectedActivities.toList(),
-      'notes': notesController.text,
-    };
+    if (targetDate!.isBefore(startDate!)) {
+      _showError('Target date must be after start date');
+      return;
+    }
 
-    print('Updating goal: $goalData');
+    // Parse and validate numeric values
+    final targetWeight = double.tryParse(targetWeightController.text.trim());
+    final bodyFat = double.tryParse(bodyFatController.text.trim());
+    final muscleMass = double.tryParse(muscleMassController.text.trim());
+    final calories = int.tryParse(caloriesController.text.trim());
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Goal updated successfully!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    if (targetWeight == null || targetWeight <= 0) {
+      _showError('Please enter a valid target weight');
+      return;
+    }
+
+    if (bodyFat == null || bodyFat < 0 || bodyFat > 100) {
+      _showError('Please enter a valid body fat percentage (0-100)');
+      return;
+    }
+
+    if (muscleMass == null || muscleMass < 0 || muscleMass > 100) {
+      _showError('Please enter a valid muscle mass percentage (0-100)');
+      return;
+    }
+
+    if (calories == null || calories <= 0) {
+      _showError('Please enter a valid daily calories target');
+      return;
+    }
+
+    // Show loading indicator
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
       ),
     );
 
-    Navigator.pop(context);
+    try {
+      // Create request object
+      final request = GoalRequest(
+        goalName: goalNameController.text.trim(),
+        targetWeight: targetWeight,
+        targetBodyFatPercentage: bodyFat,
+        targetMuscleMass: muscleMass,
+        targetWorkoutSessionsPerWeek: workoutSessionsPerWeek,
+        targetCaloriesPerDay: calories,
+        startDate: startDate!,
+        endDate: targetDate!,
+        status: widget.goal.goal.status,
+        notes: notesController.text.trim(),
+      );
+
+      debugPrint('🔵 Updating goal with data: ${request.toJson()}');
+
+      // Call API
+      await GoalService.updateGoal(widget.goal.goal.id, request);
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Goal updated successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Return to previous screen with success result
+      Navigator.pop(context, true); // true indicates successful update
+
+    } catch (e) {
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      // Show error
+      _showError('Failed to update goal: ${e.toString()}');
+      debugPrint('❌ Update goal error: $e');
+    }
+  }
+
+  /// Helper method to format date to "yyyy-MM-dd"
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   void _showError(String message) {
@@ -588,6 +708,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }

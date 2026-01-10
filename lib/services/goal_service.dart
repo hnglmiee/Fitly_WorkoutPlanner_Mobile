@@ -72,98 +72,6 @@ class GoalService {
   }
 
   /// Create new goal
-  // static Future<GoalProgress?> createGoal(GoalRequest request) async {
-  //   try {
-  //     debugPrint('🔵 ============================================');
-  //     debugPrint('🔵 Creating new goal...');
-  //     debugPrint('  Goal name: ${request.goalName}');
-  //     debugPrint('  Target weight: ${request.targetWeight}kg');
-  //     debugPrint('  Target body fat: ${request.targetBodyFatPercentage}%');
-  //     debugPrint('  Target muscle mass: ${request.targetMuscleMass}%');
-  //     debugPrint('  Workout sessions/week: ${request.targetWorkoutSessionsPerWeek}');
-  //     debugPrint('  Calories/day: ${request.targetCaloriesPerDay}');
-  //     debugPrint('  Start date: ${request.startDate}');
-  //     debugPrint('  End date: ${request.endDate}');
-  //     debugPrint('  Status: ${request.status}');
-  //     debugPrint('🔵 ============================================');
-  //
-  //     final dio = DioClient.dio;
-  //
-  //     final requestData = request.toJson();
-  //     debugPrint('🔵 Request payload: ${jsonEncode(requestData)}');
-  //
-  //     final response = await dio.post(
-  //       '/goal',
-  //       data: requestData,
-  //     );
-  //
-  //     debugPrint('🔵 Response status: ${response.statusCode}');
-  //     debugPrint('🔵 Response data: ${response.data}');
-  //
-  //     final data = response.data is String
-  //         ? jsonDecode(response.data)
-  //         : response.data;
-  //
-  //     if (data['code'] != 1000) {
-  //       final message = data['message'] ?? 'Unknown error';
-  //       debugPrint('❌ API error code: ${data['code']}');
-  //       debugPrint('❌ API error message: $message');
-  //       throw Exception('API Error: $message');
-  //     }
-  //
-  //     // Parse response as GoalProgress
-  //     final result = data['result'];
-  //     if (result == null) {
-  //       throw Exception('No result in response');
-  //     }
-  //
-  //     final goalProgress = GoalProgress.fromJson(result);
-  //     debugPrint('🔵 ============================================');
-  //     debugPrint('✅ Goal created successfully!');
-  //     debugPrint('  Goal name: ${goalProgress.goal.goalName}');
-  //     debugPrint('  Status: ${goalProgress.status}');
-  //     debugPrint('🔵 ============================================');
-  //
-  //     return goalProgress;
-  //
-  //   } on DioException catch (e) {
-  //     debugPrint('❌ ============================================');
-  //     debugPrint('❌ createGoal DioException');
-  //     debugPrint('  Status code: ${e.response?.statusCode}');
-  //     debugPrint('  Response body: ${e.response?.data}');
-  //     debugPrint('  Request data: ${e.requestOptions.data}');
-  //     debugPrint('  URL: ${e.requestOptions.path}');
-  //     debugPrint('❌ ============================================');
-  //
-  //     String errorMessage = 'Failed to create goal';
-  //     if (e.response?.data != null) {
-  //       try {
-  //         final responseData = e.response!.data is String
-  //             ? jsonDecode(e.response!.data)
-  //             : e.response!.data;
-  //         errorMessage = responseData['message'] ?? errorMessage;
-  //
-  //         // Log validation errors if exist
-  //         if (responseData['errors'] != null) {
-  //           debugPrint('  Validation errors: ${responseData['errors']}');
-  //         }
-  //       } catch (_) {
-  //         errorMessage = e.response!.data.toString();
-  //       }
-  //     }
-  //
-  //     throw Exception(errorMessage);
-  //
-  //   } catch (e, stack) {
-  //     debugPrint('❌ ============================================');
-  //     debugPrint('❌ createGoal unexpected error: $e');
-  //     debugPrint('❌ ============================================');
-  //     debugPrintStack(stackTrace: stack);
-  //     rethrow;
-  //   }
-  // }
-
-  /// Create new goal
   static Future<void> createGoal(GoalRequest request) async {
     try {
       debugPrint('🔵 ============================================');
@@ -201,6 +109,7 @@ class GoalService {
 
 
   /// Update existing goal
+  /// Update existing goal
   static Future<GoalProgress?> updateGoal(int goalId, GoalRequest request) async {
     try {
       debugPrint('🔵 Updating goal $goalId...');
@@ -213,6 +122,7 @@ class GoalService {
       );
 
       debugPrint('🔵 Response status: ${response.statusCode}');
+      debugPrint('🔵 Response data: ${response.data}'); // ← Thêm log này để xem response
 
       final data = response.data is String
           ? jsonDecode(response.data)
@@ -222,11 +132,9 @@ class GoalService {
         throw Exception(data['message'] ?? 'Failed to update goal');
       }
 
-      final result = data['result'];
-      if (result == null) return null;
-
+      // ✅ KHÔNG parse GoalProgress vì API chỉ trả về Goal object, không phải GoalProgress
       debugPrint('✅ Goal updated successfully');
-      return GoalProgress.fromJson(result);
+      return null; // ← Trả về null thay vì parse GoalProgress
 
     } catch (e, stack) {
       debugPrint('❌ updateGoal error: $e');
@@ -234,7 +142,6 @@ class GoalService {
       rethrow;
     }
   }
-
   /// Delete goal
   static Future<void> deleteGoal(int goalId) async {
     try {
