@@ -22,19 +22,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
   String? uploadedFileName;
   String? uploadedFilePath;
 
-  /// GENDER
-  String selectedGender = 'Male';
-  final List<String> genderOptions = ['Male', 'Female', 'Other'];
-
-  /// GOAL
-  String? selectedGoal;
-  final List<String> goalOptions = [
-    'Lose Fat & Gain Muscle',
-    'Build Muscle',
-    'Lose Weight',
-    'Maintain Weight',
-    'Improve Endurance',
-  ];
 
   /// DATE & TIME
   DateTime selectedDate = DateTime.now();
@@ -242,32 +229,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
 
                     const SizedBox(height: 16),
 
-                    /// GOAL
-                    _label('Goal'),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: selectedGoal,
-                      hint: const Text('Select your goal'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
-                      ),
-                      items:
-                      goalOptions
-                          .map(
-                            (e) =>
-                            DropdownMenuItem(value: e, child: Text(e)),
-                      )
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() => selectedGoal = value);
-                      },
-                      decoration: _dropdownDecoration(),
-                    ),
-
-                    const SizedBox(height: 16),
-
                     /// BASIC INFO SECTION
                     _sectionHeader('Basic Information'),
                     const SizedBox(height: 12),
@@ -306,47 +267,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                     ),
 
                     const SizedBox(height: 16),
-
-                    /// GENDER
-                    _label('Gender'),
-                    Wrap(
-                      spacing: 12,
-                      children:
-                      genderOptions.map((gender) {
-                        final selected = selectedGender == gender;
-                        return ChoiceChip(
-                          label: Text(gender),
-                          selected: selected,
-                          selectedColor: AppTheme.primary.withOpacity(0.15),
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(
-                              color:
-                              selected
-                                  ? AppTheme.primary
-                                  : Colors.grey.shade300,
-                              width: 1,
-                            ),
-                          ),
-                          labelStyle: TextStyle(
-                            color:
-                            selected
-                                ? AppTheme.primary
-                                : Colors.black87,
-                            fontWeight:
-                            selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
-                          onSelected: (value) {
-                            setState(() => selectedGender = gender);
-                          },
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 20),
 
                     /// BODY COMPOSITION SECTION
                     _sectionHeader('Body Composition'),
@@ -619,20 +539,14 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       _showError('Please enter total body water');
       return;
     }
-    if (selectedGoal == null) {
-      _showError('Please select your goal');
-      return;
-    }
 
     // TODO: Save to database or state management
     // Example data structure:
     final inBodyData = {
       'date': selectedDate,
       'time': selectedTime,
-      'goal': selectedGoal,
       'height': double.tryParse(heightController.text),
       'weight': double.tryParse(weightController.text),
-      'gender': selectedGender,
       'bodyFatPercentage': double.tryParse(bodyFatController.text),
       'muscleMass': double.tryParse(muscleMassController.text),
       'totalBodyWater': double.tryParse(bodyWaterController.text),

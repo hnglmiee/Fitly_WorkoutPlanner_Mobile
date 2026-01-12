@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/profile_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/training_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/screens/plan_progress_screen.dart';
+import 'package:workout_tracker_mini_project_mobile/screens/plan_history_screen.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/workout_schedule.dart';
 import '../models/workout_plan.dart';
@@ -26,6 +27,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   int _selectedIndex = 1;
 
   List<WorkoutSchedule> schedules = [];
+  List<WorkoutSchedule> filteredSchedules = [];
   List<WorkoutPlan> cachedPlans = [];
   bool _isLoading = false;
 
@@ -60,10 +62,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
       setState(() {
         schedules = data;
+        _filterSchedules();
         _isLoading = false;
       });
 
       debugPrint('✅ Loaded ${schedules.length} schedules');
+      debugPrint('✅ Filtered to ${filteredSchedules.length} current schedules');
     } catch (e) {
       debugPrint('❌ Error loading schedules: $e');
 
@@ -80,6 +84,21 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         );
       }
     }
+  }
+
+  /// Filter schedules: only show from last week onwards
+  void _filterSchedules() {
+    final now = DateTime.now();
+    final lastWeekStart = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 7));
+
+    filteredSchedules = schedules.where((schedule) {
+      final scheduleDate = DateTime(
+        schedule.scheduledDate.year,
+        schedule.scheduledDate.month,
+        schedule.scheduledDate.day,
+      );
+      return scheduleDate.isAfter(lastWeekStart) || scheduleDate.isAtSameMomentAs(lastWeekStart);
+    }).toList();
   }
 
   void _onNavTapped(int index) {
@@ -205,7 +224,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         debugPrint('🔵 Navigating to PlanProgressScreen');
         debugPrint('  Plan ID: ${matchedPlan.id}');
         debugPrint('  Plan Title: ${matchedPlan.title}');
-        debugPrint('  Schedule ID: ${schedule.id}'); // ← IMPORTANT
+        debugPrint('  Schedule ID: ${schedule.id}');
 
         await Navigator.push(
           context,
@@ -299,7 +318,24 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  // History button
+                  IconButton(
+                    icon: Icon(
+                      Icons.history,
+                      color: AppTheme.primary,
+                      size: 24,
+                    ),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PlanHistoryScreen(),
+                        ),
+                      );
+                      // Reload after returning from history
+                      _loadSchedules();
+                    },
+                  ),
                 ],
               ),
             ),
@@ -403,11 +439,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
             const SizedBox(height: 8),
 
-            /// SCHEDULES LIST
+            /// SCHEDULES LIST (Filtered)
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : schedules.isEmpty
+                  : filteredSchedules.isEmpty
                   ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -439,7 +475,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               )
                   : ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: _buildSchedulesByDay(schedules),
+                children: _buildSchedulesByDay(filteredSchedules),
               ),
             ),
           ],
@@ -581,10 +617,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       },
       onDismissed: (direction) async {
         final deletedSchedule = schedule;
-        final deletedIndex = schedules.indexOf(schedule);
+        final deletedIndex = filteredSchedules.indexOf(schedule);
 
         setState(() {
           schedules.removeWhere((s) => s.id == schedule.id);
+          filteredSchedules.removeWhere((s) => s.id == schedule.id);
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -612,7 +649,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               textColor: Colors.white,
               onPressed: () {
                 setState(() {
-                  schedules.insert(deletedIndex, deletedSchedule);
+                  schedules.add(deletedSchedule);
+                  schedules.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+                  filteredSchedules.insert(deletedIndex, deletedSchedule);
                 });
               },
             ),
@@ -625,7 +664,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           debugPrint('Error deleting schedule: $e');
           if (mounted) {
             setState(() {
-              schedules.insert(deletedIndex, deletedSchedule);
+              schedules.add(deletedSchedule);
+              schedules.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+              filteredSchedules.insert(deletedIndex, deletedSchedule);
             });
           }
         }

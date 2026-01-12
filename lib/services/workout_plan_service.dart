@@ -22,8 +22,9 @@ class WorkoutPlanService {
 
       debugPrint('🔵 Parsed data: $data');
 
-      // ✅ Check if response is successful
-      if (data['code'] != 1000) {
+      // ✅ Check if response is successful (API returns code 0 or 1000 for success)
+      final code = data['code'];
+      if (code != 0 && code != 1000) {
         final message = data['message'] ?? 'Unknown error';
         debugPrint('❌ API error: $message');
         throw Exception('API Error: $message');
@@ -51,7 +52,7 @@ class WorkoutPlanService {
     }
   }
 
-  // ✅ CẬP NHẬT - Create new plan với đầy đủ thông tin
+  // ✅ Create new plan with full information
   static Future<WorkoutPlan> createPlan({
     required String title,
     required String notes,
@@ -65,7 +66,7 @@ class WorkoutPlanService {
 
       final dio = DioClient.dio;
 
-      // Chuẩn bị data theo format backend expect
+      // Prepare data according to backend format
       final requestData = {
         'title': title,
         'notes': notes,
@@ -87,7 +88,7 @@ class WorkoutPlanService {
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
 
-      if (data['code'] != 1000) {
+      if (data['code'] != 0 && data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to create plan');
       }
 
@@ -100,7 +101,7 @@ class WorkoutPlanService {
     }
   }
 
-  // ✅ CẬP NHẬT - Update plan với đầy đủ thông tin
+  // ✅ Update plan with full information
   static Future<WorkoutPlan> updatePlan({
     required int planId,
     required String title,
@@ -135,7 +136,7 @@ class WorkoutPlanService {
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
 
-      if (data['code'] != 1000) {
+      if (data['code'] != 0 && data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to update plan');
       }
 
@@ -158,7 +159,7 @@ class WorkoutPlanService {
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
 
-      if (data['code'] != 1000) {
+      if (data['code'] != 0 && data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to delete plan');
       }
 
@@ -180,7 +181,7 @@ class WorkoutPlanService {
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
 
-      if (data['code'] != 1000) {
+      if (data['code'] != 0 && data['code'] != 1000) {
         throw Exception(data['message'] ?? 'Failed to get plan');
       }
 
@@ -193,7 +194,7 @@ class WorkoutPlanService {
     }
   }
 
-  // ✅ THÊM MỚI - Refresh token nếu cần
+  // ✅ Refresh plans cache
   static Future<void> refreshPlansCache() async {
     debugPrint('🔄 Refreshing plans cache...');
     // Implement caching logic if needed

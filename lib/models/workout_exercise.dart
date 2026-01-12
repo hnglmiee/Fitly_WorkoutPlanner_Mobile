@@ -1,4 +1,4 @@
-// models/workout_exercise.dart
+// lib/models/workout_exercise.dart
 
 class WorkoutExercise {
   final int workoutExerciseId;
@@ -25,15 +25,19 @@ class WorkoutExercise {
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
     return WorkoutExercise(
-      workoutExerciseId: json['workoutExerciseId'],
-      planId: json['planId'],
-      planTitle: json['planTitle'],
-      exerciseId: json['exerciseId'] ?? 0,
-      exerciseName: json['exerciseName'],
-      sets: json['sets'],
-      reps: json['reps'],
-      weight: json['weight']?.toDouble(),
-      comments: json['comments'],
+      workoutExerciseId: json['workoutExerciseId'] as int,
+      planId: json['planId'] as int,
+      planTitle: json['planTitle'] as String,
+      exerciseId: json['exerciseId'] as int,
+      exerciseName: json['exerciseName'] as String,
+      sets: json['sets'] as int,
+      reps: json['reps'] as int,
+      weight: json['weight'] != null
+          ? (json['weight'] is int
+          ? (json['weight'] as int).toDouble()
+          : json['weight'] as double)
+          : null,
+      comments: json['comments'] as String?,
     );
   }
 
@@ -53,6 +57,16 @@ class WorkoutExercise {
 
   @override
   String toString() {
-    return 'WorkoutExercise(id: $workoutExerciseId, planId: $planId, name: $exerciseName)';
+    return 'WorkoutExercise(id: $workoutExerciseId, exercise: $exerciseName, sets: $sets, reps: $reps, weight: $weight)';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is WorkoutExercise &&
+        other.workoutExerciseId == workoutExerciseId;
+  }
+
+  @override
+  int get hashCode => workoutExerciseId.hashCode;
 }
