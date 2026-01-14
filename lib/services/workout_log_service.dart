@@ -23,7 +23,6 @@ class WorkoutLogService {
 
       final dio = DioClient.dio;
 
-      // ✅ Gửi đầy đủ theo format backend expect
       final requestData = {
         'scheduleId': scheduleId,
         'exerciseId': exerciseId,
@@ -64,7 +63,6 @@ class WorkoutLogService {
       debugPrint('  Request sent: ${e.requestOptions.data}');
       debugPrint('  URL: ${e.requestOptions.path}');
 
-      // Extract error message from response
       String errorMessage = 'Failed to log workout';
       if (e.response?.data != null) {
         try {
@@ -73,7 +71,6 @@ class WorkoutLogService {
               : e.response!.data;
           errorMessage = responseData['message'] ?? errorMessage;
 
-          // Log validation errors if exist
           if (responseData['errors'] != null) {
             debugPrint('  Validation errors: ${responseData['errors']}');
           }
@@ -90,7 +87,7 @@ class WorkoutLogService {
     }
   }
 
-  /// Get all workout logs (optional - nếu backend support)
+  /// Get all workout logs
   static Future<List<WorkoutLogResponse>> fetchWorkoutLogs({
     int? scheduleId,
   }) async {
@@ -138,7 +135,7 @@ class WorkoutLogService {
     }
   }
 
-  /// Update workout log (optional - nếu backend support)
+  /// 🔥 Update workout log
   static Future<WorkoutLogResponse> updateWorkoutLog({
     required int logId,
     required int scheduleId,
@@ -149,7 +146,13 @@ class WorkoutLogService {
     String notes = '',
   }) async {
     try {
+      debugPrint('🔵 ============================================');
       debugPrint('🔵 Updating workout log $logId...');
+      debugPrint('  URL: /workout-logs/$logId');
+      debugPrint('  Schedule ID: $scheduleId');
+      debugPrint('  Exercise ID: $exerciseId');
+      debugPrint('  Sets: $actualSets, Reps: $actualReps, Weight: $actualWeight kg');
+      debugPrint('  Notes: $notes');
 
       final dio = DioClient.dio;
 
@@ -158,24 +161,74 @@ class WorkoutLogService {
         'exerciseId': exerciseId,
         'actualSets': actualSets,
         'actualReps': actualReps,
-        'actualWeight': actualWeight,
+        'actualWeight': actualWeight.toInt(),
         'notes': notes,
+        'loggedAt': DateTime.now().toUtc().toIso8601String(),
       };
+
+      debugPrint('🔵 Request body: $requestData');
 
       final response = await dio.put(
         '/workout-logs/$logId',
         data: requestData,
       );
 
+      debugPrint('🔵 Response status: ${response.statusCode}');
+
+      // 🔥 CRITICAL: Print raw response to debug
+      debugPrint('🔥 ========== RAW UPDATE RESPONSE ==========');
+      debugPrint('🔥 Raw response data type: ${response.data.runtimeType}');
+      debugPrint('🔥 Raw response data: ${response.data}');
+      debugPrint('🔥 ========================================');
+
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
 
+      debugPrint('🔥 Parsed data: $data');
+      debugPrint('🔥 Result field: ${data['result']}');
+      debugPrint('🔥 Result type: ${data['result'].runtimeType}');
+
       if (data['code'] != 1000) {
-        throw Exception(data['message'] ?? 'Failed to update log');
+        final message = data['message'] ?? 'Unknown error';
+        debugPrint('❌ API error: $message');
+        throw Exception('API Error: $message');
       }
 
-      debugPrint('✅ Workout log updated successfully');
-      return WorkoutLogResponse.fromJson(data['result']);
+      // 🔥 Check if result is null or empty
+      if (data['result'] == null) {
+        debugPrint('⚠️ WARNING: API returned null result for UPDATE');
+        throw Exception('API returned null result');
+      }
+
+      final logResponse = WorkoutLogResponse.fromJson(data['result']);
+      debugPrint('✅ Workout log updated successfully: ${logResponse.toString()}');
+      debugPrint('🔵 ============================================');
+
+      return logResponse;
+    } on DioException catch (e) {
+      debugPrint('❌ updateWorkoutLog DioException:');
+      debugPrint('  Status code: ${e.response?.statusCode}');
+      debugPrint('  Response body: ${e.response?.data}');
+      debugPrint('  Request sent: ${e.requestOptions.data}');
+      debugPrint('  URL: ${e.requestOptions.path}');
+
+      String errorMessage = 'Failed to update workout log';
+      if (e.response?.data != null) {
+        try {
+          final responseData = e.response!.data is String
+              ? jsonDecode(e.response!.data)
+              : e.response!.data;
+          errorMessage = responseData['message'] ?? errorMessage;
+
+          if (responseData['errors'] != null) {
+            debugPrint('  Validation errors: ${responseData['errors']}');
+          }
+        } catch (_) {
+          errorMessage = e.response!.data.toString();
+        }
+      }
+
+      throw Exception(errorMessage);
     } catch (e, stack) {
       debugPrint('❌ updateWorkoutLog error: $e');
       debugPrintStack(stackTrace: stack);
@@ -183,7 +236,7 @@ class WorkoutLogService {
     }
   }
 
-  /// Delete workout log (optional - nếu backend support)
+  /// Delete workout log
   static Future<void> deleteWorkoutLog(int logId) async {
     try {
       debugPrint('🔵 Deleting workout log $logId...');
@@ -205,7 +258,8 @@ class WorkoutLogService {
       rethrow;
     }
   }
-  /// Get workout logs by scheduleId and map by exerciseId (get LATEST log per exercise)
+
+  /// Get workout logs by scheduleId
   static Future<Map<int, WorkoutLogResponse>> fetchLogsBySchedule(int scheduleId) async {
     try {
       debugPrint('🔵 ============================================');
@@ -251,37 +305,25 @@ class WorkoutLogService {
 
       debugPrint('✅ Successfully parsed ${allLogs.length} logs');
 
-      // ✅ SIMPLIFIED: Keep only FIRST log per exerciseId (since API returns sorted DESC)
       final Map<int, WorkoutLogResponse> logsMap = {};
 
       for (var log in allLogs) {
         final exerciseId = log.exerciseId;
 
-        // ✅ Only add if this exerciseId hasn't been seen yet
         if (!logsMap.containsKey(exerciseId)) {
           logsMap[exerciseId] = log;
 
           debugPrint('📝 Latest log for exerciseId $exerciseId:');
           debugPrint('   - Exercise: ${log.exerciseName}');
           debugPrint('   - Sets: ${log.actualSets}, Reps: ${log.actualReps}, Weight: ${log.actualWeight}kg');
-          debugPrint('   - Notes: ${log.notes}');
+          debugPrint('   - Log ID: ${log.id}');
           debugPrint('   - Logged at: ${log.loggedAt}');
-        } else {
-          debugPrint('⏭️ Skipping duplicate exerciseId $exerciseId (older log from ${log.loggedAt})');
         }
       }
 
       debugPrint('🔵 ============================================');
       debugPrint('✅ Total UNIQUE exercises with logs: ${logsMap.length}');
       debugPrint('✅ Exercise IDs: ${logsMap.keys.toList()}');
-
-      // Summary
-      for (var entry in logsMap.entries) {
-        debugPrint('   📊 exerciseId ${entry.key}: ${entry.value.exerciseName}');
-        debugPrint('      → ${entry.value.actualSets} sets × ${entry.value.actualReps} reps @ ${entry.value.actualWeight}kg');
-        debugPrint('      → Logged at: ${entry.value.loggedAt}');
-      }
-
       debugPrint('🔵 ============================================');
 
       return logsMap;

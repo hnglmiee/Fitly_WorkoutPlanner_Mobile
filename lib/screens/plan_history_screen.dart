@@ -168,12 +168,6 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
         )
         ),
         centerTitle: true,
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.refresh, color: Colors.black),
-        //     onPressed: _loadData,
-        //   ),
-        // ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/WorkoutMock.dart';
 import '../models/exercise_log.dart';
+import '../models/workout_log.dart';
 import '../models/workout_plan.dart';
 import '../services/workout_exercise_service.dart';
 import '../services/workout_log_service.dart';
@@ -10,12 +11,12 @@ import '../theme/app_theme.dart';
 
 class PlanProgressScreen extends StatefulWidget {
   final WorkoutPlan plan;
-  final int scheduleId; // 🔥 THÊM SCHEDULE ID
+  final int scheduleId;
 
   const PlanProgressScreen({
     super.key,
     required this.plan,
-    required this.scheduleId, // 🔥 REQUIRED
+    required this.scheduleId,
   });
 
   @override
@@ -27,8 +28,6 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
   List<WorkoutMock> workouts = [];
   Set<int> completedWorkouts = {};
   Map<int, ExerciseLog?> exerciseLogs = {};
-
-  // ✅ Map index -> exerciseId (MASTER TABLE, không phải workoutExerciseId)
   Map<int, int> exerciseIdMap = {};
 
   bool isLoading = true;
@@ -39,7 +38,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     super.initState();
     debugPrint('🔵 PlanProgressScreen initialized');
     debugPrint('  Plan ID: ${widget.plan.id}');
-    debugPrint('  Schedule ID: ${widget.scheduleId}'); // 🔥 Log schedule ID
+    debugPrint('  Schedule ID: ${widget.scheduleId}');
     _loadExercises();
   }
 
@@ -78,7 +77,6 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
         ));
 
         debugPrint('=== Exercise $i Debug ===');
-        debugPrint('  JSON: ${exercise.toJson()}');
         debugPrint('  workoutExerciseId: ${exercise.workoutExerciseId}');
         debugPrint('  exerciseId (MASTER): ${exercise.exerciseId}');
         debugPrint('  exerciseName: ${exercise.exerciseName}');
@@ -90,18 +88,21 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
         if (logsFromAPI.containsKey(exercise.exerciseId)) {
           final apiLog = logsFromAPI[exercise.exerciseId]!;
 
+          // 🔥 IMPORTANT: Store actual log ID from API
           exerciseLogs[i] = ExerciseLog(
             sets: apiLog.actualSets,
             reps: apiLog.actualReps,
             weight: apiLog.actualWeight,
             notes: apiLog.notes,
             loggedAt: apiLog.loggedAt,
+            logId: apiLog.id, // 🔥 Use actual ID from API
           );
 
           completedWorkouts.add(i);
           debugPrint('  ✅ Exercise $i already logged:');
           debugPrint('     Name: ${exercise.exerciseName}');
           debugPrint('     Sets: ${apiLog.actualSets}, Reps: ${apiLog.actualReps}, Weight: ${apiLog.actualWeight}kg');
+          debugPrint('     📌 LOG ID FROM API: ${apiLog.id}');
         }
       }
 
@@ -111,7 +112,6 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
       });
 
       debugPrint('✅ Loaded ${workouts.length} exercises for plan ID: ${widget.plan.id}');
-      debugPrint('✅ Exercise ID mapping: $exerciseIdMap');
       debugPrint('✅ Completed: ${completedWorkouts.length} exercises');
     } catch (e) {
       debugPrint('❌ Error loading exercises: $e');
@@ -128,7 +128,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
   double get progressPercentage =>
       totalWorkouts > 0 ? (completedCount / totalWorkouts) * 100 : 0;
 
-  /// ✅ Log exercise với CORRECT scheduleId và exerciseId
+  /// ✅ Log exercise - UPDATE nếu đã có log, CREATE nếu chưa
   Future<void> _logExercise({
     required int index,
     required int sets,
@@ -167,36 +167,104 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
         throw Exception('Exercise ID not found for index $index');
       }
 
+      debugPrint('🔵 ========================================');
       debugPrint('🔵 Logging exercise at index $index');
-      debugPrint('  Schedule ID: ${widget.scheduleId}'); // ✅ CORRECT
-      debugPrint('  Exercise ID (master): $exerciseId'); // ✅ CORRECT
+      debugPrint('  Schedule ID: ${widget.scheduleId}');
+      debugPrint('  Exercise ID (master): $exerciseId');
+      debugPrint('  New values: Sets=$sets, Reps=$reps, Weight=$weight kg');
 
-      // ✅ Call API with CORRECT IDs
-      final response = await WorkoutLogService.logWorkout(
-        scheduleId: widget.scheduleId, // 🔥 USE SCHEDULE ID, NOT PLAN ID
-        exerciseId: exerciseId,        // 🔥 USE EXERCISE ID, NOT WORKOUT_EXERCISE ID
-        actualSets: sets,
-        actualReps: reps,
-        actualWeight: weight,
-        notes: notes,
-      );
+      final existingLog = exerciseLogs[index];
 
-      debugPrint('✅ Workout logged: ${response.toString()}');
+      // 🔥 FIX: Check both existingLog AND logId are not null
+      final isUpdate = existingLog != null && existingLog.logId != null && existingLog.logId! > 0;
+
+      debugPrint('🔵 ========== UPDATE CHECK ==========');
+      debugPrint('🔵 Exercise index: $index');
+      debugPrint('🔵 Existing log: ${existingLog != null ? "EXISTS" : "NULL"}');
+      if (existingLog != null) {
+        debugPrint('🔵 Existing log ID: ${existingLog.logId}');
+        debugPrint('🔵 Existing sets: ${existingLog.sets}, reps: ${existingLog.reps}, weight: ${existingLog.weight}');
+      }
+      debugPrint('🔵 Is update operation: $isUpdate');
+      debugPrint('🔵 ==================================');
+
+      if (isUpdate) {
+        // 🔥 UPDATE existing log
+        final logId = existingLog.logId!;
+
+        debugPrint('🔥 ========== UPDATING EXISTING LOG ==========');
+        debugPrint('🔥 HTTP Method: PUT');
+        debugPrint('🔥 Endpoint: /workout-logs/$logId');
+        debugPrint('🔥 Log ID: $logId');
+        debugPrint('🔥 Schedule ID: ${widget.scheduleId}');
+        debugPrint('🔥 Exercise ID: $exerciseId');
+        debugPrint('🔥 New Sets: $sets, Reps: $reps, Weight: $weight kg');
+        debugPrint('🔥 Notes: $notes');
+        debugPrint('🔥 ==========================================');
+
+        await WorkoutLogService.updateWorkoutLog(
+          logId: logId,
+          scheduleId: widget.scheduleId,
+          exerciseId: exerciseId,
+          actualSets: sets,
+          actualReps: reps,
+          actualWeight: weight,
+          notes: notes,
+        );
+
+        debugPrint('✅ Workout log UPDATED successfully');
+      } else {
+        // 🔥 CREATE new log
+        debugPrint('🔥 ========== CREATING NEW LOG ==========');
+        debugPrint('🔥 HTTP Method: POST');
+        debugPrint('🔥 Endpoint: /workout-logs');
+        debugPrint('🔥 Schedule ID: ${widget.scheduleId}');
+        debugPrint('🔥 Exercise ID: $exerciseId');
+        debugPrint('🔥 Sets: $sets, Reps: $reps, Weight: $weight kg');
+        debugPrint('🔥 Notes: $notes');
+        debugPrint('🔥 =====================================');
+
+        await WorkoutLogService.logWorkout(
+          scheduleId: widget.scheduleId,
+          exerciseId: exerciseId,
+          actualSets: sets,
+          actualReps: reps,
+          actualWeight: weight,
+          notes: notes,
+        );
+
+        debugPrint('✅ Workout log CREATED successfully');
+      }
 
       // Hide loading snackbar
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
 
-      // Update local state
+      // 🔥 CRITICAL: Reload logs từ API để lấy ID chính xác
+      debugPrint('🔵 Reloading logs from API to get correct ID...');
+      final updatedLogs = await WorkoutLogService.fetchLogsBySchedule(widget.scheduleId);
+      final updatedLog = updatedLogs[exerciseId];
+
+      debugPrint('🔵 Updated log for exerciseId $exerciseId:');
+      debugPrint('   ID: ${updatedLog?.id}');
+      debugPrint('   Sets: ${updatedLog?.actualSets}, Reps: ${updatedLog?.actualReps}');
+
+      // Update local state with correct ID
       setState(() {
-        exerciseLogs[index] = ExerciseLog(
-          sets: sets,
-          reps: reps,
-          weight: weight,
-          notes: notes,
-          loggedAt: response.loggedAt,
-        );
+        if (updatedLog != null) {
+          exerciseLogs[index] = ExerciseLog(
+            sets: updatedLog.actualSets,
+            reps: updatedLog.actualReps,
+            weight: updatedLog.actualWeight,
+            notes: updatedLog.notes,
+            loggedAt: updatedLog.loggedAt,
+            logId: updatedLog.id, // 🔥 Get CORRECT ID from fresh API call
+          );
+          debugPrint('✅ Stored correct log ID: ${updatedLog.id}');
+        } else {
+          debugPrint('⚠️ Could not reload log from API');
+        }
         completedWorkouts.add(index);
 
         // Move to next exercise
@@ -204,6 +272,8 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
           activeWorkoutIndex = index + 1;
         }
       });
+
+      debugPrint('🔵 ========================================');
 
       // Show success
       if (mounted) {
@@ -223,7 +293,9 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
         );
       }
     } catch (e) {
+      debugPrint('❌ ========================================');
       debugPrint('❌ Error logging exercise: $e');
+      debugPrint('❌ ========================================');
 
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -239,7 +311,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     }
   }
 
-  /// Dialog để log exercise (giữ nguyên)
+  /// Dialog để log exercise
   void _showExerciseLogDialog(int index, {ExerciseLog? existingLog}) {
     final setsController = TextEditingController(
       text: existingLog?.sets.toString() ?? '',
@@ -485,6 +557,14 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                       ),
                     ),
                   ),
+                  IconButton(
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        size: 22,
+                        color: AppTheme.primary,
+                      ),
+                      onPressed: null
+                  ),
                   const SizedBox(width: 48),
                 ],
               ),
@@ -598,7 +678,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     );
   }
 
-  /// Content State (giữ nguyên phần còn lại)
+  /// Content State
   Widget _buildContentState() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
