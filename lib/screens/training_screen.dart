@@ -8,7 +8,9 @@ import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 
 import '../models/user_info.dart';
 import '../models/workout_plan.dart';
+import '../models/workout_chart_item.dart';
 import '../services/user_service.dart';
+import '../services/workout_chart_service.dart';
 import '../services/workout_plan_service.dart';
 import 'notification_screen.dart';
 
@@ -24,6 +26,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   int _selectedIndex = 0;
   int unreadNotifications = 3;
   Future<List<WorkoutPlan>>? _plansFuture;
+  Future<List<WorkoutChartItem>>? _chartFuture;
 
   late PageController _pageController;
 
@@ -35,23 +38,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
   UserInfo? userInfo;
   bool isLoadingUser = true;
 
-  // Sample workout data for chart
-  final List<Map<String, dynamic>> workoutData = [
-    {'day': 'Mon', 'sessions': 2},
-    {'day': 'Tue', 'sessions': 1},
-    {'day': 'Wed', 'sessions': 3},
-    {'day': 'Thu', 'sessions': 0},
-    {'day': 'Fri', 'sessions': 2},
-    {'day': 'Sat', 'sessions': 1},
-    {'day': 'Sun', 'sessions': 0},
-  ];
-
   @override
   void initState() {
     super.initState();
     _initWeek();
     _pageController = PageController(initialPage: 0);
     _plansFuture = WorkoutPlanService.fetchMyPlans();
+    _chartFuture = WorkoutService.fetchWeeklyWorkoutChart();
     _fetchUserInfo();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -68,7 +61,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     weekDates = List.generate(7, (i) => monday.add(Duration(days: i)));
 
     selectedDayIndex = weekDates.indexWhere(
-      (d) => d.year == now.year && d.month == now.month && d.day == now.day,
+          (d) => d.year == now.year && d.month == now.month && d.day == now.day,
     );
 
     if (selectedDayIndex < 0) {
@@ -333,11 +326,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   margin: const EdgeInsets.only(bottom: 6),
                                   decoration: BoxDecoration(
                                     color:
-                                        isToday
-                                            ? Colors.red
-                                            : isSelected
-                                            ? Colors.blue
-                                            : Colors.transparent,
+                                    isToday
+                                        ? Colors.red
+                                        : isSelected
+                                        ? Colors.blue
+                                        : Colors.transparent,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -346,9 +339,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   margin: const EdgeInsets.only(right: 12),
                                   decoration: BoxDecoration(
                                     color:
-                                        isSelected
-                                            ? Colors.blue
-                                            : Colors.blue.shade100,
+                                    isSelected
+                                        ? Colors.blue
+                                        : Colors.blue.shade100,
                                     borderRadius: BorderRadius.circular(30),
                                   ),
                                   child: Padding(
@@ -357,15 +350,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                     ),
                                     child: Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           DateFormat('EEE').format(date),
                                           style: TextStyle(
                                             color:
-                                                isSelected
-                                                    ? Colors.white
-                                                    : Colors.black,
+                                            isSelected
+                                                ? Colors.white
+                                                : Colors.black,
                                           ),
                                         ),
                                         const SizedBox(height: 8),
@@ -380,9 +373,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                             ),
                                             border: Border.all(
                                               color:
-                                                  isSelected
-                                                      ? Colors.blue
-                                                      : Colors.transparent,
+                                              isSelected
+                                                  ? Colors.blue
+                                                  : Colors.transparent,
                                               width: 2,
                                             ),
                                           ),
@@ -611,7 +604,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
                     const SizedBox(height: 24),
 
-                    // ✅ WORKOUT SESSIONS CHART
+                    // WORKOUT SESSIONS CHART
                     const Text(
                       'Weekly Workout Sessions',
                       style: TextStyle(
@@ -622,57 +615,127 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total Sessions',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.black54,
-                                  fontWeight: FontWeight.w500,
+                    FutureBuilder<List<WorkoutChartItem>>(
+                      future: _chartFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Container(
+                            padding: const EdgeInsets.all(20),
+                            height: 280,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
                                 ),
+                              ],
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppTheme.primary,
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
                                 ),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: Colors.red,
                                 ),
-                                child: Text(
-                                  '${workoutData.fold<int>(0, (sum, item) => sum + (item['sessions'] as int))} sessions',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.primary,
-                                  ),
+                                const SizedBox(height: 12),
+                                const Text('Failed to load chart data'),
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _chartFuture = WorkoutService.fetchWeeklyWorkoutChart();
+                                    });
+                                  },
+                                  child: const Text('Retry'),
                                 ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        final chartData = snapshot.data ?? [];
+
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 24),
-                          _WorkoutBarChart(data: workoutData),
-                        ],
-                      ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Total Sessions',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      '${chartData.fold<int>(0, (sum, item) => sum + item.sessions)} sessions',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              _WorkoutBarChart(data: chartData),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -834,15 +897,27 @@ class _PlanCard extends StatelessWidget {
 }
 
 class _WorkoutBarChart extends StatelessWidget {
-  final List<Map<String, dynamic>> data;
+  final List<WorkoutChartItem> data;
 
   const _WorkoutBarChart({required this.data});
 
   @override
   Widget build(BuildContext context) {
+    if (data.isEmpty) {
+      return const SizedBox(
+        height: 200,
+        child: Center(
+          child: Text(
+            'No data available',
+            style: TextStyle(color: Colors.black54),
+          ),
+        ),
+      );
+    }
+
     final maxSessions = data.fold<int>(
       0,
-      (max, item) => (item['sessions'] as int) > max ? item['sessions'] : max,
+          (max, item) => item.sessions > max ? item.sessions : max,
     );
 
     return SizedBox(
@@ -850,79 +925,75 @@ class _WorkoutBarChart extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
-        children:
-            data.map((item) {
-              final sessions = item['sessions'] as int;
-              final day = item['day'] as String;
-              final barHeight =
-                  maxSessions > 0 ? (sessions / maxSessions) * 140 : 0.0;
-              final isToday = day == DateFormat('EEE').format(DateTime.now());
+        children: data.map((item) {
+          final sessions = item.sessions;
+          final day = item.label;
+          final barHeight =
+          maxSessions > 0 ? (sessions / maxSessions) * 140 : 0.0;
+          final isToday = day == DateFormat('EEE').format(DateTime.now());
 
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // Session count label
-                      SizedBox(
-                        height: 20,
-                        child:
-                            sessions > 0
-                                ? Text(
-                                  sessions.toString(),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.primary,
-                                  ),
-                                )
-                                : const SizedBox.shrink(),
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Session count label
+                  SizedBox(
+                    height: 20,
+                    child: sessions > 0
+                        ? Text(
+                      sessions.toString(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primary,
                       ),
-
-                      const SizedBox(height: 4),
-                      // Bar
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        height: barHeight < 20 && sessions > 0 ? 20 : barHeight,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors:
-                                sessions > 0
-                                    ? [
-                                      AppTheme.primary,
-                                      AppTheme.primary.withOpacity(0.6),
-                                    ]
-                                    : [
-                                      Colors.grey.shade200,
-                                      Colors.grey.shade200,
-                                    ],
-                          ),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(8),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Day label
-                      Text(
-                        day,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight:
-                              isToday ? FontWeight.w700 : FontWeight.w500,
-                          color: isToday ? AppTheme.primary : Colors.black54,
-                        ),
-                      ),
-                    ],
+                    )
+                        : const SizedBox.shrink(),
                   ),
-                ),
-              );
-            }).toList(),
+
+                  const SizedBox(height: 4),
+                  // Bar
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: barHeight < 20 && sessions > 0 ? 20 : barHeight,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: sessions > 0
+                            ? [
+                          AppTheme.primary,
+                          AppTheme.primary.withOpacity(0.6),
+                        ]
+                            : [
+                          Colors.grey.shade200,
+                          Colors.grey.shade200,
+                        ],
+                      ),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(8),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Day label
+                  Text(
+                    day,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                      color: isToday ? AppTheme.primary : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

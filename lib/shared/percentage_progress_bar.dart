@@ -83,18 +83,18 @@ class _PercentageProgressBarState extends State<PercentageProgressBar>
             ),
 
             /// Percentage text (top-right)
-            Positioned(
-              right: 8,
-              top: -1.5,
-              child: Text(
-                "${currentPercent.toInt()}%",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: currentPercent > 50 ? Colors.white : Colors.black,
-                ),
-              ),
-            ),
+            // Positioned(
+            //   right: 8,
+            //   top: -1.5,
+            //   child: Text(
+            //     "${currentPercent.toInt()}%",
+            //     style: TextStyle(
+            //       fontSize: 13,
+            //       fontWeight: FontWeight.w600,
+            //       color: currentPercent > 50 ? Colors.white : Colors.black,
+            //     ),
+            //   ),
+            // ),
           ],
         );
       },

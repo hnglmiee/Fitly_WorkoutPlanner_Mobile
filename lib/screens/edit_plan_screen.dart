@@ -1,8 +1,8 @@
-// screens/edit_plan_screen.dart
 import 'package:flutter/material.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import '../models/exercise_form.dart';
 import '../models/workout_plan.dart';
+import '../services/workout_exercise_service.dart';
 
 class EditPlanScreen extends StatefulWidget {
   final WorkoutPlan plan;
@@ -19,13 +19,43 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
   late TextEditingController notesController;
 
   bool everyDay = true;
+  bool isLoading = false;
 
-  /// EXERCISE DATA
-  final Map<String, List<String>> exerciseMap = {
-    'Chest': ['Bench Press', 'Push Up', 'Chest Fly'],
-    'Legs': ['Squat', 'Lunges', 'Leg Press'],
-    'Back': ['Pull Up', 'Deadlift', 'Lat Pulldown'],
-    'Core': ['Plank', 'Crunch', 'Russian Twist'],
+  /// EXERCISE DATA WITH PROPER IDs
+  /// Structure: categoryId -> category name -> list of exercises with IDs
+  final Map<int, Map<String, dynamic>> categoryMap = {
+    1: {
+      'name': 'Chest',
+      'exercises': [
+        {'id': 1, 'name': 'Bench Press'},
+        {'id': 3, 'name': 'Push Up'},
+        {'id': 5, 'name': 'Chest Fly'},
+      ],
+    },
+    2: {
+      'name': 'Legs',
+      'exercises': [
+        {'id': 2, 'name': 'Squat'},
+        {'id': 4, 'name': 'Lunges'},
+        {'id': 6, 'name': 'Leg Press'},
+      ],
+    },
+    3: {
+      'name': 'Back',
+      'exercises': [
+        {'id': 7, 'name': 'Pull Up'},
+        {'id': 8, 'name': 'Deadlift'},
+        {'id': 9, 'name': 'Lat Pulldown'},
+      ],
+    },
+    4: {
+      'name': 'Core',
+      'exercises': [
+        {'id': 10, 'name': 'Plank'},
+        {'id': 11, 'name': 'Crunch'},
+        {'id': 12, 'name': 'Russian Twist'},
+      ],
+    },
   };
 
   /// DAYS
@@ -71,149 +101,183 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              /// HEADER
-              Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Edit Plan',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                  /// HEADER
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'Edit Plan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 40),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  /// FORM
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        _label('Plan Title'),
+                        _input(
+                          controller: titleController,
+                          hint: 'e.g. Full Body Workout',
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// EXERCISES SECTION
+                        _sectionHeader('Exercises'),
+                        const SizedBox(height: 12),
+
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: exercises.length,
+                          itemBuilder: (context, index) {
+                            return _exerciseItem(index);
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        /// ➕ ADD EXERCISE BUTTON
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AppTheme.primary, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              exercises.add(ExerciseForm());
+                            });
+                          },
+                          icon: Icon(Icons.add_rounded, color: AppTheme.primary),
+                          label: Text(
+                            'Add Exercise',
+                            style: TextStyle(
+                              color: AppTheme.primary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// SCHEDULE SECTION
+                        _sectionHeader('Schedule'),
+                        const SizedBox(height: 12),
+
+                        _label('Select Days'),
+                        _daySelector(),
+
+                        const SizedBox(height: 16),
+
+                        _toggleEveryDay(),
+
+                        const SizedBox(height: 20),
+
+                        /// REMINDER SECTION
+                        _sectionHeader('Reminder'),
+                        const SizedBox(height: 12),
+
+                        _reminderDropdown(),
+
+                        const SizedBox(height: 20),
+
+                        /// NOTES SECTION
+                        _label('Notes (Optional)'),
+                        const SizedBox(height: 5),
+                        _input(
+                          controller: notesController,
+                          maxLines: 4,
+                          hint: 'Add any additional notes here...',
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        /// UPDATE BUTTON
+                        SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: isLoading ? null : _updatePlan,
+                            child: isLoading
+                                ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                                : const Text(
+                              'Add Exercises',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 40),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 16),
-
-              /// FORM
-              Expanded(
-                child: ListView(
-                  children: [
-                    _label('Plan Title'),
-                    _input(
-                      controller: titleController,
-                      hint: 'e.g. Full Body Workout',
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// EXERCISES SECTION
-                    _sectionHeader('Exercises'),
-                    const SizedBox(height: 12),
-
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: exercises.length,
-                      itemBuilder: (context, index) {
-                        return _exerciseItem(index);
-                      },
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    /// ➕ ADD EXERCISE BUTTON
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.primary, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          exercises.add(ExerciseForm());
-                        });
-                      },
-                      icon: Icon(Icons.add_rounded, color: AppTheme.primary),
-                      label: Text(
-                        'Add Exercise',
-                        style: TextStyle(
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
+            // Loading overlay
+            if (isLoading)
+              Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: AppTheme.primary),
+                          const SizedBox(height: 16),
+                          const Text('Adding exercises...'),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 20),
-
-                    /// SCHEDULE SECTION
-                    _sectionHeader('Schedule'),
-                    const SizedBox(height: 12),
-
-                    _label('Select Days'),
-                    _daySelector(),
-
-                    const SizedBox(height: 16),
-
-                    _toggleEveryDay(),
-
-                    const SizedBox(height: 20),
-
-                    /// REMINDER SECTION
-                    _sectionHeader('Reminder'),
-                    const SizedBox(height: 12),
-
-                    _reminderDropdown(),
-
-                    const SizedBox(height: 20),
-
-                    /// NOTES SECTION
-                    _label('Notes (Optional)'),
-                    const SizedBox(height: 5),
-                    _input(
-                      controller: notesController,
-                      maxLines: 4,
-                      hint: 'Add any additional notes here...',
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// UPDATE BUTTON
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: _updatePlan,
-                        child: const Text(
-                          'Update Plan',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -326,38 +390,36 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children:
-          days.map((day) {
-            final selected = selectedDays.contains(day);
+      children: days.map((day) {
+        final selected = selectedDays.contains(day);
 
-            return ChoiceChip(
-              label: Text(day),
-              selected: selected,
-              selectedColor: AppTheme.primary.withOpacity(0.15),
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: selected ? AppTheme.primary : Colors.grey.shade300,
-                  width: 1,
-                ),
-              ),
-              labelStyle: TextStyle(
-                color: selected ? AppTheme.primary : Colors.black87,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              ),
-              onSelected:
-                  everyDay
-                      ? null
-                      : (value) {
-                        setState(() {
-                          value
-                              ? selectedDays.add(day)
-                              : selectedDays.remove(day);
-                        });
-                      },
-            );
-          }).toList(),
+        return ChoiceChip(
+          label: Text(day),
+          selected: selected,
+          selectedColor: AppTheme.primary.withOpacity(0.15),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: selected ? AppTheme.primary : Colors.grey.shade300,
+              width: 1,
+            ),
+          ),
+          labelStyle: TextStyle(
+            color: selected ? AppTheme.primary : Colors.black87,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+          ),
+          onSelected: everyDay
+              ? null
+              : (value) {
+            setState(() {
+              value
+                  ? selectedDays.add(day)
+                  : selectedDays.remove(day);
+            });
+          },
+        );
+      }).toList(),
     );
   }
 
@@ -424,10 +486,9 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              items:
-                  reminderOptions
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
+              items: reminderOptions
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: (value) {
                 if (value == null) return;
                 setState(() => reminder = value);
@@ -441,6 +502,15 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
 
   Widget _exerciseItem(int index) {
     final item = exercises[index];
+
+    // Get exercises for selected category
+    List<Map<String, dynamic>> availableExercises = [];
+    if (item.categoryId != null && categoryMap.containsKey(item.categoryId)) {
+      availableExercises = List<Map<String, dynamic>>.from(
+        categoryMap[item.categoryId]!['exercises'] as List,
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -522,28 +592,37 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _label('Muscle Group'),
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<int>(
                       isExpanded: true,
-                      value: item.muscle,
+                      value: item.categoryId,
                       hint: const Text('Select'),
                       style: const TextStyle(
                         fontSize: 15,
                         color: Colors.black87,
                       ),
-                      items:
-                          exerciseMap.keys
-                              .map(
-                                (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
-                              )
-                              .toList(),
+                      items: categoryMap.entries
+                          .map((entry) => DropdownMenuItem(
+                        value: entry.key,
+                        child: Text(entry.value['name'] as String),
+                      ))
+                          .toList(),
                       onChanged: (value) {
                         setState(() {
-                          item.muscle = value;
+                          item.categoryId = value;
+                          item.muscle = value != null
+                              ? categoryMap[value]!['name'] as String
+                              : null;
+
+                          // Reset exercise when category changes
+                          item.exerciseId = null;
                           item.exercise = null;
-                          final max = muscleMaxWeight[value] ?? 100;
-                          if (item.weightRange.end > max) {
-                            item.weightRange = RangeValues(0, max);
+
+                          // Adjust weight range
+                          if (item.muscle != null) {
+                            final max = muscleMaxWeight[item.muscle] ?? 100;
+                            if (item.weightRange.end > max) {
+                              item.weightRange = RangeValues(0, max);
+                            }
                           }
                         });
                       },
@@ -558,27 +637,30 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _label('Exercise'),
-                    DropdownButtonFormField<String>(
+                    DropdownButtonFormField<int>(
                       isExpanded: true,
-                      value: item.exercise,
+                      value: item.exerciseId,
                       hint: const Text('Select'),
                       style: const TextStyle(
                         fontSize: 15,
                         color: Colors.black87,
                       ),
-                      items:
-                          item.muscle == null
-                              ? []
-                              : exerciseMap[item.muscle]!
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
-                                    ),
-                                  )
-                                  .toList(),
-                      onChanged: (value) {
-                        setState(() => item.exercise = value);
+                      items: availableExercises
+                          .map((ex) => DropdownMenuItem(
+                        value: ex['id'] as int,
+                        child: Text(ex['name'] as String),
+                      ))
+                          .toList(),
+                      onChanged: availableExercises.isEmpty
+                          ? null
+                          : (value) {
+                        setState(() {
+                          item.exerciseId = value;
+                          item.exercise = value != null
+                              ? availableExercises
+                              .firstWhere((ex) => ex['id'] == value)['name'] as String
+                              : null;
+                        });
                       },
                       decoration: _dropdownDecoration(),
                     ),
@@ -650,7 +732,8 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
 
   /// ================= UPDATE FUNCTION =================
 
-  void _updatePlan() {
+  Future<void> _updatePlan() async {
+    // Validation
     if (titleController.text.isEmpty) {
       _showError('Please enter a plan title');
       return;
@@ -662,7 +745,8 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     }
 
     for (var i = 0; i < exercises.length; i++) {
-      if (exercises[i].muscle == null || exercises[i].exercise == null) {
+      final ex = exercises[i];
+      if (ex.categoryId == null || ex.exerciseId == null) {
         _showError('Please complete exercise #${i + 1}');
         return;
       }
@@ -673,43 +757,70 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
       return;
     }
 
-    // TODO: Update to API
-    final planData = {
-      'id': widget.plan.id,
-      'title': titleController.text,
-      'notes': notesController.text,
-      'exercises':
-          exercises
-              .map(
-                (e) => {
-                  'muscle': e.muscle,
-                  'exercise': e.exercise,
-                  'sets': e.sets,
-                  'reps': e.reps,
-                  'weightRange': {
-                    'min': e.weightRange.start.round(),
-                    'max': e.weightRange.end.round(),
-                  },
-                },
-              )
-              .toList(),
-      'everyDay': everyDay,
-      'days': everyDay ? [] : selectedDays.toList(),
-      'reminder': reminder,
-    };
+    setState(() => isLoading = true);
 
-    debugPrint('Updating plan: $planData');
+    try {
+      debugPrint('🔵 ========================================');
+      debugPrint('🔵 Adding exercises to plan ${widget.plan.id}');
+      debugPrint('🔵 Plan title: ${titleController.text}');
+      debugPrint('🔵 Total exercises to add: ${exercises.length}');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Plan updated successfully!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+      // Prepare exercises data for API
+      final exercisesData = exercises.map((e) {
+        debugPrint('  📝 Exercise: ${e.exercise} (ID: ${e.exerciseId})');
+        debugPrint('     Category: ${e.muscle} (ID: ${e.categoryId})');
+        debugPrint('     Sets: ${e.sets}, Reps: ${e.reps}');
+        debugPrint('     Weight: ${e.weightRange.start.round()}-${e.weightRange.end.round()}kg');
 
-    Navigator.pop(context);
+        return {
+          'exerciseId': e.exerciseId!,
+          'sets': e.sets,
+          'reps': e.reps,
+          'weight': e.weightRange.end.round(), // Use max weight from range
+          'comments': 'Weight range: ${e.weightRange.start.round()}kg - ${e.weightRange.end.round()}kg',
+        };
+      }).toList();
+
+      debugPrint('🔵 API Request data: $exercisesData');
+
+      // Call API to create exercises
+      final createdExercises = await WorkoutExerciseService.createMultipleWorkoutExercises(
+        planId: widget.plan.id,
+        exercises: exercisesData,
+      );
+
+      debugPrint('✅ Successfully created ${createdExercises.length} exercises');
+      for (var ex in createdExercises) {
+        debugPrint('   ✓ ${ex.exerciseName}: ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight}kg');
+      }
+      debugPrint('🔵 ========================================');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully added ${createdExercises.length} exercise(s)!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+
+        // Return to previous screen with success flag
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      debugPrint('❌ ========================================');
+      debugPrint('❌ Error adding exercises: $e');
+      debugPrint('❌ ========================================');
+
+      if (mounted) {
+        _showError('Failed to add exercises: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   void _showError(String message) {

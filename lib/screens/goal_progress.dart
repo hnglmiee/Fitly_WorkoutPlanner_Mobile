@@ -47,6 +47,74 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
     return "Target: ${target.toStringAsFixed(1)}$unit";
   }
 
+  void _confirmDeleteGoal(BuildContext context, int goalId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            "Delete Goal",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          content: const Text(
+            "Are you sure you want to delete this goal?\nThis action cannot be undone.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () async {
+                Navigator.pop(context);
+
+                try {
+                  await GoalService.deleteGoal(goalId);
+
+                  if (!mounted) return;
+
+                  setState(() {
+                    _goalFuture = GoalService.fetchGoalProgress();
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Goal deleted successfully"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Failed to delete goal"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text(
+                "Delete",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   // ✅ Calculate progress percentage
   double _calculateProgress(GoalProgress goalProgress) {
     final inBody = goalProgress.lastestInBody;
@@ -747,104 +815,109 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     const SizedBox(height: 24),
 
                     /// ===== Notes =====
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Notes",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        TextButton.icon(
-                          onPressed: () => _showAddNoteDialog(context),
-                          icon: Icon(
-                            Icons.add,
-                            size: 18,
-                            color: AppTheme.primary,
-                          ),
-                          label: Text(
-                            "Add Note",
-                            style: TextStyle(
-                              color: AppTheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     const Text(
+                    //       "Notes",
+                    //       style: TextStyle(
+                    //         fontSize: 18,
+                    //         fontWeight: FontWeight.w700,
+                    //         letterSpacing: -0.5,
+                    //       ),
+                    //     ),
+                    //     TextButton.icon(
+                    //       onPressed: () => _showAddNoteDialog(context),
+                    //       icon: Icon(
+                    //         Icons.add,
+                    //         size: 18,
+                    //         color: AppTheme.primary,
+                    //       ),
+                    //       label: Text(
+                    //         "Add Note",
+                    //         style: TextStyle(
+                    //           color: AppTheme.primary,
+                    //           fontWeight: FontWeight.w600,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                    // const SizedBox(height: 12),
 
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.restaurant,
-                              color: Colors.orange,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Oatmeal with Egg",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "160 kcal / day",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.more_vert, size: 20),
-                            onPressed: () {},
-                            color: Colors.grey.shade600,
-                          ),
-                        ],
-                      ),
-                    ),
+                    // Container(
+                    //   width: double.infinity,
+                    //   padding: const EdgeInsets.all(16),
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.white,
+                    //     borderRadius: BorderRadius.circular(16),
+                    //     border: Border.all(color: Colors.grey.shade200),
+                    //     boxShadow: [
+                    //       BoxShadow(
+                    //         color: Colors.black.withOpacity(0.02),
+                    //         blurRadius: 8,
+                    //         offset: const Offset(0, 2),
+                    //       ),
+                    //     ],
+                    //   ),
+                    //   child: Row(
+                    //     children: [
+                    //       Container(
+                    //         padding: const EdgeInsets.all(10),
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.orange.withOpacity(0.1),
+                    //           borderRadius: BorderRadius.circular(12),
+                    //         ),
+                    //         child: const Icon(
+                    //           Icons.restaurant,
+                    //           color: Colors.orange,
+                    //           size: 20,
+                    //         ),
+                    //       ),
+                    //       const SizedBox(width: 12),
+                    //       Expanded(
+                    //         child: Column(
+                    //           crossAxisAlignment: CrossAxisAlignment.start,
+                    //           children: [
+                    //             const Text(
+                    //               "Oatmeal with Egg",
+                    //               style: TextStyle(
+                    //                 fontWeight: FontWeight.w600,
+                    //                 fontSize: 14,
+                    //               ),
+                    //             ),
+                    //             const SizedBox(height: 4),
+                    //             Text(
+                    //               "160 kcal / day",
+                    //               style: TextStyle(
+                    //                 fontSize: 12,
+                    //                 color: Colors.grey.shade600,
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //       IconButton(
+                    //         icon: const Icon(Icons.more_vert, size: 20),
+                    //         onPressed: () {},
+                    //         color: Colors.grey.shade600,
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
 
-                    const SizedBox(height: 24),
+                    // const SizedBox(height: 24),
 
                     /// ===== Delete Button =====
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final goalProgress = await _goalFuture;
+                          if (goalProgress == null) return;
+
+                          _confirmDeleteGoal(context, goalProgress.goal.id);
+                        },
                         icon: const Icon(Icons.delete_outline, size: 20),
                         label: const Text(
                           "Delete Goal",

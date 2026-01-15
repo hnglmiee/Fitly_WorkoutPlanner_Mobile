@@ -1,74 +1,100 @@
+// lib/screens/goal_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
-import '../models/goal_history_item.dart';
+import '../models/goal_progress.dart';
+import '../services/goal_service.dart';
 
-class GoalDetailScreen extends StatelessWidget {
-  final GoalHistoryItem goal;
+class GoalDetailScreen extends StatefulWidget {
+  final GoalProgress goalProgress;
 
-  const GoalDetailScreen({super.key, required this.goal});
+  const GoalDetailScreen({super.key, required this.goalProgress});
+
+  @override
+  State<GoalDetailScreen> createState() => _GoalDetailScreenState();
+}
+
+class _GoalDetailScreenState extends State<GoalDetailScreen> {
+  late GoalProgress currentGoal;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    currentGoal = widget.goalProgress;
+    _refreshGoalData();
+  }
+
+  Future<void> _refreshGoalData() async {
+    setState(() => isLoading = true);
+
+    try {
+      final allGoals = await GoalService.fetchAllGoals();
+      final updatedGoal = allGoals.firstWhere(
+            (g) => g.id == currentGoal.id,
+        orElse: () => currentGoal,
+      );
+
+      if (mounted) {
+        setState(() {
+          currentGoal = updatedGoal;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Error refreshing goal: $e');
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Color get statusColor {
+    switch (currentGoal.goal.status.toUpperCase()) {
+      case 'COMPLETED':
+        return Colors.green;
+      case 'ACTIVE':
+      case 'IN_PROGRESS':
+        return Colors.orange;
+      case 'CANCELED':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String get statusText {
+    switch (currentGoal.goal.status.toUpperCase()) {
+      case 'COMPLETED':
+        return 'Completed';
+      case 'ACTIVE':
+        return 'Active';
+      case 'IN_PROGRESS':
+        return 'In Progress';
+      case 'CANCELED':
+        return 'Canceled';
+      default:
+        return currentGoal.goal.status;
+    }
+  }
+
+  IconData get statusIcon {
+    switch (currentGoal.goal.status.toUpperCase()) {
+      case 'COMPLETED':
+        return Icons.check_circle;
+      case 'ACTIVE':
+      case 'IN_PROGRESS':
+        return Icons.access_time;
+      case 'CANCELED':
+        return Icons.cancel;
+      default:
+        return Icons.flag;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Sample workout data - replace with actual data from API
-    final workoutPlan = {
-      'title': goal.title,
-      'type': goal.type,
-      'status': goal.status,
-      'startDate': DateTime(2024, 1, 1),
-      'endDate': DateTime(2024, 3, 31),
-      'totalWorkouts': 36,
-      'completedWorkouts': 32,
-      'totalDuration': '48 hours',
-      'schedule': [
-        {'day': 'Monday', 'time': '06:00 AM'},
-        {'day': 'Wednesday', 'time': '06:00 AM'},
-        {'day': 'Friday', 'time': '06:00 AM'},
-      ],
-      'exercises': [
-        {
-          'name': 'Bench Press',
-          'sets': 4,
-          'reps': 12,
-          'weight': 60.0,
-          'notes': 'Focus on form',
-          'duration': '15 mins',
-        },
-        {
-          'name': 'Squats',
-          'sets': 4,
-          'reps': 10,
-          'weight': 80.0,
-          'notes': 'Keep back straight',
-          'duration': '20 mins',
-        },
-        {
-          'name': 'Deadlift',
-          'sets': 3,
-          'reps': 8,
-          'weight': 100.0,
-          'notes': 'Warm up properly',
-          'duration': '18 mins',
-        },
-        {
-          'name': 'Pull-ups',
-          'sets': 3,
-          'reps': 15,
-          'weight': 0.0,
-          'notes': 'Bodyweight exercise',
-          'duration': '10 mins',
-        },
-        {
-          'name': 'Shoulder Press',
-          'sets': 3,
-          'reps': 12,
-          'weight': 40.0,
-          'notes': 'Controlled movement',
-          'duration': '12 mins',
-        },
-      ],
-    };
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -95,237 +121,550 @@ class GoalDetailScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48),
+                  IconButton(
+                    icon: Icon(
+                      Icons.refresh,
+                      size: 20,
+                      color: isLoading ? Colors.grey : AppTheme.primary,
+                    ),
+                    onPressed: isLoading ? null : _refreshGoalData,
+                  ),
                 ],
               ),
             ),
 
             /// CONTENT
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// GOAL HEADER CARD
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppTheme.primary,
-                            AppTheme.primary.withOpacity(0.8),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primary.withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  workoutPlan['type'].toString().toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: goal.statusColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      goal.status == GoalStatus.completed
-                                          ? Icons.check_circle
-                                          : Icons.cancel,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      goal.statusText,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            workoutPlan['title'] as String,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              _buildHeaderStat(
-                                Icons.calendar_today,
-                                '${DateFormat('MMM d').format(workoutPlan['startDate'] as DateTime)} - ${DateFormat('MMM d, y').format(workoutPlan['endDate'] as DateTime)}',
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+              child: RefreshIndicator(
+                onRefresh: _refreshGoalData,
+                color: AppTheme.primary,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// GOAL HEADER CARD
+                      _buildHeaderCard(),
+                      const SizedBox(height: 24),
 
-                    const SizedBox(height: 24),
+                      /// STATISTICS CARDS
+                      _buildStatisticsRow(),
+                      const SizedBox(height: 24),
 
-                    /// STATISTICS CARDS
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            Icons.fitness_center,
-                            'Workouts',
-                            '${workoutPlan['completedWorkouts']}/${workoutPlan['totalWorkouts']}',
-                            Colors.blue,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            Icons.timer_outlined,
-                            'Duration',
-                            workoutPlan['totalDuration'] as String,
-                            Colors.orange,
-                          ),
-                        ),
+                      /// PROGRESS SECTION
+                      _buildProgressSection(),
+                      const SizedBox(height: 24),
+
+                      /// TARGET METRICS
+                      _buildTargetMetrics(),
+                      const SizedBox(height: 24),
+
+                      /// TIMELINE SECTION
+                      _buildTimelineSection(),
+
+                      /// NOTES (if available)
+                      if (currentGoal.goal.notes.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildNotesSection(),
                       ],
-                    ),
 
-                    const SizedBox(height: 24),
+                      /// INBODY DATA (if available)
+                      if (currentGoal.lastestInBody != null) ...[
+                        const SizedBox(height: 24),
+                        _buildInBodySection(),
+                      ],
 
-                    /// SCHEDULE SECTION
-                    _sectionHeader('Workout Schedule'),
-                    const SizedBox(height: 12),
-
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.02),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children:
-                            (workoutPlan['schedule'] as List).map((schedule) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.primary.withOpacity(
-                                          0.1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.calendar_today,
-                                        size: 18,
-                                        color: AppTheme.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        schedule['day'] as String,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      schedule['time'] as String,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// EXERCISES SECTION
-                    _sectionHeader('Exercises Plan'),
-                    const SizedBox(height: 12),
-
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: (workoutPlan['exercises'] as List).length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final exercise =
-                            (workoutPlan['exercises'] as List)[index];
-                        return _buildExerciseCard(exercise, index + 1);
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-                  ],
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeaderCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primary,
+            AppTheme.primary.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  currentGoal.goal.goalType.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      statusIcon,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      statusText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            currentGoal.goal.goalName,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildHeaderStat(
+                Icons.calendar_today,
+                '${DateFormat('MMM d').format(currentGoal.goal.startDate)} - ${DateFormat('MMM d, y').format(currentGoal.goal.endDate)}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildHeaderStat(
+                Icons.tag,
+                'Goal ID: ${currentGoal.id}',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatisticsRow() {
+    final duration = currentGoal.goal.endDate
+        .difference(currentGoal.goal.startDate)
+        .inDays;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            Icons.fitness_center,
+            'Workouts',
+            '${currentGoal.completedWorkouts}/${currentGoal.totalWorkouts}',
+            Colors.blue,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            Icons.timer_outlined,
+            'Duration',
+            '$duration days',
+            Colors.orange,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Progress Overview',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          /// Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: currentGoal.progressPercentage / 100,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+              minHeight: 12,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${currentGoal.progressPercentage.toStringAsFixed(1)}% Complete',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primary,
+                ),
+              ),
+              Text(
+                '${currentGoal.completedWorkouts}/${currentGoal.totalWorkouts} workouts',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          /// This Week Stats
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'This Week',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${currentGoal.workoutSessionThisWeek} workout${currentGoal.workoutSessionThisWeek != 1 ? 's' : ''}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (currentGoal.goal.targetWorkoutSessionsPerWeek != null)
+                  Text(
+                    'Target: ${currentGoal.goal.targetWorkoutSessionsPerWeek}/week',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetMetrics() {
+    final goal = currentGoal.goal;
+    final hasTargets = goal.targetWeight != null ||
+        goal.targetBodyFatPercentage != null ||
+        goal.targetMuscleMass != null ||
+        goal.targetWorkoutSessionsPerWeek != null ||
+        goal.targetCaloriesPerDay != null;
+
+    if (!hasTargets) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('Target Metrics'),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              if (goal.targetWeight != null)
+                _buildTargetItem(
+                  icon: Icons.monitor_weight,
+                  label: 'Target Weight',
+                  value: '${goal.targetWeight} kg',
+                  color: Colors.blue,
+                ),
+              if (goal.targetBodyFatPercentage != null)
+                _buildTargetItem(
+                  icon: Icons.trending_down,
+                  label: 'Target Body Fat',
+                  value: '${goal.targetBodyFatPercentage}%',
+                  color: Colors.orange,
+                ),
+              if (goal.targetMuscleMass != null)
+                _buildTargetItem(
+                  icon: Icons.fitness_center,
+                  label: 'Target Muscle Mass',
+                  value: '${goal.targetMuscleMass} kg',
+                  color: Colors.green,
+                ),
+              if (goal.targetWorkoutSessionsPerWeek != null)
+                _buildTargetItem(
+                  icon: Icons.event_repeat,
+                  label: 'Workouts Per Week',
+                  value: '${goal.targetWorkoutSessionsPerWeek} sessions',
+                  color: Colors.purple,
+                ),
+              if (goal.targetCaloriesPerDay != null)
+                _buildTargetItem(
+                  icon: Icons.local_fire_department,
+                  label: 'Daily Calories',
+                  value: '${goal.targetCaloriesPerDay} kcal',
+                  color: Colors.red,
+                  isLast: true,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineSection() {
+    final goal = currentGoal.goal;
+    final duration = goal.endDate.difference(goal.startDate).inDays;
+    final daysLeft = goal.endDate.difference(DateTime.now()).inDays;
+    final daysElapsed = DateTime.now().difference(goal.startDate).inDays;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('Timeline'),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              _buildTimelineItem(
+                icon: Icons.play_circle_outline,
+                label: 'Start Date',
+                value: DateFormat('MMM dd, yyyy').format(goal.startDate),
+              ),
+              _buildTimelineItem(
+                icon: Icons.flag,
+                label: 'End Date',
+                value: DateFormat('MMM dd, yyyy').format(goal.endDate),
+              ),
+              _buildTimelineItem(
+                icon: Icons.timelapse,
+                label: 'Total Duration',
+                value: '$duration days',
+              ),
+              if (daysLeft > 0)
+                _buildTimelineItem(
+                  icon: Icons.schedule,
+                  label: 'Days Remaining',
+                  value: '$daysLeft days',
+                )
+              else
+                _buildTimelineItem(
+                  icon: Icons.check_circle_outline,
+                  label: 'Status',
+                  value: 'Goal period ended',
+                ),
+              if (daysElapsed >= 0)
+                _buildTimelineItem(
+                  icon: Icons.history,
+                  label: 'Days Elapsed',
+                  value: '${daysElapsed > duration ? duration : daysElapsed} days',
+                  isLast: true,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('Notes'),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.amber.shade200),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.sticky_note_2_outlined,
+                size: 20,
+                color: Colors.amber.shade700,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  currentGoal.goal.notes,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.amber.shade900,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInBodySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('Latest InBody Measurement'),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.monitor_heart_outlined,
+                size: 20,
+                color: AppTheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'InBody data available',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey.shade400,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -347,11 +686,11 @@ class GoalDetailScreen extends StatelessWidget {
   }
 
   Widget _buildStatCard(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
+      IconData icon,
+      String label,
+      String value,
+      Color color,
+      ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -400,6 +739,80 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildTargetItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    bool isLast = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimelineItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool isLast = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      child: Row(
+        children: [
+          Icon(icon, color: AppTheme.primary, size: 18),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _sectionHeader(String text) {
     return Text(
       text,
@@ -407,199 +820,6 @@ class GoalDetailScreen extends StatelessWidget {
         fontSize: 18,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
-      ),
-    );
-  }
-
-  Widget _buildExerciseCard(Map<String, dynamic> exercise, int number) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              /// NUMBER BADGE
-              Container(
-                width: 32,
-                height: 32,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$number',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              /// EXERCISE NAME
-              Expanded(
-                child: Text(
-                  exercise['name'] as String,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ),
-
-              /// DURATION
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      size: 14,
-                      color: Colors.orange.shade700,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      exercise['duration'] as String,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          /// EXERCISE DETAILS GRID
-          Row(
-            children: [
-              Expanded(
-                child: _buildExerciseDetail(
-                  Icons.repeat,
-                  'Sets',
-                  '${exercise['sets']}',
-                  Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildExerciseDetail(
-                  Icons.fitness_center,
-                  'Reps',
-                  '${exercise['reps']}',
-                  Colors.green,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildExerciseDetail(
-                  Icons.monitor_weight_outlined,
-                  'Weight',
-                  exercise['weight'] > 0 ? '${exercise['weight']} kg' : 'Body',
-                  Colors.purple,
-                ),
-              ),
-            ],
-          ),
-
-          /// NOTES
-          if ((exercise['notes'] as String).isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.amber.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.lightbulb_outline,
-                    size: 16,
-                    color: Colors.amber.shade700,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      exercise['notes'] as String,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.amber.shade900,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExerciseDetail(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -71,6 +71,66 @@ class GoalService {
     }
   }
 
+  /// 🔥 NEW: Fetch all goals (history)
+  static Future<List<GoalProgress>> fetchAllGoals() async {
+    try {
+      debugPrint('🔵 ============================================');
+      debugPrint('🔵 Fetching all goals...');
+
+      final dio = DioClient.dio;
+      final response = await dio.get('/goal');
+
+      debugPrint('🔵 Response status: ${response.statusCode}');
+      debugPrint('🔵 Response data: ${response.data}');
+
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+
+      if (data['code'] != 1000) {
+        debugPrint('❌ API error: ${data['message']}');
+        throw Exception(data['message'] ?? 'Failed to fetch goals');
+      }
+
+      final List result = data['result'] ?? [];
+      debugPrint('🔵 Found ${result.length} goals');
+
+      if (result.isEmpty) {
+        debugPrint('⚠️ No goals found');
+        return [];
+      }
+
+      final List<GoalProgress> goals = [];
+      for (var i = 0; i < result.length; i++) {
+        try {
+          final goalProgress = GoalProgress.fromJson(result[i]);
+          goals.add(goalProgress);
+          debugPrint('  ✓ Goal ${i + 1}: ${goalProgress.goal.goalName} (${goalProgress.goal.status})');
+        } catch (e) {
+          debugPrint('  ⚠️ Failed to parse goal #$i: $e');
+        }
+      }
+
+      debugPrint('✅ Successfully loaded ${goals.length} goals');
+      debugPrint('🔵 ============================================');
+
+      return goals;
+
+    } on DioException catch (e) {
+      debugPrint('❌ fetchAllGoals DioException:');
+      debugPrint('  Status code: ${e.response?.statusCode}');
+      debugPrint('  Response: ${e.response?.data}');
+
+      // Return empty list instead of throwing for better UX
+      return [];
+
+    } catch (e, stack) {
+      debugPrint('❌ fetchAllGoals error: $e');
+      debugPrintStack(stackTrace: stack);
+      return [];
+    }
+  }
+
   /// Create new goal
   static Future<void> createGoal(GoalRequest request) async {
     try {
@@ -96,7 +156,6 @@ class GoalService {
         throw Exception(data['message'] ?? 'Create goal failed');
       }
 
-      // ✅ KHÔNG parse GoalProgress ở đây
       debugPrint('✅ Goal created successfully');
 
     } on DioException catch (e) {
@@ -107,8 +166,6 @@ class GoalService {
     }
   }
 
-
-  /// Update existing goal
   /// Update existing goal
   static Future<GoalProgress?> updateGoal(int goalId, GoalRequest request) async {
     try {
@@ -122,7 +179,7 @@ class GoalService {
       );
 
       debugPrint('🔵 Response status: ${response.statusCode}');
-      debugPrint('🔵 Response data: ${response.data}'); // ← Thêm log này để xem response
+      debugPrint('🔵 Response data: ${response.data}');
 
       final data = response.data is String
           ? jsonDecode(response.data)
@@ -132,9 +189,8 @@ class GoalService {
         throw Exception(data['message'] ?? 'Failed to update goal');
       }
 
-      // ✅ KHÔNG parse GoalProgress vì API chỉ trả về Goal object, không phải GoalProgress
       debugPrint('✅ Goal updated successfully');
-      return null; // ← Trả về null thay vì parse GoalProgress
+      return null;
 
     } catch (e, stack) {
       debugPrint('❌ updateGoal error: $e');
@@ -142,6 +198,7 @@ class GoalService {
       rethrow;
     }
   }
+
   /// Delete goal
   static Future<void> deleteGoal(int goalId) async {
     try {

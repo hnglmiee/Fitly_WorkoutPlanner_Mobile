@@ -6,7 +6,7 @@ import '../models/workout_log.dart';
 import '../network/dio_client.dart';
 
 class WorkoutLogService {
-  /// Log workout exercise
+  /// 🔥 WORKAROUND: Log workout - ignore POST response, refetch from GET
   static Future<WorkoutLogResponse> logWorkout({
     required int scheduleId,
     required int exerciseId,
@@ -35,13 +35,13 @@ class WorkoutLogService {
 
       debugPrint('🔵 Request data: $requestData');
 
+      // 🔥 WORKAROUND: Call POST but don't parse response
       final response = await dio.post(
         '/workout-logs',
         data: requestData,
       );
 
       debugPrint('🔵 Response status: ${response.statusCode}');
-      debugPrint('🔵 Response data: ${response.data}');
 
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
@@ -52,16 +52,25 @@ class WorkoutLogService {
         throw Exception('API Error: $message');
       }
 
-      final logResponse = WorkoutLogResponse.fromJson(data['result']);
-      debugPrint('✅ Workout logged successfully: ${logResponse.toString()}');
+      debugPrint('✅ Workout logged to database (ignoring response parsing)');
 
-      return logResponse;
+      // 🔥 WORKAROUND: Refetch from GET endpoint to get complete data
+      debugPrint('🔵 Refetching from GET endpoint...');
+      await Future.delayed(const Duration(milliseconds: 500)); // Small delay for DB sync
+
+      final logs = await fetchLogsBySchedule(scheduleId);
+
+      if (logs.containsKey(exerciseId)) {
+        final log = logs[exerciseId]!;
+        debugPrint('✅ Fetched complete log data: ID=${log.id}, ExerciseId=${log.exerciseId}');
+        return log;
+      } else {
+        throw Exception('Could not find created log');
+      }
     } on DioException catch (e) {
       debugPrint('❌ logWorkout DioException:');
       debugPrint('  Status code: ${e.response?.statusCode}');
       debugPrint('  Response body: ${e.response?.data}');
-      debugPrint('  Request sent: ${e.requestOptions.data}');
-      debugPrint('  URL: ${e.requestOptions.path}');
 
       String errorMessage = 'Failed to log workout';
       if (e.response?.data != null) {
@@ -70,10 +79,6 @@ class WorkoutLogService {
               ? jsonDecode(e.response!.data)
               : e.response!.data;
           errorMessage = responseData['message'] ?? errorMessage;
-
-          if (responseData['errors'] != null) {
-            debugPrint('  Validation errors: ${responseData['errors']}');
-          }
         } catch (_) {
           errorMessage = e.response!.data.toString();
         }
@@ -103,7 +108,6 @@ class WorkoutLogService {
       final response = await dio.get(endpoint);
 
       debugPrint('🔵 Response status: ${response.statusCode}');
-      debugPrint('🔵 Response data: ${response.data}');
 
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
@@ -135,7 +139,7 @@ class WorkoutLogService {
     }
   }
 
-  /// 🔥 Update workout log
+  /// 🔥 WORKAROUND: Update workout log - ignore PUT response, refetch from GET
   static Future<WorkoutLogResponse> updateWorkoutLog({
     required int logId,
     required int scheduleId,
@@ -149,10 +153,6 @@ class WorkoutLogService {
       debugPrint('🔵 ============================================');
       debugPrint('🔵 Updating workout log $logId...');
       debugPrint('  URL: /workout-logs/$logId');
-      debugPrint('  Schedule ID: $scheduleId');
-      debugPrint('  Exercise ID: $exerciseId');
-      debugPrint('  Sets: $actualSets, Reps: $actualReps, Weight: $actualWeight kg');
-      debugPrint('  Notes: $notes');
 
       final dio = DioClient.dio;
 
@@ -168,6 +168,7 @@ class WorkoutLogService {
 
       debugPrint('🔵 Request body: $requestData');
 
+      // 🔥 WORKAROUND: Call PUT but don't parse response
       final response = await dio.put(
         '/workout-logs/$logId',
         data: requestData,
@@ -175,18 +176,8 @@ class WorkoutLogService {
 
       debugPrint('🔵 Response status: ${response.statusCode}');
 
-      // 🔥 CRITICAL: Print raw response to debug
-      debugPrint('🔥 ========== RAW UPDATE RESPONSE ==========');
-      debugPrint('🔥 Raw response data type: ${response.data.runtimeType}');
-      debugPrint('🔥 Raw response data: ${response.data}');
-      debugPrint('🔥 ========================================');
-
       final data =
       response.data is String ? jsonDecode(response.data) : response.data;
-
-      debugPrint('🔥 Parsed data: $data');
-      debugPrint('🔥 Result field: ${data['result']}');
-      debugPrint('🔥 Result type: ${data['result'].runtimeType}');
 
       if (data['code'] != 1000) {
         final message = data['message'] ?? 'Unknown error';
@@ -194,23 +185,26 @@ class WorkoutLogService {
         throw Exception('API Error: $message');
       }
 
-      // 🔥 Check if result is null or empty
-      if (data['result'] == null) {
-        debugPrint('⚠️ WARNING: API returned null result for UPDATE');
-        throw Exception('API returned null result');
+      debugPrint('✅ Workout log updated in database (ignoring response parsing)');
+
+      // 🔥 WORKAROUND: Refetch from GET endpoint
+      debugPrint('🔵 Refetching from GET endpoint...');
+      await Future.delayed(const Duration(milliseconds: 500)); // Small delay for DB sync
+
+      final logs = await fetchLogsBySchedule(scheduleId);
+
+      if (logs.containsKey(exerciseId)) {
+        final log = logs[exerciseId]!;
+        debugPrint('✅ Fetched updated log data: ID=${log.id}, ExerciseId=${log.exerciseId}');
+        debugPrint('🔵 ============================================');
+        return log;
+      } else {
+        throw Exception('Could not find updated log');
       }
-
-      final logResponse = WorkoutLogResponse.fromJson(data['result']);
-      debugPrint('✅ Workout log updated successfully: ${logResponse.toString()}');
-      debugPrint('🔵 ============================================');
-
-      return logResponse;
     } on DioException catch (e) {
       debugPrint('❌ updateWorkoutLog DioException:');
       debugPrint('  Status code: ${e.response?.statusCode}');
       debugPrint('  Response body: ${e.response?.data}');
-      debugPrint('  Request sent: ${e.requestOptions.data}');
-      debugPrint('  URL: ${e.requestOptions.path}');
 
       String errorMessage = 'Failed to update workout log';
       if (e.response?.data != null) {
@@ -219,10 +213,6 @@ class WorkoutLogService {
               ? jsonDecode(e.response!.data)
               : e.response!.data;
           errorMessage = responseData['message'] ?? errorMessage;
-
-          if (responseData['errors'] != null) {
-            debugPrint('  Validation errors: ${responseData['errors']}');
-          }
         } catch (_) {
           errorMessage = e.response!.data.toString();
         }
@@ -259,13 +249,12 @@ class WorkoutLogService {
     }
   }
 
-  /// Get workout logs by scheduleId
+  /// Get workout logs by scheduleId - THIS WORKS PERFECTLY
   static Future<Map<int, WorkoutLogResponse>> fetchLogsBySchedule(int scheduleId) async {
     try {
       debugPrint('🔵 ============================================');
       debugPrint('🔵 fetchLogsBySchedule called');
       debugPrint('🔵 Schedule ID: $scheduleId');
-      debugPrint('🔵 ============================================');
 
       final dio = DioClient.dio;
       final endpoint = '/workout-logs/schedule/$scheduleId';
@@ -278,7 +267,6 @@ class WorkoutLogService {
       final data = response.data is String ? jsonDecode(response.data) : response.data;
 
       debugPrint('🔵 Response code: ${data['code']}');
-      debugPrint('🔵 Response message: ${data['message']}');
 
       if (data['code'] != 1000) {
         debugPrint('❌ API returned error code: ${data['code']}');
@@ -312,27 +300,17 @@ class WorkoutLogService {
 
         if (!logsMap.containsKey(exerciseId)) {
           logsMap[exerciseId] = log;
-
-          debugPrint('📝 Latest log for exerciseId $exerciseId:');
-          debugPrint('   - Exercise: ${log.exerciseName}');
-          debugPrint('   - Sets: ${log.actualSets}, Reps: ${log.actualReps}, Weight: ${log.actualWeight}kg');
-          debugPrint('   - Log ID: ${log.id}');
-          debugPrint('   - Logged at: ${log.loggedAt}');
+          debugPrint('📝 Latest log for exerciseId $exerciseId: ${log.exerciseName} (ID: ${log.id})');
         }
       }
 
-      debugPrint('🔵 ============================================');
       debugPrint('✅ Total UNIQUE exercises with logs: ${logsMap.length}');
-      debugPrint('✅ Exercise IDs: ${logsMap.keys.toList()}');
       debugPrint('🔵 ============================================');
 
       return logsMap;
 
     } catch (e, stack) {
-      debugPrint('❌ ============================================');
-      debugPrint('❌ fetchLogsBySchedule CRITICAL ERROR');
-      debugPrint('❌ Error: $e');
-      debugPrint('❌ ============================================');
+      debugPrint('❌ fetchLogsBySchedule error: $e');
       debugPrintStack(stackTrace: stack);
       return {};
     }

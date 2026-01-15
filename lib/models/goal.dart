@@ -27,6 +27,14 @@ class Goal {
     required this.notes,
   });
 
+  // ✅ Computed property cho goalType
+  String get goalType {
+    if (targetWeight != null) return 'Weight';
+    if (targetBodyFatPercentage != null) return 'Body Fat';
+    if (targetMuscleMass != null) return 'Muscle';
+    return 'General';
+  }
+
   factory Goal.fromJson(Map<String, dynamic> json) {
     return Goal(
       id: json['id'] as int,

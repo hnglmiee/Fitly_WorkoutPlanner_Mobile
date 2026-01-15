@@ -8,6 +8,8 @@ import '../services/workout_exercise_service.dart';
 import '../services/workout_log_service.dart';
 import '../shared/workout_card.dart';
 import '../theme/app_theme.dart';
+import 'plan_history_screen.dart';
+import 'edit_plan_screen.dart';
 
 class PlanProgressScreen extends StatefulWidget {
   final WorkoutPlan plan;
@@ -558,14 +560,26 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                     ),
                   ),
                   IconButton(
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        size: 22,
-                        color: AppTheme.primary,
-                      ),
-                      onPressed: null
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 22,
+                      color: AppTheme.primary,
+                    ),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EditPlanScreen(plan: widget.plan),
+                        ),
+                      );
+
+                      // Reload nếu plan đã được update
+                      if (result == true && mounted) {
+                        _loadExercises();
+                      }
+                    },
+                    tooltip: 'Edit Plan',
                   ),
-                  const SizedBox(width: 48),
                 ],
               ),
             ),
