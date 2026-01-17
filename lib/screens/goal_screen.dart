@@ -197,9 +197,9 @@ class _GoalScreenState extends State<GoalScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: AppTheme.darkThird,
           border: Border.all(
-            color: isSelected ? AppTheme.darkPrimary : Colors.grey.shade200,
+            color: isSelected ? AppTheme.darkPrimary : AppTheme.darkThird,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(20),
@@ -243,14 +243,14 @@ class _GoalScreenState extends State<GoalScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? AppTheme.darkBackground : Colors.black87,
+                      color: isSelected ? AppTheme.darkText : AppTheme.darkText,
                       letterSpacing: -0.3,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 13, color: AppTheme.darkText),
                   ),
                 ],
               ),

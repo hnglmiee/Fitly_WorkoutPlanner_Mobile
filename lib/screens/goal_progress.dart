@@ -101,7 +101,6 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                       backgroundColor: Colors.green,
                     ),
                   );
-
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -121,7 +120,6 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
       },
     );
   }
-
 
   // ✅ Calculate progress percentage
   double _calculateProgress(GoalProgress goalProgress) {
@@ -315,14 +313,15 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
+                    icon: const Icon(Icons.arrow_back_ios_new,
+                        size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.add_circle_outline,
                       size: 22,
-                      color: AppTheme.darkPrimary,
+                      color: AppTheme.darkText,
                     ),
                     onPressed: () async {
                       final result = await Navigator.push(
@@ -357,7 +356,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     icon: Icon(
                       Icons.edit_outlined,
                       size: 22,
-                      color: AppTheme.darkPrimary,
+                      color: AppTheme.darkText,
                     ),
                     onPressed: () async {
                       // Get current goal data
@@ -377,7 +376,8 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.history, size: 22, color: AppTheme.darkText),
+                    icon: const Icon(Icons.history,
+                        size: 22, color: AppTheme.darkText),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -450,7 +450,8 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.darkPrimary.withOpacity(0.15),
+                                    color:
+                                    AppTheme.darkPrimary.withOpacity(0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -508,7 +509,8 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                       }
                                     },
                                     icon: const Icon(Icons.add_circle_outline,
-                                        color: AppTheme.darkBackground, size: 22),
+                                        color: AppTheme.darkBackground,
+                                        size: 22),
                                     label: const Text(
                                       'Create Goal',
                                       style: TextStyle(
@@ -753,7 +755,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // ✅ Use real data from API
+                    // ✅ RESTYLED: Equal sized cards
                     FutureBuilder<GoalProgress?>(
                       future: _goalFuture,
                       builder: (context, snapshot) {
@@ -763,12 +765,14 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
 
                         return Column(
                           children: [
+                            /// ROW 1: Workout Sessions & Weight (Equal height)
                             Row(
                               children: [
                                 Expanded(
                                   child: _ModernStatCard(
                                     title: "Workout Sessions",
-                                    value: goalProgress?.workoutSessionThisWeek
+                                    value: goalProgress
+                                        ?.workoutSessionThisWeek
                                         .toString() ??
                                         "-",
                                     sub: goal?.targetWorkoutSessionsPerWeek !=
@@ -796,31 +800,41 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                               ],
                             ),
                             const SizedBox(height: 12),
+
+                            /// ROW 2: Body Fat, Muscle, Calories (Equal width & height)
                             Row(
                               children: [
-                                _MiniTarget(
-                                  label: "Body Fat",
-                                  value: _formatDoubleWithUnit(
-                                      inBody?.bodyFatPercentage, "%"),
-                                  icon: Icons.local_fire_department,
-                                  color: Colors.orange,
-                                  target: goal?.targetBodyFatPercentage,
+                                Expanded(
+                                  child: _MiniTarget(
+                                    label: "Body Fat",
+                                    value: _formatDoubleWithUnit(
+                                        inBody?.bodyFatPercentage, "%"),
+                                    icon: Icons.local_fire_department,
+                                    color: Colors.orange,
+                                    target: goal?.targetBodyFatPercentage,
+                                  ),
                                 ),
-                                _MiniTarget(
-                                  label: "Muscle",
-                                  value: _formatDoubleWithUnit(
-                                      inBody?.muscleMass, "%"),
-                                  icon: Icons.fitness_center,
-                                  color: AppTheme.darkPrimary,
-                                  target: goal?.targetMuscleMass,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _MiniTarget(
+                                    label: "Muscle",
+                                    value: _formatDoubleWithUnit(
+                                        inBody?.muscleMass, "%"),
+                                    icon: Icons.fitness_center,
+                                    color: AppTheme.darkPrimary,
+                                    target: goal?.targetMuscleMass,
+                                  ),
                                 ),
-                                _MiniTarget(
-                                  label: "Calories",
-                                  value: goal?.targetCaloriesPerDay
-                                      ?.toString() ??
-                                      "-",
-                                  icon: Icons.restaurant,
-                                  color: Colors.green,
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _MiniTarget(
+                                    label: "Calories",
+                                    value: goal?.targetCaloriesPerDay
+                                        ?.toString() ??
+                                        "-",
+                                    icon: Icons.restaurant,
+                                    color: Colors.green,
+                                  ),
                                 ),
                               ],
                             ),
@@ -916,6 +930,7 @@ class _ModernActivityChip extends StatelessWidget {
   }
 }
 
+/// ✅ RESTYLED: Fixed height stat card for equal sizing
 class _ModernStatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -925,7 +940,7 @@ class _ModernStatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  _ModernStatCard({
+  const _ModernStatCard({
     required this.title,
     required this.value,
     this.sub,
@@ -938,6 +953,7 @@ class _ModernStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 160, // ✅ Fixed height for equal sizing
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.darkSecondary,
@@ -953,7 +969,9 @@ class _ModernStatCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          /// ICON
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -962,72 +980,83 @@ class _ModernStatCard extends StatelessWidget {
             ),
             child: Icon(icon, size: 22, color: color),
           ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+
+          /// TITLE + VALUE
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                  letterSpacing: -1,
-                  color: AppTheme.darkText,
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              if (sub != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2, left: 2),
-                  child: Text(
-                    sub!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade400,
-                      fontWeight: FontWeight.w500,
+              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        height: 1,
+                        letterSpacing: -1,
+                        color: AppTheme.darkText,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              if (unit != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2, left: 2),
-                  child: Text(
-                    unit!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade400,
-                      fontWeight: FontWeight.w600,
+                  if (sub != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2, left: 2),
+                      child: Text(
+                        sub!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
+                  if (unit != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2, left: 2),
+                      child: Text(
+                        unit!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtitle!,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+              ],
             ],
           ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              subtitle!,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade500,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 }
 
+/// ✅ RESTYLED: Fixed height mini target for equal sizing
 class _MiniTarget extends StatelessWidget {
   final String label;
   final String value;
@@ -1045,64 +1074,73 @@ class _MiniTarget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.darkSecondary,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.darkThird),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+    return Container(
+      height: 130, // ✅ Fixed height for equal sizing
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.darkSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          /// ICON
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, size: 18, color: color),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey.shade400,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: AppTheme.darkText,
-              ),
-            ),
-            if (target != null) ...[
-              const SizedBox(height: 2),
+            child: Icon(icon, size: 18, color: color),
+          ),
+
+          /// LABEL + VALUE + TARGET
+          Column(
+            children: [
               Text(
-                "→ ${target!.toStringAsFixed(1)}%",
+                label,
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 9,
-                  color: Colors.grey.shade500,
+                  fontSize: 10,
+                  color: Colors.grey.shade400,
                   fontWeight: FontWeight.w500,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: AppTheme.darkText,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (target != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  "→ ${target!.toStringAsFixed(1)}%",
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

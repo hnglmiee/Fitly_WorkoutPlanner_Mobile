@@ -10,6 +10,7 @@ import '../services/in_body_service.dart';
 import '../shared/navigation_bar.dart';
 import 'add_in_body.dart';
 import 'edit_in_body.dart';
+import 'exercise_detail_screen.dart';
 import 'goal_progress.dart';
 import 'in_body_history_screen.dart';
 
@@ -741,21 +742,69 @@ class _InBodyScreenState extends State<InBodyScreen> {
               icon: Icons.directions_walk,
               text: 'Walking',
               color: Colors.green.shade400,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExerciseDetailScreen(
+                      exerciseName: 'Walking',
+                      icon: Icons.directions_walk,
+                      color: Colors.green.shade400,
+                    ),
+                  ),
+                );
+              },
             ),
             _ModernExerciseChip(
               icon: Icons.pool,
               text: 'Swimming',
               color: Colors.blue.shade400,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExerciseDetailScreen(
+                      exerciseName: 'Swimming',
+                      icon: Icons.pool,
+                      color: Colors.blue.shade400,
+                    ),
+                  ),
+                );
+              },
             ),
             _ModernExerciseChip(
               icon: Icons.directions_run,
               text: 'Jogging',
               color: Colors.orange.shade400,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExerciseDetailScreen(
+                      exerciseName: 'Jogging',
+                      icon: Icons.directions_run,
+                      color: Colors.orange.shade400,
+                    ),
+                  ),
+                );
+              },
             ),
             _ModernExerciseChip(
               icon: Icons.sports_tennis,
               text: 'Tennis',
               color: Colors.purple.shade400,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ExerciseDetailScreen(
+                      exerciseName: 'Tennis',
+                      icon: Icons.sports_tennis,
+                      color: Colors.purple.shade400,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -845,11 +894,13 @@ class _ModernExerciseChip extends StatelessWidget {
   final IconData icon;
   final String text;
   final Color color;
+  final VoidCallback onTap;
 
   const _ModernExerciseChip({
     required this.icon,
     required this.text,
     required this.color,
+    required this.onTap,
   });
 
   @override
@@ -857,7 +908,6 @@ class _ModernExerciseChip extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
     return Container(
       width: (width - 56) / 2,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
         color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
@@ -870,28 +920,38 @@ class _ModernExerciseChip extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 20, color: color),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    letterSpacing: -0.3,
+                    color: AppTheme.darkText,
+                  ),
+                ),
+              ],
             ),
-            child: Icon(icon, size: 20, color: color),
           ),
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              letterSpacing: -0.3,
-              color: AppTheme.darkText,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

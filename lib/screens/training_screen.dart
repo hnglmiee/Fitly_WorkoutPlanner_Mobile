@@ -193,9 +193,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               ? 'Loading...'
                               : userInfo?.fullName ?? 'User',
                           style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20,
-                            letterSpacing: -0.5,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                              letterSpacing: -0.5,
                               color: AppTheme.darkText
                           ),
                         ),
@@ -295,10 +295,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     const Text(
                       'Training Plan',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                        letterSpacing: -0.5,
-                        color: AppTheme.darkText
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          letterSpacing: -0.5,
+                          color: AppTheme.darkText
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -343,7 +343,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   decoration: BoxDecoration(
                                     color:
                                     isSelected
-                                        // ? Colors.blue
+                                    // ? Colors.blue
                                         ? AppTheme.darkPrimary
                                         : AppTheme.darkThird,
                                     borderRadius: BorderRadius.circular(30),
@@ -403,9 +403,19 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     /// PLAN PROGRESS
+                    const Text(
+                      'Current Plans',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          letterSpacing: -0.5,
+                          color: AppTheme.darkText
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     FutureBuilder<List<WorkoutPlan>>(
                       future: _plansFuture,
                       builder: (context, snapshot) {
@@ -472,13 +482,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
                         if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(32),
                             decoration: BoxDecoration(
-                              color: AppTheme.lightBackground,
+                              color: AppTheme.darkSecondary,
                               borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppTheme.darkThird),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
+                                  color: Colors.black.withOpacity(0.2),
                                   blurRadius: 10,
                                   offset: const Offset(0, 2),
                                 ),
@@ -487,17 +498,76 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.fitness_center,
-                                  size: 64,
-                                  color: Colors.grey.shade400,
+                                // Empty state icon
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.darkPrimary.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.fitness_center,
+                                    size: 48,
+                                    color: AppTheme.darkPrimary,
+                                  ),
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 20),
+
+                                // Title
                                 const Text(
-                                  'No workout plans yet',
+                                  'No Workout Plans Yet',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.5,
+                                    color: AppTheme.darkText,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Description
+                                Text(
+                                  'Create your first workout plan to\nstart your fitness journey',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade400,
+                                    height: 1.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Create Plan Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const ScheduleScreen(),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.add_circle_outline,
+                                        color: AppTheme.darkBackground, size: 20),
+                                    label: const Text(
+                                      'Create Workout Plan',
+                                      style: TextStyle(
+                                        color: AppTheme.darkBackground,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.darkPrimary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      elevation: 0,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -537,10 +607,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     const Text(
                       'My Activities',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                        letterSpacing: -0.5,
-                        color: AppTheme.darkText
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          letterSpacing: -0.5,
+                          color: AppTheme.darkText
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -576,10 +646,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     const Text(
                       'Daily Progress',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                        letterSpacing: -0.5,
-                        color: AppTheme.darkText
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          letterSpacing: -0.5,
+                          color: AppTheme.darkText
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -811,10 +881,10 @@ class _PlanCard extends StatelessWidget {
                     Text(
                       plan.title,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                        color: AppTheme.darkText
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
+                          color: AppTheme.darkText
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1101,11 +1171,11 @@ class _ProgressCard extends StatelessWidget {
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                  height: 1,
-                  color: AppTheme.darkText
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                    height: 1,
+                    color: AppTheme.darkText
                 ),
               ),
               const SizedBox(width: 4),

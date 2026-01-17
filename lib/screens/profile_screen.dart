@@ -64,56 +64,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// ✅ RESTYLED: Modern stat card with improved design
   Widget _buildModernStatCard(
-    IconData icon,
-    String title,
-    String value,
-    Color color,
-  ) {
+      IconData icon,
+      String title,
+      String value,
+      Color color,
+      ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      height: 110, // ✅ Fixed height for consistency
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.darkThird,
-        borderRadius: BorderRadius.circular(12),
-        // border: Border.all(color: Colors.grey.shade200),
+        color: AppTheme.darkSecondary,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          /// ICON
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 16, color: color),
+            child: Icon(icon, size: 20, color: color),
           ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppTheme.darkText,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
-              color: AppTheme.darkText
-            ),
+
+          /// TITLE + VALUE
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color: AppTheme.darkText,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ],
       ),
@@ -121,18 +132,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildModernMenuItem(
-    IconData icon,
-    String title,
-    String subtitle, {
-    VoidCallback? onTap,
-    bool isDanger = false,
-  }) {
+      IconData icon,
+      String title,
+      String subtitle, {
+        VoidCallback? onTap,
+        bool isDanger = false,
+      }) {
     final itemColor = isDanger ? Colors.red : AppTheme.darkText;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: () {
             if (isDanger) {
@@ -148,14 +159,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isDanger ? AppTheme.darkThird : AppTheme.darkThird,
+              color: AppTheme.darkSecondary,
+              border: Border.all(color: AppTheme.darkThird),
             ),
             child: Row(
               children: [
-                Icon(icon, size: 24, color: isDanger ? Colors.red : itemColor),
-                const SizedBox(width: 16),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDanger
+                        ? Colors.red.withOpacity(0.15)
+                        : AppTheme.darkPrimary.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: isDanger ? Colors.red : AppTheme.darkPrimary,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: isDanger ? Colors.red : AppTheme.darkText,
                         ),
@@ -171,9 +196,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppTheme.darkText,
+                          color: Colors.grey.shade400,
                         ),
                       ),
                     ],
@@ -181,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  size: 16,
+                  size: 14,
                   color: isDanger ? Colors.red : Colors.grey.shade600,
                 ),
               ],
@@ -196,117 +221,116 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => Dialog(
-            backgroundColor: AppTheme.darkThird,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+      builder: (_) => Dialog(
+        backgroundColor: AppTheme.darkSecondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: Colors.red,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Confirm Logout",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: AppTheme.darkText,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Are you sure you want to logout?\nYou will need to login again.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade400,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.logout_rounded,
-                      color: Colors.red,
-                      size: 40,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Confirm Logout",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.5,
-                      color: AppTheme.darkText
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "Are you sure you want to logout?\nYou will need to login again.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.darkText,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: AppTheme.darkText,
-                              width: 1,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                                color: AppTheme.darkText
-                            ),
-                          ),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: AppTheme.darkThird,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              await AuthService.logout();
-                              if (!context.mounted) return;
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
-                                ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await AuthService.logout();
+                          if (!context.mounted) return;
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
                                 (_) => false,
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(e.toString())),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: const Text(
-                            "Logout",
-                            style: TextStyle(
-                              color: AppTheme.darkText,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString())),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        "Logout",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
@@ -339,7 +363,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppTheme.darkText),
+                        icon: const Icon(Icons.arrow_back_ios,
+                            size: 20, color: AppTheme.darkText),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -356,7 +381,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: AppTheme.darkText
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ),
@@ -377,34 +402,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: AppTheme.darkThird,
-                            borderRadius: BorderRadius.circular(16),
-                            // border: Border.all(color: Colors.grey.shade200),
+                            color: AppTheme.darkSecondary,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppTheme.darkThird),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
                           child: Column(
                             children: [
-                              // In ProfileScreen, find the Stack with avatar and edit button:
                               Stack(
                                 children: [
                                   // Avatar
-                                  CircleAvatar(
-                                    radius: 50,
-                                    backgroundColor: AppTheme.darkText,
-                                    child: Text(
-                                      user.fullName.isNotEmpty
-                                          ? user.fullName[0].toUpperCase()
-                                          : '?',
-                                      style: const TextStyle(
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppTheme.darkText
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          AppTheme.darkPrimary,
+                                          AppTheme.darkPrimary.withOpacity(0.7),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.darkPrimary
+                                              .withOpacity(0.3),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        user.fullName.isNotEmpty
+                                            ? user.fullName[0].toUpperCase()
+                                            : '?',
+                                        style: const TextStyle(
+                                          fontSize: 40,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -418,10 +463,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         await Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder:
-                                                (_) => ProfileEditScreen(
-                                                  userInfo: user,
-                                                ),
+                                            builder: (_) => ProfileEditScreen(
+                                              userInfo: user,
+                                            ),
                                           ),
                                         );
                                         // Reload profile data
@@ -430,19 +474,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         });
                                       },
                                       child: Container(
-                                        width: 32,
-                                        height: 32,
+                                        width: 36,
+                                        height: 36,
                                         decoration: BoxDecoration(
                                           color: AppTheme.darkPrimary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Colors.white,
-                                            width: 2,
+                                            color: AppTheme.darkSecondary,
+                                            width: 3,
                                           ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
                                         ),
                                         child: const Icon(
                                           Icons.edit,
-                                          size: 12,
+                                          size: 16,
                                           color: Colors.white,
                                         ),
                                       ),
@@ -450,22 +502,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 16),
                               Text(
                                 user.fullName,
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: -0.5,
-                                    color: AppTheme.darkText
+                                  color: AppTheme.darkText,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 user.email,
                                 style: TextStyle(
-                                  fontSize: 13,
-                                    color: AppTheme.darkText
+                                  fontSize: 14,
+                                  color: Colors.grey.shade400,
                                 ),
                               ),
                             ],
@@ -483,7 +535,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.5,
-                                color: AppTheme.darkText
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ),
@@ -498,9 +550,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               crossAxisCount: 2,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              childAspectRatio: 1.6,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
+                              childAspectRatio: 1.4,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
                               children: [
                                 _buildModernStatCard(
                                   Icons.person_outline,
@@ -546,22 +598,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.5,
-                                color: AppTheme.darkText
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ),
                         const SizedBox(height: 12),
 
-                        // _buildModernMenuItem(
-                        //   Icons.fitness_center,
-                        //   "Workout Plan",
-                        //   "Manage your workout routines",
-                        // ),
-                        // _buildModernMenuItem(
-                        //   Icons.calendar_today,
-                        //   "Workout Schedule",
-                        //   "View and edit your schedule",
-                        // ),
                         _buildModernMenuItem(
                           Icons.assessment_outlined,
                           "In Body",
@@ -575,11 +617,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-                        // _buildModernMenuItem(
-                        //   Icons.flag_outlined,
-                        //   "Goal",
-                        //   "Set and track your fitness goals",
-                        // ),
                         _buildModernMenuItem(
                           Icons.logout_rounded,
                           "Logout",
