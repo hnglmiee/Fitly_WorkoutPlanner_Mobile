@@ -4,11 +4,10 @@ import 'package:intl/intl.dart';
 
 import '../models/exercise_models.dart';
 import '../models/exercise_form.dart';
-import '../models/workout_plan.dart';
 import '../services/exercise_service.dart';
 import '../services/workout_exercise_service.dart';
 import '../services/workout_plan_service.dart';
-import '../services/workout_schedule_service.dart'; // 🔥 IMPORT SERVICE MỚI
+import '../services/workout_schedule_service.dart';
 
 class AddPlanScreen extends StatefulWidget {
   final DateTime selectedDate;
@@ -60,7 +59,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
   List<ExerciseForm> exercises = [ExerciseForm()];
 
-  // 🔥 THÊM TIME PICKER
+  // THÊM TIME PICKER
   TimeOfDay? selectedTime;
 
   @override
@@ -126,10 +125,41 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     super.dispose();
   }
 
+  String _formatDate(DateTime date) {
+    return '${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}.${date.year}';
+  }
+
+  String _formatTime(TimeOfDay time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _selectTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppTheme.darkPrimary,
+              surface: AppTheme.darkSecondary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        selectedTime = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -140,7 +170,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -148,8 +178,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                       child: Text(
                         'Add New Plan',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.darkText
                         ),
                       ),
                     ),
@@ -160,15 +191,14 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
               const SizedBox(height: 8),
 
-              /// 🔥 HIỂN THỊ NGÀY ĐÃ CHỌN
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: AppTheme.darkPrimary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.primary.withOpacity(0.3),
+                    color: AppTheme.darkPrimary.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -177,7 +207,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     Icon(
                       Icons.calendar_today,
                       size: 18,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkText,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -187,7 +217,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.primary,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -209,7 +239,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                           'Loading exercises...',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: AppTheme.darkText,
                           ),
                         ),
                       ],
@@ -245,7 +275,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: AppTheme.primary, width: 1.5),
+                          side: BorderSide(color: AppTheme.darkPrimary, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -256,11 +286,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                             exercises.add(ExerciseForm());
                           });
                         },
-                        icon: Icon(Icons.add_rounded, color: AppTheme.primary),
+                        icon: Icon(Icons.add_rounded, color: AppTheme.darkPrimary),
                         label: Text(
                           'Add Exercise',
                           style: TextStyle(
-                            color: AppTheme.primary,
+                            color: AppTheme.darkText,
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
                           ),
@@ -270,43 +300,53 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                       const SizedBox(height: 20),
 
                       /// SCHEDULE TIME (Optional)
-                      _sectionHeader('Schedule Time (Optional)'),
-                      const SizedBox(height: 12),
-
-                      _timePickerButton(),
-
-                      const SizedBox(height: 20),
-
-                      /// SCHEDULE SECTION
-                      _sectionHeader('Repeat Schedule'),
-                      const SizedBox(height: 12),
-
-                      _label('Select Days'),
-                      _daySelector(),
-
-                      const SizedBox(height: 16),
-
-                      _toggleEveryDay(),
-
-                      const SizedBox(height: 20),
-
-                      /// REMINDER SECTION
-                      _sectionHeader('Reminder'),
-                      const SizedBox(height: 12),
-
-                      _reminderDropdown(),
-
-                      const SizedBox(height: 20),
-
-                      /// NOTES SECTION
-                      _label('Notes (Optional)'),
-                      const SizedBox(height: 5),
-                      _input(
-                        controller: notesController,
-                        maxLines: 4,
-                        hint: 'Add any additional notes here...',
+                      _label('Schedule Time (Optional)'),
+                      InkWell(
+                        onTap: _selectTime,
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppTheme.darkThird,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 18,
+                                color: AppTheme.darkPrimary,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  selectedTime != null
+                                      ? _formatTime(selectedTime!)
+                                      : 'Select time (optional)',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: selectedTime != null
+                                        ? AppTheme.darkText
+                                        : Colors.grey.shade400,
+                                  ),
+                                ),
+                              ),
+                              if (selectedTime != null)
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 20),
+                                  onPressed: () {
+                                    setState(() {
+                                      selectedTime = null;
+                                    });
+                                  },
+                                  color: Colors.red,
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
-
                       const SizedBox(height: 24),
 
                       /// SAVE BUTTON
@@ -314,13 +354,13 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                         height: 52,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
+                            backgroundColor: AppTheme.darkPrimary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
                             elevation: 0,
                             disabledBackgroundColor:
-                            AppTheme.primary.withOpacity(0.6),
+                            AppTheme.darkPrimary.withOpacity(0.6),
                           ),
                           onPressed: _isLoading ? null : _savePlan,
                           child: _isLoading
@@ -329,8 +369,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                               : const Text(
@@ -338,12 +377,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: AppTheme.darkBackground,
                             ),
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
                     ],
                   ),
@@ -363,9 +401,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.darkText
         ),
       ),
     );
@@ -377,7 +415,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.black87,
+        color: AppTheme.darkText,
       ),
     );
   }
@@ -397,12 +435,13 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
+        enabledBorder: _border(AppTheme.darkThird),
+        focusedBorder: _border(AppTheme.darkThird),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
@@ -412,12 +451,12 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   InputDecoration _dropdownDecoration() {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      enabledBorder: _border(Colors.grey.shade300),
-      focusedBorder: _border(AppTheme.primary),
+      enabledBorder: _border(AppTheme.darkThird),
+      focusedBorder: _border(AppTheme.darkThird),
     );
   }
 
-  // 🔥 TIME PICKER BUTTON
+  // TIME PICKER BUTTON
   Widget _timePickerButton() {
     return InkWell(
       onTap: () async {
@@ -434,14 +473,15 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
+          color: AppTheme.darkThird,
+          border: Border.all(color: AppTheme.darkThird),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           children: [
             Icon(
               Icons.access_time,
-              color: Colors.grey.shade600,
+              color: AppTheme.darkText,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -453,7 +493,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   color: selectedTime != null
-                      ? Colors.black87
+                      ? AppTheme.darkText
                       : Colors.grey.shade400,
                   fontWeight: selectedTime != null
                       ? FontWeight.w500
@@ -487,26 +527,27 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           height: 48,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300, width: 1),
+            border: Border.all(color: AppTheme.darkThird, width: 1),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(Icons.remove, color: Colors.grey.shade700),
+                icon: Icon(Icons.remove, color: AppTheme.darkText),
                 onPressed: () => onChange(value - 1),
                 padding: EdgeInsets.zero,
               ),
               Text(
                 value.toString(),
                 style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.darkText
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.add, color: Colors.grey.shade700),
+                icon: Icon(Icons.add, color: AppTheme.darkText),
                 onPressed: () => onChange(value + 1),
                 padding: EdgeInsets.zero,
               ),
@@ -527,17 +568,17 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
         return ChoiceChip(
           label: Text(day),
           selected: selected,
-          selectedColor: AppTheme.primary.withOpacity(0.15),
-          backgroundColor: Colors.white,
+          selectedColor: AppTheme.darkPrimary.withOpacity(0.15),
+          backgroundColor: AppTheme.darkThird,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: selected ? AppTheme.primary : Colors.grey.shade300,
+              color: selected ? AppTheme.darkPrimary : AppTheme.darkThird,
               width: 1,
             ),
           ),
           labelStyle: TextStyle(
-            color: selected ? AppTheme.primary : Colors.black87,
+            color: selected ? AppTheme.darkBackground : AppTheme.darkText,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
           ),
           onSelected: everyDay
@@ -556,9 +597,8 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -568,12 +608,12 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppTheme.darkText,
             ),
           ),
           Switch(
             value: everyDay,
-            activeColor: AppTheme.primary,
+            activeColor: AppTheme.darkPrimary,
             onChanged: (value) {
               setState(() {
                 everyDay = value;
@@ -590,7 +630,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppTheme.darkThird),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -607,15 +647,19 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: Colors.black87,
+                color: AppTheme.darkText,
               ),
+              dropdownColor: AppTheme.darkSecondary,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
               items: reminderOptions
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map((e) => DropdownMenuItem(
+                value: e,
+                child: Text(e, style: const TextStyle(color: AppTheme.darkText)),
+              ))
                   .toList(),
               onChanged: (value) {
                 if (value == null) return;
@@ -650,12 +694,12 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
+        color: AppTheme.darkSecondary,
+        border: Border.all(color: AppTheme.darkThird),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: AppTheme.darkThird.withOpacity(0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -673,7 +717,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.1),
+                      color: AppTheme.darkSecondary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -682,7 +726,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.primary,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -693,7 +737,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: AppTheme.darkText,
                     ),
                   ),
                 ],
@@ -728,17 +772,18 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     DropdownButtonFormField<int>(
                       isExpanded: true,
                       value: item.categoryId,
-                      hint: const Text('Select'),
+                      hint: const Text('Select', style: TextStyle(color: Colors.grey)),
                       style: const TextStyle(
                         fontSize: 15,
-                        color: Colors.black87,
+                        color: AppTheme.darkText,
                       ),
+                      dropdownColor: AppTheme.darkSecondary,
                       items: categories
                           .map(
                             (cat) =>
                             DropdownMenuItem(
                               value: cat.id,
-                              child: Text(cat.name),
+                              child: Text(cat.name, style: const TextStyle(color: AppTheme.darkText)),
                             ),
                       )
                           .toList(),
@@ -771,17 +816,18 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     DropdownButtonFormField<int>(
                       isExpanded: true,
                       value: item.exerciseId,
-                      hint: const Text('Select'),
+                      hint: const Text('Select', style: TextStyle(color: Colors.grey)),
                       style: const TextStyle(
                         fontSize: 15,
-                        color: Colors.black87,
+                        color: AppTheme.darkText,
                       ),
+                      dropdownColor: AppTheme.darkSecondary,
                       items: categoryExercises
                           .map(
                             (ex) =>
                             DropdownMenuItem(
                               value: ex.id,
-                              child: Text(ex.name),
+                              child: Text(ex.name, style: const TextStyle(color: AppTheme.darkText)),
                             ),
                       )
                           .toList(),
@@ -836,7 +882,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                     '${item.weightRange.start.round()}kg - ${item.weightRange
                         .end.round()}kg',
                     style: TextStyle(
-                      color: AppTheme.primary,
+                      color: AppTheme.darkText,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -849,7 +895,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                 min: 0,
                 max: muscleMaxWeight[item.muscle] ?? 100,
                 divisions: 10,
-                activeColor: AppTheme.primary,
+                activeColor: AppTheme.darkPrimary,
                 inactiveColor: Colors.grey.shade300,
                 onChanged: (values) {
                   setState(() => item.weightRange = values);

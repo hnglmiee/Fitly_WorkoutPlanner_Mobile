@@ -22,7 +22,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
   String? uploadedFileName;
   String? uploadedFilePath;
 
-
   /// DATE & TIME
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
@@ -46,9 +45,12 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(colorScheme: ColorScheme.light(primary: AppTheme.primary)),
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppTheme.darkPrimary,
+              surface: AppTheme.darkSecondary,
+            ),
+          ),
           child: child!,
         );
       },
@@ -66,9 +68,12 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       initialTime: selectedTime,
       builder: (context, child) {
         return Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(colorScheme: ColorScheme.light(primary: AppTheme.primary)),
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppTheme.darkPrimary,
+              surface: AppTheme.darkSecondary,
+            ),
+          ),
           child: child!,
         );
       },
@@ -127,7 +132,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -137,7 +142,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -147,6 +152,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -172,7 +178,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Colors.grey.shade300,
+                                  color: AppTheme.darkThird,
                                   width: 1,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -182,12 +188,15 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                                   Icon(
                                     Icons.calendar_today,
                                     size: 18,
-                                    color: Colors.grey.shade600,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     _formatDate(selectedDate),
-                                    style: const TextStyle(fontSize: 16),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: AppTheme.darkText,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -202,7 +211,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Colors.grey.shade300,
+                                  color: AppTheme.darkThird,
                                   width: 1,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -212,12 +221,15 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                                   Icon(
                                     Icons.access_time,
                                     size: 18,
-                                    color: Colors.grey.shade600,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     _formatTime(selectedTime),
-                                    style: const TextStyle(fontSize: 16),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: AppTheme.darkText,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -317,18 +329,18 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                     if (uploadedFileName == null)
                       OutlinedButton.icon(
                         onPressed: _pickFile,
-                        icon: const Icon(Icons.cloud_upload_outlined, size: 20),
-                        label: const Text(
+                        icon: Icon(Icons.cloud_upload_outlined, size: 20, color: AppTheme.darkPrimary),
+                        label: Text(
                           'Upload PNG or PDF',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
+                            color: AppTheme.darkText,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.primary,
                           side: BorderSide(
-                            color: AppTheme.primary,
+                            color: AppTheme.darkPrimary,
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
@@ -342,10 +354,10 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.05),
+                          color: AppTheme.darkSecondary,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: AppTheme.primary.withOpacity(0.3),
+                            color: AppTheme.darkPrimary.withOpacity(0.3),
                             width: 1,
                           ),
                         ),
@@ -354,14 +366,14 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppTheme.primary.withOpacity(0.1),
+                                color: AppTheme.darkPrimary.withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
                                 uploadedFileName!.endsWith('.pdf')
                                     ? Icons.picture_as_pdf
                                     : Icons.image,
-                                color: AppTheme.primary,
+                                color: AppTheme.darkPrimary,
                                 size: 24,
                               ),
                             ),
@@ -375,6 +387,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
+                                      color: AppTheme.darkText,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -384,7 +397,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                                     'File uploaded successfully',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade600,
+                                      color: Colors.grey.shade400,
                                     ),
                                   ),
                                 ],
@@ -406,10 +419,11 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                       height: 52,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
+                          backgroundColor: AppTheme.darkPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 0,
                         ),
                         onPressed: _saveInBodyRecord,
                         child: const Text(
@@ -417,7 +431,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppTheme.darkBackground,
                           ),
                         ),
                       ),
@@ -441,7 +455,11 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.darkText,
+        ),
       ),
     );
   }
@@ -452,7 +470,7 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.black87,
+        color: AppTheme.darkText,
       ),
     );
   }
@@ -472,11 +490,13 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
+        enabledBorder: _border(AppTheme.darkThird),
+        focusedBorder: _border(AppTheme.darkPrimary),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
@@ -491,16 +511,18 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         suffixText: suffix,
         suffixStyle: TextStyle(
-          color: Colors.grey.shade600,
+          color: Colors.grey.shade400,
           fontWeight: FontWeight.w500,
         ),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
+        enabledBorder: _border(AppTheme.darkThird),
+        focusedBorder: _border(AppTheme.darkPrimary),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
@@ -510,8 +532,8 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
   InputDecoration _dropdownDecoration() {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      enabledBorder: _border(Colors.grey.shade300),
-      focusedBorder: _border(AppTheme.primary),
+      enabledBorder: _border(AppTheme.darkThird),
+      focusedBorder: _border(AppTheme.darkPrimary),
     );
   }
 
@@ -540,8 +562,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       return;
     }
 
-    // TODO: Save to database or state management
-    // Example data structure:
     final inBodyData = {
       'date': selectedDate,
       'time': selectedTime,
@@ -557,7 +577,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
 
     print('Saving In Body Record: $inBodyData');
 
-    // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('In Body record saved successfully!'),
@@ -567,7 +586,6 @@ class _AddInBodyScreenState extends State<AddInBodyScreen> {
       ),
     );
 
-    // Navigate back
     Navigator.pop(context);
   }
 

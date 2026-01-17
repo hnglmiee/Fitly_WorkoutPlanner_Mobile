@@ -10,11 +10,10 @@ class AppTheme {
 
   // Dark Theme Colors
   static const Color darkPrimary = Color(0xFFD3FF56);
+  // static const Color darkSecondary = Color(0xFFDCFCB4);
   static const Color darkSecondary = Color(0xFF313130);
   static const Color darkThird = Color(0xFF3F403D);
-  static const Color darkBackground = Color(
-    0xFF1C1C1C,
-  ); // Darker for better contrast
+  static const Color darkBackground = Color(0xFF1C1C1C); // Darker for better contrast
   static const Color darkText = Color(0xFFF6F8F1);
 
   /// =====================================================

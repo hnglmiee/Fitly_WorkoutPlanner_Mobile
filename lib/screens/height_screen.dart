@@ -15,7 +15,7 @@ class _HeightScreenState extends State<HeightScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -26,7 +26,7 @@ class _HeightScreenState extends State<HeightScreen> {
               /// HEADER
               const Text(
                 "Height",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.darkText),
               ),
 
               const SizedBox(height: 20),
@@ -50,6 +50,7 @@ class _HeightScreenState extends State<HeightScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                    color: AppTheme.darkText
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -62,7 +63,7 @@ class _HeightScreenState extends State<HeightScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.darkText,
                   height: 1.5,
                 ),
               ),
@@ -73,7 +74,7 @@ class _HeightScreenState extends State<HeightScreen> {
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppTheme.darkThird,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
@@ -95,7 +96,7 @@ class _HeightScreenState extends State<HeightScreen> {
                           style: TextStyle(
                             fontSize: 64,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.primary,
+                            color: AppTheme.darkText,
                             height: 1,
                           ),
                           child: Text(height.toInt().toString()),
@@ -107,7 +108,7 @@ class _HeightScreenState extends State<HeightScreen> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ),
@@ -126,9 +127,9 @@ class _HeightScreenState extends State<HeightScreen> {
                         overlayShape: const RoundSliderOverlayShape(
                           overlayRadius: 24,
                         ),
-                        activeTrackColor: AppTheme.primary,
+                        activeTrackColor: AppTheme.darkPrimary,
                         inactiveTrackColor: Colors.grey.shade200,
-                        thumbColor: AppTheme.primary,
+                        thumbColor: AppTheme.darkPrimary,
                         overlayColor: AppTheme.primary.withOpacity(0.2),
                       ),
                       child: Slider(
@@ -151,7 +152,7 @@ class _HeightScreenState extends State<HeightScreen> {
                           "140 cm",
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade600,
+                            color: AppTheme.darkText,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -159,7 +160,7 @@ class _HeightScreenState extends State<HeightScreen> {
                           "210 cm",
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade600,
+                            color: AppTheme.darkText,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -180,7 +181,7 @@ class _HeightScreenState extends State<HeightScreen> {
                     Navigator.push(context, _slideTo(const WeightScreen()));
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppTheme.darkPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -189,7 +190,7 @@ class _HeightScreenState extends State<HeightScreen> {
                   child: const Text(
                     "Next",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.darkBackground,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -212,7 +213,7 @@ class _HeightScreenState extends State<HeightScreen> {
         height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: active ? AppTheme.primary : Colors.grey.shade300,
+          color: active ? AppTheme.darkPrimary : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(3),
         ),
       ),

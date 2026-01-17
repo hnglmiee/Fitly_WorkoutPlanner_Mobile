@@ -73,9 +73,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        // border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -101,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title,
             style: const TextStyle(
               fontSize: 10,
-              color: Colors.black54,
+              color: AppTheme.darkText,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -112,6 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               fontSize: 14,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3,
+              color: AppTheme.darkText
             ),
           ),
         ],
@@ -126,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     VoidCallback? onTap,
     bool isDanger = false,
   }) {
-    final itemColor = isDanger ? Colors.red : AppTheme.primary;
+    final itemColor = isDanger ? Colors.red : AppTheme.darkText;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -149,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDanger ? Colors.red.shade50 : AppTheme.third,
+              color: isDanger ? AppTheme.darkThird : AppTheme.darkThird,
             ),
             child: Row(
               children: [
@@ -164,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isDanger ? Colors.red : Colors.black87,
+                          color: isDanger ? Colors.red : AppTheme.darkText,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -172,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         subtitle,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.black54,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ],
@@ -197,6 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       barrierDismissible: false,
       builder:
           (_) => Dialog(
+            backgroundColor: AppTheme.darkThird,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -224,6 +226,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5,
+                      color: AppTheme.darkText
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -232,7 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade600,
+                      color: AppTheme.darkText,
                       height: 1.5,
                     ),
                   ),
@@ -244,8 +247,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
-                              color: Colors.grey.shade300,
-                              width: 1.5,
+                              color: AppTheme.darkText,
+                              width: 1,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -256,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             "Cancel",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                                color: AppTheme.darkText
                             ),
                           ),
                         ),
@@ -292,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: const Text(
                             "Logout",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppTheme.darkText,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -310,6 +313,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: FutureBuilder<UserInfo>(
           future: _userFuture,
@@ -335,7 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, size: 20),
+                        icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppTheme.darkText),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -352,6 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
+                              color: AppTheme.darkText
                             ),
                           ),
                         ),
@@ -372,9 +377,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppTheme.darkThird,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade200),
+                            // border: Border.all(color: Colors.grey.shade200),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.02),
@@ -391,7 +396,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   // Avatar
                                   CircleAvatar(
                                     radius: 50,
-                                    backgroundColor: Colors.grey.shade200,
+                                    backgroundColor: AppTheme.darkText,
                                     child: Text(
                                       user.fullName.isNotEmpty
                                           ? user.fullName[0].toUpperCase()
@@ -399,6 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       style: const TextStyle(
                                         fontSize: 32,
                                         fontWeight: FontWeight.bold,
+                                        color: AppTheme.darkText
                                       ),
                                     ),
                                   ),
@@ -427,7 +433,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         width: 32,
                                         height: 32,
                                         decoration: BoxDecoration(
-                                          color: AppTheme.primary,
+                                          color: AppTheme.darkPrimary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: Colors.white,
@@ -451,6 +457,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: -0.5,
+                                    color: AppTheme.darkText
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -458,7 +465,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 user.email,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                    color: AppTheme.darkText
                                 ),
                               ),
                             ],
@@ -476,6 +483,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.5,
+                                color: AppTheme.darkText
                             ),
                           ),
                         ),
@@ -538,6 +546,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.5,
+                                color: AppTheme.darkText
                             ),
                           ),
                         ),

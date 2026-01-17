@@ -26,55 +26,58 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
   Future<void> _deleteRecord() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.darkSecondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: const [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.orange,
+              size: 28,
             ),
-            title: Row(
-              children: const [
-                Icon(
-                  Icons.warning_amber_rounded,
-                  color: Colors.orange,
-                  size: 28,
-                ),
-                SizedBox(width: 12),
-                Text('Delete Record'),
-              ],
+            SizedBox(width: 12),
+            Text(
+              'Delete Record',
+              style: TextStyle(color: AppTheme.darkText),
             ),
-            content: const Text(
-              'Are you sure you want to delete this InBody record? This action cannot be undone.',
-              style: TextStyle(fontSize: 15),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to delete this InBody record? This action cannot be undone.',
+          style: TextStyle(fontSize: 15, color: AppTheme.darkText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w600,
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
 
     if (confirmed != true) return;
@@ -94,7 +97,6 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
           ),
         );
 
-        // Return to previous screen and signal deletion
         Navigator.pop(context, {'deleted': true, 'id': currentRecord.id});
       }
     } catch (e) {
@@ -115,36 +117,44 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Column(
           children: [
-            // Updated Header - matching InBodyScreen style
+            /// HEADER
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Spacer(),
-                  Text('InBody Details', style: textTheme.headlineMedium),
-                  const Spacer(),
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        'InBody Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
+                        ),
+                      ),
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(
                       Icons.delete_outline,
                       color: Colors.red,
-                      size: 24,
+                      size: 22,
                     ),
                     onPressed: _deleteRecord,
                   ),
                 ],
               ),
             ),
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -202,36 +212,32 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (_) => EditInBodyScreen(
-                                    inBodyData: {
-                                      'id': currentRecord.id,
-                                      'measuredAt': currentRecord.measuredAt,
-                                      'height': currentRecord.height,
-                                      'weight': currentRecord.weight,
-                                      'bodyFatPercentage':
-                                          currentRecord.bodyFatPercentage,
-                                      'muscleMass': currentRecord.muscleMass,
-                                      'notes': currentRecord.notes ?? '',
-                                    },
-                                  ),
+                              builder: (_) => EditInBodyScreen(
+                                inBodyData: {
+                                  'id': currentRecord.id,
+                                  'measuredAt': currentRecord.measuredAt,
+                                  'height': currentRecord.height,
+                                  'weight': currentRecord.weight,
+                                  'bodyFatPercentage':
+                                  currentRecord.bodyFatPercentage,
+                                  'muscleMass': currentRecord.muscleMass,
+                                  'notes': currentRecord.notes ?? '',
+                                },
+                              ),
                             ),
                           );
 
-                          // If edited, refresh data
                           if (result != null && result is Map) {
                             if (result['deleted'] == true) {
-                              // Record was deleted in edit screen
                               if (mounted) {
                                 Navigator.pop(context, result);
                               }
                             } else {
-                              // Record was updated, reload
                               try {
                                 final updated =
-                                    await InBodyService.getInBodyRecordById(
-                                      currentRecord.id,
-                                    );
+                                await InBodyService.getInBodyRecordById(
+                                  currentRecord.id,
+                                );
                                 setState(() {
                                   currentRecord = updated;
                                 });
@@ -241,17 +247,17 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                             }
                           }
                         },
-                        icon: const Icon(Icons.edit, size: 20),
+                        icon: const Icon(Icons.edit, size: 20, color: AppTheme.darkBackground),
                         label: const Text(
                           'Edit Record',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            color: AppTheme.darkBackground,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppTheme.darkPrimary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -275,16 +281,16 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.third.withOpacity(0.1),
-            AppTheme.primary.withOpacity(0.05),
-          ],
-        ),
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1),
+        border: Border.all(color: AppTheme.darkThird, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -293,13 +299,13 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.15),
+                  color: AppTheme.darkPrimary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.fitness_center,
                   size: 28,
-                  color: AppTheme.primary,
+                  color: AppTheme.darkPrimary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -313,6 +319,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.3,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -320,7 +327,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                       'InBody Measurement',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade400,
                       ),
                     ),
                   ],
@@ -332,7 +339,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.darkThird,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -343,7 +350,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                     Icon(
                       Icons.calendar_today_rounded,
                       size: 20,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkPrimary,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -351,24 +358,25 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     Text(
                       DateFormat('yyyy').format(currentRecord.measuredAt),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade400,
                       ),
                     ),
                   ],
                 ),
-                Container(width: 1, height: 40, color: Colors.grey.shade300),
+                Container(width: 1, height: 40, color: AppTheme.darkThird),
                 Column(
                   children: [
                     Icon(
                       Icons.access_time_rounded,
                       size: 20,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkPrimary,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -376,13 +384,14 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     Text(
                       'Time',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade400,
                       ),
                     ),
                   ],
@@ -402,6 +411,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
         fontSize: 18,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
+        color: AppTheme.darkText,
       ),
     );
   }
@@ -415,7 +425,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
             label: 'Height',
             value: currentRecord.height.toStringAsFixed(1),
             unit: 'cm',
-            color: Colors.blue,
+            color: AppTheme.darkPrimary,
           ),
         ),
         const SizedBox(width: 12),
@@ -442,11 +452,12 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -457,7 +468,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 24, color: color),
@@ -465,9 +476,9 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
           const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black54,
+              color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -482,6 +493,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                  color: AppTheme.darkText,
                 ),
               ),
               const SizedBox(width: 4),
@@ -492,7 +504,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade400,
                   ),
                 ),
               ),
@@ -524,7 +536,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                 label: 'Muscle Mass',
                 value: currentRecord.muscleMass.toStringAsFixed(1),
                 unit: '%',
-                color: Colors.blue,
+                color: AppTheme.darkPrimary,
               ),
             ),
           ],
@@ -545,11 +557,12 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -561,7 +574,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 22, color: color),
@@ -569,9 +582,9 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
           const SizedBox(height: 16),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: Colors.black54,
+              color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -586,6 +599,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   fontWeight: FontWeight.w700,
                   letterSpacing: -1,
                   height: 1,
+                  color: AppTheme.darkText,
                 ),
               ),
               Padding(
@@ -595,7 +609,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade400,
                   ),
                 ),
               ),
@@ -610,25 +624,28 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.blue.shade50, Colors.blue.shade100.withOpacity(0.3)],
-        ),
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.withOpacity(0.2), width: 1),
+        border: Border.all(color: AppTheme.darkPrimary.withOpacity(0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.darkPrimary.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.water_drop,
-              color: Colors.blue.shade600,
+              color: AppTheme.darkPrimary,
               size: 26,
             ),
           ),
@@ -642,13 +659,13 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Estimated from lean mass',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
                 ),
               ],
             ),
@@ -662,6 +679,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                  color: AppTheme.darkText,
                 ),
               ),
               Padding(
@@ -671,7 +689,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade400,
                   ),
                 ),
               ),
@@ -686,11 +704,12 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -704,7 +723,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
             value: currentRecord.bmi.toStringAsFixed(1),
             color: Colors.purple,
           ),
-          const Divider(height: 24),
+          Divider(height: 24, color: AppTheme.darkThird),
           _infoRow(
             icon: Icons.accessible_forward_rounded,
             label: 'Lean Body Mass',
@@ -727,7 +746,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withOpacity(0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, size: 20, color: color),
@@ -739,7 +758,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppTheme.darkText,
             ),
           ),
         ),
@@ -749,6 +768,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.3,
+            color: AppTheme.darkText,
           ),
         ),
       ],
@@ -759,11 +779,12 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -772,7 +793,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
       child: Column(
         children: [
           _trendRow(label: 'Body Fat Trend', trend: currentRecord.bodyFatTrend),
-          const Divider(height: 24),
+          Divider(height: 24, color: AppTheme.darkThird),
           _trendRow(
             label: 'Muscle Mass Trend',
             trend: currentRecord.muscleMassTrend,
@@ -809,14 +830,14 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppTheme.darkText,
             ),
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: trendColor.withOpacity(0.1),
+            color: trendColor.withOpacity(0.15),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -843,11 +864,12 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -856,7 +878,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.note_outlined, size: 24, color: Colors.grey.shade600),
+          Icon(Icons.note_outlined, size: 24, color: Colors.grey.shade400),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -867,7 +889,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade400,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -875,7 +897,7 @@ class _InBodyDetailScreenState extends State<InBodyDetailScreen> {
                   currentRecord.notes!,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.black87,
+                    color: AppTheme.darkText,
                     height: 1.5,
                   ),
                 ),

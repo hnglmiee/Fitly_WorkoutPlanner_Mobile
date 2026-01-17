@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: AppTheme.lightBackground,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -97,12 +97,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                  color: AppTheme.darkText
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 "Sign in and elevate your fitness game.",
-                style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 15, color: AppTheme.darkText),
               ),
 
               const SizedBox(height: 40),
@@ -146,12 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppTheme.darkPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                     elevation: 0,
-                    disabledBackgroundColor: AppTheme.primary.withOpacity(0.6),
+                    disabledBackgroundColor: AppTheme.darkPrimary.withOpacity(0.6),
                   ),
                   child:
                       _isLoading
@@ -166,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           : const Text(
                             "Sign In",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppTheme.darkBackground,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -185,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       "OR",
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: AppTheme.darkText,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -206,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Don't have an account? ",
                       style: TextStyle(
                         fontSize: 15,
-                        color: Colors.grey.shade700,
+                          color: AppTheme.darkText
                       ),
                     ),
                     GestureDetector(
@@ -222,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         "Sign up",
                         style: TextStyle(
                           fontSize: 15,
-                          color: AppTheme.primary,
+                          color: AppTheme.darkPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -246,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.darkText),
       ),
     );
   }

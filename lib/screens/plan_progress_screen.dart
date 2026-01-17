@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../models/WorkoutMock.dart';
 import '../models/exercise_log.dart';
-import '../models/workout_log.dart';
 import '../models/workout_plan.dart';
 import '../services/workout_exercise_service.dart';
 import '../services/workout_log_service.dart';
 import '../shared/workout_card.dart';
 import '../theme/app_theme.dart';
-import 'plan_history_screen.dart';
 import 'edit_plan_screen.dart';
 
 class PlanProgressScreen extends StatefulWidget {
@@ -97,7 +95,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
             weight: apiLog.actualWeight,
             notes: apiLog.notes,
             loggedAt: apiLog.loggedAt,
-            logId: apiLog.id, // 🔥 Use actual ID from API
+            logId: apiLog.id,
           );
 
           completedWorkouts.add(i);
@@ -243,7 +241,6 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
 
-      // 🔥 CRITICAL: Reload logs từ API để lấy ID chính xác
       debugPrint('🔵 Reloading logs from API to get correct ID...');
       final updatedLogs = await WorkoutLogService.fetchLogsBySchedule(widget.scheduleId);
       final updatedLog = updatedLogs[exerciseId];
@@ -331,6 +328,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        backgroundColor: AppTheme.darkSecondary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -358,6 +356,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
+                                color: AppTheme.darkText,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -365,14 +364,14 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                               workouts[index].title,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade400,
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, size: 20),
+                        icon: const Icon(Icons.close, size: 20, color: AppTheme.darkText),
                         onPressed: () => Navigator.pop(context),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -412,6 +411,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                   TextField(
                     controller: notesController,
                     maxLines: 3,
+                    style: const TextStyle(color: AppTheme.darkText),
                     decoration: InputDecoration(
                       hintText: 'Add any notes about this exercise...',
                       hintStyle: TextStyle(
@@ -419,8 +419,8 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                         fontSize: 14,
                       ),
                       contentPadding: const EdgeInsets.all(14),
-                      enabledBorder: _dialogBorder(Colors.grey.shade300),
-                      focusedBorder: _dialogBorder(AppTheme.primary),
+                      enabledBorder: _dialogBorder(AppTheme.darkThird),
+                      focusedBorder: _dialogBorder(AppTheme.darkPrimary),
                       errorBorder: _dialogBorder(Colors.red),
                       focusedErrorBorder: _dialogBorder(Colors.red),
                     ),
@@ -465,7 +465,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primary,
+                        backgroundColor: AppTheme.darkPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -474,7 +474,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                       child: Text(
                         existingLog == null ? 'Save Record' : 'Update Record',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.darkBackground,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -495,7 +495,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.darkText),
       ),
     );
   }
@@ -515,17 +515,18 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         suffixText: suffix,
         suffixStyle: TextStyle(
-          color: Colors.grey.shade600,
+          color: Colors.grey.shade400,
           fontWeight: FontWeight.w500,
         ),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _dialogBorder(Colors.grey.shade300),
-        focusedBorder: _dialogBorder(AppTheme.primary),
+        enabledBorder: _dialogBorder(AppTheme.darkThird),
+        focusedBorder: _dialogBorder(AppTheme.darkPrimary),
         errorBorder: _dialogBorder(Colors.red),
         focusedErrorBorder: _dialogBorder(Colors.red),
       ),
@@ -535,7 +536,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightBackground,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -545,7 +546,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -555,6 +556,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -563,7 +565,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                     icon: Icon(
                       Icons.edit_outlined,
                       size: 22,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkPrimary,
                     ),
                     onPressed: () async {
                       final result = await Navigator.push(
@@ -606,11 +608,11 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppTheme.primary),
+          CircularProgressIndicator(color: AppTheme.darkPrimary),
           const SizedBox(height: 16),
           Text(
             'Loading exercises...',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
           ),
         ],
       ),
@@ -627,33 +629,35 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
           children: [
             Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Oops! Something went wrong',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+                color: AppTheme.darkText,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage ?? 'Unknown error',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadExercises,
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label:
-              const Text('Retry', style: TextStyle(color: Colors.white)),
+              icon: const Icon(Icons.refresh, color: AppTheme.darkBackground),
+              label: const Text(
+                'Retry',
+                style: TextStyle(color: AppTheme.darkBackground),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: AppTheme.darkPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 0,
               ),
             ),
           ],
@@ -671,21 +675,21 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
           Icon(
             Icons.fitness_center_outlined,
             size: 64,
-            color: Colors.grey.shade300,
+            color: Colors.grey.shade600,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'No exercises in this plan',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
+              color: AppTheme.darkText,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Add exercises to get started',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
           ),
         ],
       ),
@@ -703,11 +707,12 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.darkSecondary,
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.darkThird),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withOpacity(0.2),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -722,12 +727,12 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.1),
+                        color: AppTheme.darkPrimary.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.fitness_center,
-                        color: AppTheme.primary,
+                        color: AppTheme.darkPrimary,
                         size: 24,
                       ),
                     ),
@@ -744,6 +749,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
+                              color: AppTheme.darkText,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -751,9 +757,9 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                             widget.plan.notes.isNotEmpty
                                 ? widget.plan.notes
                                 : "No description",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: Colors.black54,
+                              color: Colors.grey.shade400,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -773,12 +779,12 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Progress",
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700,
+                            color: AppTheme.darkText,
                           ),
                         ),
                         Text(
@@ -786,7 +792,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.primary,
+                            color: AppTheme.darkPrimary,
                           ),
                         ),
                       ],
@@ -796,9 +802,9 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
                         value: progressPercentage / 100,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: AppTheme.darkThird,
                         valueColor:
-                        AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                        AlwaysStoppedAnimation<Color>(AppTheme.darkPrimary),
                         minHeight: 8,
                       ),
                     ),
@@ -820,13 +826,13 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                  color: AppTheme.darkText,
                 ),
               ),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: AppTheme.darkPrimary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -834,7 +840,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.primary,
+                    color: AppTheme.darkPrimary,
                   ),
                 ),
               ),
@@ -906,7 +912,7 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppTheme.darkPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -915,12 +921,12 @@ class _PlanProgressScreenState extends State<PlanProgressScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.check_circle, color: Colors.white, size: 20),
+                    Icon(Icons.check_circle, size: 20, color: AppTheme.darkBackground),
                     SizedBox(width: 8),
                     Text(
                       "Complete Workout",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppTheme.darkBackground,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

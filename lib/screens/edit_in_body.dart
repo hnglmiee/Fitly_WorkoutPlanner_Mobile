@@ -3,7 +3,7 @@ import 'package:workout_tracker_mini_project_mobile/theme/app_theme.dart';
 import 'package:file_picker/file_picker.dart';
 
 class EditInBodyScreen extends StatefulWidget {
-  final Map<String, dynamic> inBodyData; // ✅ Nhận data để edit
+  final Map<String, dynamic> inBodyData;
 
   const EditInBodyScreen({super.key, required this.inBodyData});
 
@@ -34,7 +34,6 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
     _loadExistingData();
   }
 
-  // Load existing data từ parameter
   void _loadExistingData() {
     heightController.text = widget.inBodyData['height']?.toString() ?? '';
     weightController.text = widget.inBodyData['weight']?.toString() ?? '';
@@ -72,9 +71,12 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(colorScheme: ColorScheme.light(primary: AppTheme.primary)),
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppTheme.darkPrimary,
+              surface: AppTheme.darkSecondary,
+            ),
+          ),
           child: child!,
         );
       },
@@ -92,9 +94,12 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       initialTime: selectedTime,
       builder: (context, child) {
         return Theme(
-          data: Theme.of(
-            context,
-          ).copyWith(colorScheme: ColorScheme.light(primary: AppTheme.primary)),
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppTheme.darkPrimary,
+              surface: AppTheme.darkSecondary,
+            ),
+          ),
           child: child!,
         );
       },
@@ -153,7 +158,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -163,7 +168,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -173,6 +178,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -205,7 +211,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Colors.grey.shade300,
+                                  color: AppTheme.darkThird,
                                   width: 1,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -215,12 +221,15 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                                   Icon(
                                     Icons.calendar_today,
                                     size: 18,
-                                    color: Colors.grey.shade600,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     _formatDate(selectedDate),
-                                    style: const TextStyle(fontSize: 16),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: AppTheme.darkText,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -235,7 +244,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Colors.grey.shade300,
+                                  color: AppTheme.darkThird,
                                   width: 1,
                                 ),
                                 borderRadius: BorderRadius.circular(14),
@@ -245,12 +254,15 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                                   Icon(
                                     Icons.access_time,
                                     size: 18,
-                                    color: Colors.grey.shade600,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     _formatTime(selectedTime),
-                                    style: const TextStyle(fontSize: 16),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: AppTheme.darkText,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -347,10 +359,11 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                       height: 52,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
+                          backgroundColor: AppTheme.darkPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 0,
                         ),
                         onPressed: _updateInBodyRecord,
                         child: const Text(
@@ -358,7 +371,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppTheme.darkBackground,
                           ),
                         ),
                       ),
@@ -382,7 +395,11 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.darkText,
+        ),
       ),
     );
   }
@@ -393,7 +410,7 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.black87,
+        color: AppTheme.darkText,
       ),
     );
   }
@@ -413,11 +430,13 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
+        enabledBorder: _border(AppTheme.darkThird),
+        focusedBorder: _border(AppTheme.darkPrimary),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
@@ -432,16 +451,18 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
     return TextField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         suffixText: suffix,
         suffixStyle: TextStyle(
-          color: Colors.grey.shade600,
+          color: Colors.grey.shade400,
           fontWeight: FontWeight.w500,
         ),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
+        enabledBorder: _border(AppTheme.darkThird),
+        focusedBorder: _border(AppTheme.darkPrimary),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
@@ -451,8 +472,8 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
   InputDecoration _dropdownDecoration() {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      enabledBorder: _border(Colors.grey.shade300),
-      focusedBorder: _border(AppTheme.primary),
+      enabledBorder: _border(AppTheme.darkThird),
+      focusedBorder: _border(AppTheme.darkPrimary),
     );
   }
 
@@ -481,7 +502,6 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       return;
     }
 
-    // TODO: Update to database or state management
     final updatedInBodyData = {
       'id': widget.inBodyData['id'],
       'date': selectedDate,
@@ -498,7 +518,6 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
 
     print('Updating In Body Record: $updatedInBodyData');
 
-    // Show success message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('In Body record updated successfully!'),
@@ -508,7 +527,6 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       ),
     );
 
-    // Navigate back with updated data
     Navigator.pop(context, updatedInBodyData);
   }
 
@@ -517,46 +535,52 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
   void _showDeleteConfirmation() {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: const Text(
-              'Delete Record',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-            content: const Text(
-              'Are you sure you want to delete this InBody record? This action cannot be undone.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close dialog
-                  _deleteInBodyRecord();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.darkSecondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'Delete Record',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.darkText,
           ),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this InBody record? This action cannot be undone.',
+          style: TextStyle(color: AppTheme.darkText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteInBodyRecord();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   void _deleteInBodyRecord() {
-    // TODO: Delete from database
     print('Deleting In Body Record ID: ${widget.inBodyData['id']}');
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -568,7 +592,6 @@ class _EditInBodyScreenState extends State<EditInBodyScreen> {
       ),
     );
 
-    // Navigate back with delete flag
     Navigator.pop(context, {'deleted': true, 'id': widget.inBodyData['id']});
   }
 

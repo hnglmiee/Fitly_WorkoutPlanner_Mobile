@@ -32,14 +32,14 @@ class WorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+          color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               active
-                  ? AppTheme.primary
+                  ? AppTheme.darkThird
                   : completed
-                  ? Colors.green
+                  ? AppTheme.darkPrimary
                   : Colors.grey.shade200,
           width: active || completed ? 2 : 1,
         ),
@@ -66,9 +66,9 @@ class WorkoutCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color:
                             completed
-                                ? Colors.green
+                                ? AppTheme.darkPrimary
                                 : active
-                                ? AppTheme.primary
+                                ? AppTheme.darkPrimary.withOpacity(0.1)
                                 : Colors.grey.shade300,
                         shape: BoxShape.circle,
                       ),
@@ -77,7 +77,7 @@ class WorkoutCard extends StatelessWidget {
                             completed
                                 ? const Icon(
                                   Icons.check,
-                                  color: Colors.white,
+                                  color: AppTheme.darkThird,
                                   size: 18,
                                 )
                                 : Text(
@@ -123,6 +123,7 @@ class WorkoutCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
+                                color: AppTheme.darkText
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -131,28 +132,28 @@ class WorkoutCard extends StatelessWidget {
                               Icon(
                                 Icons.fitness_center,
                                 size: 14,
-                                color: Colors.grey.shade600,
+                                  color: AppTheme.darkText
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 sets,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                    color: AppTheme.darkText
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Icon(
                                 Icons.repeat,
                                 size: 14,
-                                color: Colors.grey.shade600,
+                                color: AppTheme.darkText
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 reps,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                    color: AppTheme.darkText
                                 ),
                               ),
                             ],
@@ -169,14 +170,14 @@ class WorkoutCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               completed
-                                  ? Colors.green
+                                  ? AppTheme.darkPrimary
                                   : active
-                                  ? AppTheme.primary
+                                  ? AppTheme.darkText
                                   : Colors.grey.shade300,
                           foregroundColor:
                               completed || active
-                                  ? Colors.white
-                                  : Colors.black54,
+                                  ? AppTheme.darkBackground
+                                  : AppTheme.darkPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -208,9 +209,9 @@ class WorkoutCard extends StatelessWidget {
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+              color: AppTheme.darkSecondary,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.shade200, width: 1),
+                border: Border.all(color: AppTheme.darkSecondary, width: 1),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +224,7 @@ class WorkoutCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Colors.green.shade700,
+                          color: AppTheme.darkText
                         ),
                       ),
                       if (onEdit != null)
@@ -232,7 +233,7 @@ class WorkoutCard extends StatelessWidget {
                           child: Icon(
                             Icons.edit,
                             size: 16,
-                            color: Colors.green.shade700,
+                              color: AppTheme.darkText
                           ),
                         ),
                     ],
@@ -270,7 +271,7 @@ class WorkoutCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                      color: AppTheme.darkSecondary,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -279,7 +280,7 @@ class WorkoutCard extends StatelessWidget {
                           Icon(
                             Icons.note_alt_outlined,
                             size: 14,
-                            color: Colors.green.shade700,
+                            color: AppTheme.darkText,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
@@ -290,7 +291,7 @@ class WorkoutCard extends StatelessWidget {
                                   'Notes',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: Colors.green.shade700,
+                                    color: AppTheme.darkText,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -299,7 +300,7 @@ class WorkoutCard extends StatelessWidget {
                                   loggedData!.notes,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey.shade800,
+                                    color: AppTheme.darkText,
                                   ),
                                 ),
                               ],
@@ -321,26 +322,26 @@ class WorkoutCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 14, color: Colors.green.shade700),
+          Icon(icon, size: 14, color: AppTheme.darkPrimary),
           const SizedBox(height: 2),
           Text(
             value,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
+              color: AppTheme.darkText,
             ),
           ),
           Text(
             label,
             style: TextStyle(
               fontSize: 9,
-              color: Colors.green.shade700,
+              color: AppTheme.darkText,
               fontWeight: FontWeight.w600,
             ),
           ),

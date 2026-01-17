@@ -12,7 +12,7 @@ class CongratulationsPage extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -24,7 +24,7 @@ class CongratulationsPage extends StatelessWidget {
               SizedBox(
                 height: screenHeight * 0.35,
                 child: Lottie.asset(
-                  'assets/lottie/done.json',
+                  'assets/lottie/done_dark.json',
                   fit: BoxFit.contain,
                   repeat: true,
                 ),
@@ -39,6 +39,7 @@ class CongratulationsPage extends StatelessWidget {
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                    color: AppTheme.darkText
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -51,7 +52,7 @@ class CongratulationsPage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.darkText,
                   height: 1.5,
                 ),
               ),
@@ -70,7 +71,7 @@ class CongratulationsPage extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppTheme.darkPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -82,7 +83,7 @@ class CongratulationsPage extends StatelessWidget {
                       Text(
                         "Get Started",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.darkBackground,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),

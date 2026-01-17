@@ -18,7 +18,7 @@ class _GenderScreenState extends State<GenderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -29,7 +29,7 @@ class _GenderScreenState extends State<GenderScreen> {
               /// HEADER
               const Text(
                 "Gender",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.darkText),
               ),
 
               const SizedBox(height: 20),
@@ -53,6 +53,7 @@ class _GenderScreenState extends State<GenderScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                    color: AppTheme.darkText
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -65,7 +66,7 @@ class _GenderScreenState extends State<GenderScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.darkText,
                   height: 1.5,
                 ),
               ),
@@ -113,8 +114,8 @@ class _GenderScreenState extends State<GenderScreen> {
                           ? _onNextPressed
                           : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    disabledBackgroundColor: AppTheme.primary.withOpacity(0.4),
+                    backgroundColor: AppTheme.darkPrimary,
+                    disabledBackgroundColor: AppTheme.darkPrimary.withOpacity(0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -127,13 +128,13 @@ class _GenderScreenState extends State<GenderScreen> {
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              color: Colors.white,
+                              color: AppTheme.darkText,
                             ),
                           )
                           : const Text(
                             "Next",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppTheme.darkBackground,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -156,7 +157,7 @@ class _GenderScreenState extends State<GenderScreen> {
         height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: active ? AppTheme.primary : Colors.grey.shade300,
+          color: active ? AppTheme.darkPrimary : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(3),
         ),
       ),

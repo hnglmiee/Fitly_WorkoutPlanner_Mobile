@@ -49,7 +49,7 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightBackground,
+      backgroundColor: AppTheme.darkBackground,
 
       /// ===== Body with Custom Header =====
       body: SafeArea(
@@ -62,7 +62,8 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new,
+                        size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -72,6 +73,7 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -103,11 +105,14 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppTheme.primary),
+          CircularProgressIndicator(color: AppTheme.darkPrimary),
           const SizedBox(height: 16),
           Text(
             'Loading goals...',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade400,
+            ),
           ),
         ],
       ),
@@ -122,33 +127,41 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Oops! Something went wrong',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+                color: AppTheme.darkText,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               errorMessage ?? 'Unknown error',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade400,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadGoals,
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('Retry', style: TextStyle(color: Colors.white)),
+              icon: const Icon(Icons.refresh, color: AppTheme.darkBackground),
+              label: const Text(
+                'Retry',
+                style: TextStyle(color: AppTheme.darkBackground),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: AppTheme.darkPrimary,
+                padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 0,
               ),
             ),
           ],
@@ -168,21 +181,24 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
             Icon(
               Icons.flag_outlined,
               size: 64,
-              color: Colors.grey.shade300,
+              color: Colors.grey.shade600,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'No Goals Yet',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+                color: AppTheme.darkText,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Create your first goal to get started',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade400,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -195,7 +211,8 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
   Widget _buildContentState() {
     return RefreshIndicator(
       onRefresh: _loadGoals,
-      color: AppTheme.primary,
+      color: AppTheme.darkPrimary,
+      backgroundColor: AppTheme.darkSecondary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -212,20 +229,26 @@ class _GoalHistoryScreenState extends State<GoalHistoryScreen> {
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.1),
+                    color: AppTheme.darkPrimary.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppTheme.darkPrimary.withOpacity(0.3),
+                      width: 1,
+                    ),
                   ),
                   child: Text(
                     '${goals.length} ${goals.length == 1 ? 'Goal' : 'Goals'}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkPrimary,
                     ),
                   ),
                 ),
@@ -259,13 +282,13 @@ class GoalHistoryCard extends StatelessWidget {
   Color get statusColor {
     switch (goalProgress.goal.status.toLowerCase()) {
       case 'completed':
-        return Colors.green;
+        return Colors.green.shade400;
       case 'in_progress':
-        return Colors.orange;
+        return Colors.orange.shade400;
       case 'canceled':
-        return Colors.red;
+        return Colors.red.shade400;
       default:
-        return Colors.grey;
+        return Colors.grey.shade400;
     }
   }
 
@@ -309,12 +332,13 @@ class GoalHistoryCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: AppTheme.darkSecondary,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.darkThird, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -332,15 +356,16 @@ class GoalHistoryCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary,
+                    color: AppTheme.darkPrimary,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     goalProgress.goal.goalType.toUpperCase(),
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.darkBackground,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -351,7 +376,7 @@ class GoalHistoryCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -383,6 +408,7 @@ class GoalHistoryCard extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.3,
+                color: AppTheme.darkText,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -401,7 +427,7 @@ class GoalHistoryCard extends StatelessWidget {
                         'Progress',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade400,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -410,6 +436,7 @@ class GoalHistoryCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ],
@@ -423,7 +450,7 @@ class GoalHistoryCard extends StatelessWidget {
                         'Target',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade400,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -432,6 +459,7 @@ class GoalHistoryCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ],
@@ -447,8 +475,9 @@ class GoalHistoryCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: goalProgress.progressPercentage / 100,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                backgroundColor: AppTheme.darkThird,
+                valueColor:
+                AlwaysStoppedAnimation<Color>(AppTheme.darkPrimary),
                 minHeight: 8,
               ),
             ),

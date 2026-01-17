@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../theme/app_theme.dart';
+
 class ScheduleCalendar extends StatefulWidget {
   final DateTime selectedDate;
   final DateTime currentMonth;
@@ -105,15 +107,15 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.chevron_left),
+              icon: const Icon(Icons.chevron_left, color: AppTheme.darkText),
               onPressed: widget.onPrevMonth,
             ),
             Text(
               DateFormat('MMMM').format(widget.currentMonth),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.darkText),
             ),
             IconButton(
-              icon: const Icon(Icons.chevron_right),
+              icon: const Icon(Icons.chevron_right, color: AppTheme.darkText),
               onPressed: widget.onNextMonth,
             ),
           ],
@@ -125,7 +127,7 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
         SizedBox(
           height: 120,
           child: ListView.builder(
-            controller: _scrollController, // ✅ FIX
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
             itemCount: days.length,
             itemBuilder: (context, index) {
@@ -147,7 +149,7 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
                             isToday
                                 ? Colors.red
                                 : isSelected
-                                ? Colors.blue
+                                ? AppTheme.darkPrimary
                                 : Colors.transparent,
                         shape: BoxShape.circle,
                       ),
@@ -158,7 +160,7 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
                       width: 60,
                       margin: const EdgeInsets.only(right: 12),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.blue.shade100,
+                        color: isSelected ? AppTheme.darkPrimary : AppTheme.darkThird,
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Padding(
@@ -168,7 +170,7 @@ class _ScheduleCalendarState extends State<ScheduleCalendar> {
                             Text(
                               DateFormat('EEE').format(date),
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
+                                color: isSelected ? AppTheme.darkBackground : AppTheme.lightBackground,
                               ),
                             ),
                             const SizedBox(height: 8),

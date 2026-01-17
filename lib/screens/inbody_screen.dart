@@ -68,7 +68,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -78,13 +78,15 @@ class _InBodyScreenState extends State<InBodyScreen> {
                 onRefresh: () async {
                   _loadLatestRecord();
                 },
+                color: AppTheme.darkPrimary,
+                backgroundColor: AppTheme.darkSecondary,
                 child: FutureBuilder<InBodyData?>(
                   future: _latestRecordFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.primary,
+                          color: AppTheme.darkPrimary,
                         ),
                       );
                     }
@@ -132,18 +134,24 @@ class _InBodyScreenState extends State<InBodyScreen> {
 
   // ================= HEADER =================
   Widget _header(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 20),
+            icon: const Icon(Icons.arrow_back_ios,
+                size: 20, color: AppTheme.darkText),
             onPressed: () => Navigator.pop(context),
           ),
           const Spacer(),
-          Text('In Body', style: textTheme.headlineMedium),
+          const Text(
+            'In Body',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.darkText,
+            ),
+          ),
           const Spacer(),
           FutureBuilder<List<InBodyData>>(
             future: InBodyService.fetchMyInBodyRecords(),
@@ -159,7 +167,8 @@ class _InBodyScreenState extends State<InBodyScreen> {
               }
 
               return IconButton(
-                icon: Icon(Icons.history, size: 24, color: AppTheme.primary),
+                icon: Icon(Icons.history,
+                    size: 24, color: AppTheme.darkPrimary),
                 onPressed: () async {
                   final result = await Navigator.push(
                     context,
@@ -188,20 +197,25 @@ class _InBodyScreenState extends State<InBodyScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
             const SizedBox(height: 16),
             const Text(
               'Failed to load data',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.darkText,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadLatestRecord,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              icon: const Icon(Icons.refresh, color: AppTheme.darkBackground),
+              label: const Text('Retry',
+                  style: TextStyle(color: AppTheme.darkBackground)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.darkPrimary,
+                elevation: 0,
               ),
             ),
           ],
@@ -218,20 +232,21 @@ class _InBodyScreenState extends State<InBodyScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.fitness_center, size: 64, color: Colors.grey.shade300),
+            Icon(Icons.fitness_center,
+                size: 64, color: Colors.grey.shade600),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'No InBody records yet',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
+                color: AppTheme.darkText,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Tap "New Record" to add your first measurement',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -243,14 +258,18 @@ class _InBodyScreenState extends State<InBodyScreen> {
                 );
                 _loadLatestRecord();
               },
-              icon: const Icon(Icons.add_rounded, size: 22),
+              icon: const Icon(Icons.add_rounded,
+                  size: 22, color: AppTheme.darkBackground),
               label: const Text(
                 'New Record',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.darkBackground,
+                ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.darkPrimary,
+                elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
@@ -271,12 +290,13 @@ class _InBodyScreenState extends State<InBodyScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.third.withOpacity(0.1),
-            AppTheme.primary.withOpacity(0.05),
+            AppTheme.darkPrimary.withOpacity(0.15),
+            AppTheme.darkPrimary.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1),
+        border: Border.all(
+            color: AppTheme.darkPrimary.withOpacity(0.3), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -299,13 +319,13 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.15),
+                        color: AppTheme.darkPrimary.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.fitness_center,
                         size: 24,
-                        color: AppTheme.primary,
+                        color: AppTheme.darkPrimary,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -313,11 +333,11 @@ class _InBodyScreenState extends State<InBodyScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Latest Record',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black54,
+                              color: Colors.grey.shade400,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -328,6 +348,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ],
@@ -339,23 +360,23 @@ class _InBodyScreenState extends State<InBodyScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.shade400.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.trending_up,
                             size: 14,
-                            color: Colors.green,
+                            color: Colors.green.shade400,
                           ),
-                          SizedBox(width: 4),
+                          const SizedBox(width: 4),
                           Text(
                             'Active',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.green,
+                              color: Colors.green.shade400,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -370,14 +391,14 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     Icon(
                       Icons.calendar_today_rounded,
                       size: 14,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade400,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       DateFormat('MM.dd.yyyy').format(record.measuredAt),
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade400,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -385,14 +406,14 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     Icon(
                       Icons.access_time_rounded,
                       size: 14,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade400,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       DateFormat('HH:mm').format(record.measuredAt),
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade400,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -441,11 +462,12 @@ class _InBodyScreenState extends State<InBodyScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.darkSecondary,
           borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.darkThird),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -453,13 +475,13 @@ class _InBodyScreenState extends State<InBodyScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 18, color: AppTheme.primary),
+            Icon(icon, size: 18, color: AppTheme.darkPrimary),
             const SizedBox(height: 6),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: Colors.black54,
+                color: Colors.grey.shade400,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -474,6 +496,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 if (unit.isNotEmpty) ...[
@@ -482,9 +505,9 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     padding: const EdgeInsets.only(bottom: 1),
                     child: Text(
                       unit,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Colors.black54,
+                        color: Colors.grey.shade400,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -509,6 +532,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
+            color: AppTheme.darkText,
           ),
         ),
         const SizedBox(height: 16),
@@ -519,7 +543,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
               title: 'Body Fat',
               value: record.bodyFatPercentage.toStringAsFixed(1),
               unit: '%',
-              color: Colors.orange,
+              color: Colors.orange.shade400,
             ),
             const SizedBox(width: 12),
             _modernStatCard(
@@ -527,7 +551,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
               title: 'Muscle Mass',
               value: record.muscleMass.toStringAsFixed(1),
               unit: '%',
-              color: Colors.blue,
+              color: Colors.blue.shade400,
             ),
           ],
         ),
@@ -548,13 +572,14 @@ class _InBodyScreenState extends State<InBodyScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.darkSecondary,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.darkThird),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -564,7 +589,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 22, color: color),
@@ -572,9 +597,9 @@ class _InBodyScreenState extends State<InBodyScreen> {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: Colors.black54,
+                color: Colors.grey.shade400,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -589,6 +614,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     fontWeight: FontWeight.w700,
                     letterSpacing: -1,
                     height: 1,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 Padding(
@@ -598,7 +624,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade400,
                     ),
                   ),
                 ),
@@ -617,22 +643,26 @@ class _InBodyScreenState extends State<InBodyScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.blue.shade50, Colors.blue.shade100.withOpacity(0.3)],
+          colors: [
+            Colors.blue.shade400.withOpacity(0.15),
+            Colors.blue.shade400.withOpacity(0.05),
+          ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue.withOpacity(0.2), width: 1),
+        border: Border.all(
+            color: Colors.blue.shade400.withOpacity(0.3), width: 1),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.darkSecondary,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               Icons.water_drop,
-              color: Colors.blue.shade600,
+              color: Colors.blue.shade400,
               size: 26,
             ),
           ),
@@ -646,13 +676,14 @@ class _InBodyScreenState extends State<InBodyScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Estimated from lean mass',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style:
+                  TextStyle(fontSize: 12, color: Colors.grey.shade400),
                 ),
               ],
             ),
@@ -666,6 +697,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                  color: AppTheme.darkText,
                 ),
               ),
               Padding(
@@ -675,7 +707,7 @@ class _InBodyScreenState extends State<InBodyScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade400,
                   ),
                 ),
               ),
@@ -697,32 +729,33 @@ class _InBodyScreenState extends State<InBodyScreen> {
             fontSize: 18,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
+            color: AppTheme.darkText,
           ),
         ),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: const [
+          children: [
             _ModernExerciseChip(
               icon: Icons.directions_walk,
               text: 'Walking',
-              color: Colors.green,
+              color: Colors.green.shade400,
             ),
             _ModernExerciseChip(
               icon: Icons.pool,
               text: 'Swimming',
-              color: Colors.blue,
+              color: Colors.blue.shade400,
             ),
             _ModernExerciseChip(
               icon: Icons.directions_run,
               text: 'Jogging',
-              color: Colors.orange,
+              color: Colors.orange.shade400,
             ),
             _ModernExerciseChip(
               icon: Icons.sports_tennis,
               text: 'Tennis',
-              color: Colors.purple,
+              color: Colors.purple.shade400,
             ),
           ],
         ),
@@ -740,30 +773,32 @@ class _InBodyScreenState extends State<InBodyScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder:
-                      (_) => EditInBodyScreen(
-                        inBodyData: {
-                          'id': record.id,
-                          'measuredAt': record.measuredAt,
-                          'height': record.height,
-                          'weight': record.weight,
-                          'bodyFatPercentage': record.bodyFatPercentage,
-                          'muscleMass': record.muscleMass,
-                          'notes': record.notes ?? '',
-                        },
-                      ),
+                  builder: (_) => EditInBodyScreen(
+                    inBodyData: {
+                      'id': record.id,
+                      'measuredAt': record.measuredAt,
+                      'height': record.height,
+                      'weight': record.weight,
+                      'bodyFatPercentage': record.bodyFatPercentage,
+                      'muscleMass': record.muscleMass,
+                      'notes': record.notes ?? '',
+                    },
+                  ),
                 ),
               );
               _loadLatestRecord();
             },
-            icon: const Icon(Icons.edit_outlined, size: 20),
+            icon: const Icon(Icons.edit_outlined,
+                size: 20, color: AppTheme.darkText),
             label: const Text(
               'Edit Record',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.darkText,
+              ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.black87,
-              side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+              side: BorderSide(color: AppTheme.darkThird, width: 1.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -781,16 +816,18 @@ class _InBodyScreenState extends State<InBodyScreen> {
               );
               _loadLatestRecord();
             },
-            icon: const Icon(Icons.add_rounded, size: 22),
+            icon: const Icon(Icons.add_rounded,
+                size: 22, color: AppTheme.darkBackground),
             label: const Text(
               'New Record',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.darkBackground,
+              ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: AppTheme.darkPrimary,
               elevation: 0,
-              shadowColor: AppTheme.primary.withOpacity(0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -822,7 +859,7 @@ class _ModernExerciseChip extends StatelessWidget {
       width: (width - 56) / 2,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withOpacity(0.3), width: 1.5),
         boxShadow: [
@@ -839,7 +876,7 @@ class _ModernExerciseChip extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 20, color: color),
@@ -851,6 +888,7 @@ class _ModernExerciseChip extends StatelessWidget {
               fontWeight: FontWeight.w600,
               fontSize: 14,
               letterSpacing: -0.3,
+              color: AppTheme.darkText,
             ),
           ),
         ],

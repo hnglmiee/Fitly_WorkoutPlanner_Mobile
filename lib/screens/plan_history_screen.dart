@@ -152,12 +152,12 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightBackground,
+      backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppTheme.darkText),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -165,6 +165,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
           style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
+            color: AppTheme.darkText
         )
         ),
         centerTitle: true,
@@ -239,7 +240,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
               Icon(
                 Icons.calendar_month_rounded,
                 size: 20,
-                color: AppTheme.primary,
+                  color: AppTheme.darkText
               ),
               const SizedBox(width: 8),
               Text(
@@ -247,7 +248,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.primary,
+                  color: AppTheme.darkText,
                   letterSpacing: -0.5,
                 ),
               ),
@@ -258,7 +259,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppTheme.primary.withOpacity(0.3),
+                        AppTheme.darkPrimary.withOpacity(0.3),
                         Colors.transparent,
                       ],
                     ),
@@ -287,10 +288,10 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+          color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.grey.shade200,
+          color: AppTheme.darkThird,
           width: 1,
         ),
         boxShadow: [
@@ -464,8 +465,8 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppTheme.primary.withOpacity(0.1),
-                              AppTheme.primary.withOpacity(0.05),
+                              AppTheme.darkPrimary.withOpacity(0.1),
+                              AppTheme.darkText.withOpacity(0.05),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -473,7 +474,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                         child: Icon(
                           Icons.fitness_center,
                           size: 24,
-                          color: AppTheme.primary,
+                          color: AppTheme.darkText,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -489,6 +490,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: -0.3,
+                                  color: AppTheme.darkText
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -499,7 +501,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                                 plan.notes,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade600,
+                                  color: AppTheme.darkText,
                                   fontWeight: FontWeight.w400,
                                 ),
                                 maxLines: 1,
@@ -512,7 +514,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                                 Icon(
                                   Icons.calendar_today,
                                   size: 13,
-                                  color: Colors.grey.shade600,
+                                  color: AppTheme.darkText,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -521,7 +523,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                                   ),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey.shade600,
+                                    color: AppTheme.darkText,
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
@@ -530,14 +532,14 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                                   Icon(
                                     Icons.fitness_center,
                                     size: 13,
-                                    color: AppTheme.primary,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${exercises.length} exercise${exercises.length > 1 ? 's' : ''}',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: AppTheme.primary,
+                                      color: AppTheme.darkPrimary,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -566,7 +568,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
           if (isExpanded && hasExercises)
             Container(
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: AppTheme.darkSecondary,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
@@ -574,7 +576,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
               ),
               child: Column(
                 children: [
-                  Divider(height: 1, color: Colors.grey.shade200),
+                  Divider(height: 1, color: AppTheme.darkSecondary),
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -585,7 +587,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                             Icon(
                               Icons.list_alt,
                               size: 18,
-                              color: AppTheme.primary,
+                              color: AppTheme.darkPrimary,
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -593,7 +595,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppTheme.primary,
+                                color: AppTheme.darkPrimary,
                               ),
                             ),
                           ],
@@ -620,10 +622,10 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.grey.shade200,
+          color: AppTheme.darkThird,
           width: 1,
         ),
       ),
@@ -637,7 +639,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: AppTheme.darkText.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
@@ -646,7 +648,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkText,
                     ),
                   ),
                 ),
@@ -659,6 +661,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
+                    color: AppTheme.darkText
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -703,7 +706,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: Colors.grey.shade200,
+                  color: AppTheme.darkText.withOpacity(0.1),
                   width: 1,
                 ),
               ),
@@ -713,7 +716,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                   Icon(
                     Icons.comment_outlined,
                     size: 16,
-                    color: Colors.grey.shade600,
+                    color: AppTheme.darkText,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -721,7 +724,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
                       exercise.comments!,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade700,
+                        color: AppTheme.darkText,
                         height: 1.4,
                       ),
                     ),
@@ -768,7 +771,7 @@ class _PlanHistoryScreenState extends State<PlanHistoryScreen> {
               label,
               style: TextStyle(
                 fontSize: 10,
-                color: Colors.grey.shade600,
+                color: AppTheme.darkText,
                 fontWeight: FontWeight.w500,
               ),
             ),

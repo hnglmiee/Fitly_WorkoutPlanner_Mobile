@@ -278,7 +278,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
@@ -297,7 +297,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    icon: const Icon(Icons.arrow_back_ios, size: 20, color: AppTheme.darkText),
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
@@ -314,6 +314,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText
                         ),
                       ),
                     ),
@@ -322,8 +323,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   IconButton(
                     icon: Icon(
                       Icons.history,
-                      color: AppTheme.primary,
                       size: 24,
+                        color: AppTheme.darkText
                     ),
                     onPressed: () async {
                       await Navigator.push(
@@ -342,7 +343,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
             /// CALENDAR
             Container(
-              color: Colors.white,
+              color: AppTheme.darkBackground,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ScheduleCalendar(
                 selectedDate: selectedDate,
@@ -374,7 +375,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             /// ADD PLAN HEADER
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Colors.white,
+              color: AppTheme.darkBackground,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -384,10 +385,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.5,
+                        color: AppTheme.darkText
                     ),
                   ),
                   Material(
-                    color: AppTheme.primary,
+                    color: AppTheme.darkPrimary,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
@@ -416,14 +418,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           children: const [
                             Icon(
                               Icons.add_rounded,
-                              color: Colors.white,
+                              color: AppTheme.darkBackground,
                               size: 20,
                             ),
                             SizedBox(width: 4),
                             Text(
                               'Add Plan',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppTheme.darkBackground,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
@@ -507,7 +509,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 width: 4,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: AppTheme.primary,
+                  color: AppTheme.darkPrimary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -518,6 +520,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.3,
+                  color: AppTheme.darkText,
                 ),
               ),
             ],
@@ -673,7 +676,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.darkThird,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -701,7 +704,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     child: Icon(
                       Icons.fitness_center,
                       size: 20,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkText,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -715,6 +718,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
+                              color: AppTheme.darkText
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -749,7 +753,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   const SizedBox(width: 4),
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.grey.shade400,
+                    color: AppTheme.darkText,
                     size: 20,
                   ),
                 ],
@@ -767,7 +771,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     switch (status.toLowerCase()) {
       case 'completed':
-        tagColor = Colors.green;
+        tagColor = AppTheme.darkPrimary;
         displayText = 'Completed';
         break;
       case 'pending':

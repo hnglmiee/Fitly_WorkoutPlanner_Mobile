@@ -150,11 +150,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
   Widget build(BuildContext context) {
     if (weekDates.isEmpty) {
       return Scaffold(
-        body: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+        body: Center(child: CircularProgressIndicator(color: AppTheme.darkBackground)),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppTheme.darkBackground,
       bottomNavigationBar: Container(
         color: Colors.transparent,
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
@@ -183,7 +184,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           'Hello,',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: AppTheme.darkText,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -195,6 +196,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
                             letterSpacing: -0.5,
+                              color: AppTheme.darkText
                           ),
                         ),
                       ],
@@ -217,7 +219,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               icon: Icon(
                                 Icons.notifications_outlined,
                                 size: 32,
-                                color: AppTheme.primary,
+                                color: AppTheme.darkPrimary,
                               ),
                             ),
                             // Unread badge
@@ -264,7 +266,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: AppTheme.primary.withOpacity(0.3),
+                                color: AppTheme.darkPrimary.withOpacity(0.3),
                                 width: 2,
                               ),
                             ),
@@ -296,6 +298,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -329,7 +332,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                     isToday
                                         ? Colors.red
                                         : isSelected
-                                        ? Colors.blue
+                                        ? AppTheme.darkPrimary
                                         : Colors.transparent,
                                     shape: BoxShape.circle,
                                   ),
@@ -340,8 +343,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                   decoration: BoxDecoration(
                                     color:
                                     isSelected
-                                        ? Colors.blue
-                                        : Colors.blue.shade100,
+                                        // ? Colors.blue
+                                        ? AppTheme.darkPrimary
+                                        : AppTheme.darkThird,
                                     borderRadius: BorderRadius.circular(30),
                                   ),
                                   child: Padding(
@@ -357,8 +361,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                           style: TextStyle(
                                             color:
                                             isSelected
-                                                ? Colors.white
-                                                : Colors.black,
+                                                ? Colors.black
+                                                : Colors.white,
                                           ),
                                         ),
                                         const SizedBox(height: 8),
@@ -374,7 +378,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                             border: Border.all(
                                               color:
                                               isSelected
-                                                  ? Colors.blue
+                                                  ? AppTheme.darkPrimary
                                                   : Colors.transparent,
                                               width: 2,
                                             ),
@@ -411,7 +415,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             height: 200,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.darkThird,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -422,7 +426,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               ],
                             ),
                             child: CircularProgressIndicator(
-                              color: AppTheme.primary,
+                              color: AppTheme.darkPrimary,
                             ),
                           );
                         }
@@ -431,7 +435,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           return Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.lightBackground,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -470,7 +474,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           return Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.lightBackground,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -505,7 +509,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
                         if (plans.length >= 2) {
                           return SizedBox(
-                            height: 230,
+                            height: 210,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: plans.length,
@@ -527,7 +531,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       },
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
 
                     /// MY ACTIVITIES
                     const Text(
@@ -536,6 +540,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -574,6 +579,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -611,6 +617,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -623,9 +630,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             padding: const EdgeInsets.all(20),
                             height: 280,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.darkThird,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey.shade200),
+                              // border: Border.all(color: Colors.grey.shade200),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.02),
@@ -636,7 +643,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             ),
                             child: Center(
                               child: CircularProgressIndicator(
-                                color: AppTheme.primary,
+                                color: AppTheme.darkPrimary,
                               ),
                             ),
                           );
@@ -646,7 +653,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           return Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.darkBackground,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: Colors.grey.shade200),
                               boxShadow: [
@@ -686,9 +693,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         return Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppTheme.darkThird,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade200),
+                            // border: Border.all(color: Colors.grey.shade200),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.02),
@@ -706,7 +713,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                     'Total Sessions',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.black54,
+                                      color: AppTheme.darkText,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -716,7 +723,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primary.withOpacity(0.1),
+                                      color: AppTheme.darkPrimary.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -724,7 +731,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: AppTheme.primary,
+                                        color: AppTheme.darkText,
                                       ),
                                     ),
                                   ),
@@ -748,7 +755,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 }
 
-// ✅ NEW: Extracted Plan Card Widget
 class _PlanCard extends StatelessWidget {
   final WorkoutPlan plan;
 
@@ -759,7 +765,7 @@ class _PlanCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -786,13 +792,13 @@ class _PlanCard extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary,
+                        color: AppTheme.darkPrimary,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
                         'WORKOUT',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.darkBackground,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -808,6 +814,7 @@ class _PlanCard extends StatelessWidget {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.3,
+                        color: AppTheme.darkText
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -820,7 +827,7 @@ class _PlanCard extends StatelessWidget {
                       plan.notes.isNotEmpty ? plan.notes : "No notes",
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: AppTheme.darkText,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -855,7 +862,7 @@ class _PlanCard extends StatelessWidget {
           /// CONTINUE BUTTON
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
+              backgroundColor: AppTheme.darkPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
               ),
@@ -873,17 +880,17 @@ class _PlanCard extends StatelessWidget {
               children: [
                 const Text(
                   'Continue The Workout',
-                  style: TextStyle(color: Colors.white, fontSize: 15),
+                  style: TextStyle(color: AppTheme.darkBackground, fontSize: 15),
                 ),
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: AppTheme.darkBackground,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.arrow_forward,
-                    color: Colors.white,
+                    color: AppTheme.lightBackground,
                     size: 20,
                   ),
                 ),
@@ -928,8 +935,7 @@ class _WorkoutBarChart extends StatelessWidget {
         children: data.map((item) {
           final sessions = item.sessions;
           final day = item.label;
-          final barHeight =
-          maxSessions > 0 ? (sessions / maxSessions) * 140 : 0.0;
+          final barHeight = maxSessions > 0 ? (sessions / maxSessions) * 140 : 0.0;
           final isToday = day == DateFormat('EEE').format(DateTime.now());
 
           return Expanded(
@@ -947,7 +953,7 @@ class _WorkoutBarChart extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.primary,
+                        color: AppTheme.darkPrimary,
                       ),
                     )
                         : const SizedBox.shrink(),
@@ -964,8 +970,8 @@ class _WorkoutBarChart extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: sessions > 0
                             ? [
-                          AppTheme.primary,
-                          AppTheme.primary.withOpacity(0.6),
+                          AppTheme.darkPrimary,
+                          AppTheme.darkPrimary.withOpacity(0.6),
                         ]
                             : [
                           Colors.grey.shade200,
@@ -986,7 +992,7 @@ class _WorkoutBarChart extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
-                      color: isToday ? AppTheme.primary : Colors.black54,
+                      color: isToday ? AppTheme.darkText : AppTheme.darkText,
                     ),
                   ),
                 ],
@@ -1012,9 +1018,9 @@ class _ModernActivityChip extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
+        // border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -1025,11 +1031,11 @@ class _ModernActivityChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppTheme.primary),
+          Icon(icon, size: 18, color: AppTheme.darkPrimary),
           const SizedBox(width: 8),
           Text(
             label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.darkText),
           ),
         ],
       ),
@@ -1058,9 +1064,8 @@ class _ProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -1085,7 +1090,7 @@ class _ProgressCard extends StatelessWidget {
             label,
             style: const TextStyle(
               fontSize: 12,
-              color: Colors.black54,
+              color: AppTheme.darkText,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1100,6 +1105,7 @@ class _ProgressCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
                   height: 1,
+                  color: AppTheme.darkText
                 ),
               ),
               const SizedBox(width: 4),
@@ -1109,7 +1115,7 @@ class _ProgressCard extends StatelessWidget {
                   unit,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: AppTheme.darkText,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

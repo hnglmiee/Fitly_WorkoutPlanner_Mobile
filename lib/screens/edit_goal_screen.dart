@@ -26,6 +26,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   DateTime? targetDate;
   String selectedCategory = 'Weight Loss';
   int workoutSessionsPerWeek = 2;
+  bool isLoading = false;
 
   final List<String> categories = [
     'Weight Loss',
@@ -60,18 +61,15 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     // Pre-fill with existing data from goal
     goalNameController = TextEditingController(text: goal.goalName);
     targetWeightController = TextEditingController(
-        text: goal.targetWeight?.toString() ?? '0'
-    );
-    currentWeightController = TextEditingController(text: '80'); // Default or fetch from user profile
+        text: goal.targetWeight?.toString() ?? '0');
+    currentWeightController = TextEditingController(
+        text: '80'); // Default or fetch from user profile
     bodyFatController = TextEditingController(
-        text: goal.targetBodyFatPercentage?.toString() ?? '0'
-    );
+        text: goal.targetBodyFatPercentage?.toString() ?? '0');
     muscleMassController = TextEditingController(
-        text: goal.targetMuscleMass?.toString() ?? '0'
-    );
+        text: goal.targetMuscleMass?.toString() ?? '0');
     caloriesController = TextEditingController(
-        text: goal.targetCaloriesPerDay?.toString() ?? '0'
-    );
+        text: goal.targetCaloriesPerDay?.toString() ?? '0');
     notesController = TextEditingController(text: goal.notes);
 
     // Set dates from existing goal (already DateTime objects)
@@ -97,183 +95,228 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              /// HEADER
-              Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Edit Goal',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                  /// HEADER
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new,
+                            size: 18, color: AppTheme.darkText),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'Edit Goal',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.darkText,
+                            ),
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 40),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  /// FORM
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        _label('Goal Name'),
+                        _input(
+                          controller: goalNameController,
+                          hint: 'e.g. Lose 10kg in 3 months',
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// CATEGORY SECTION
+                        _sectionHeader('Category'),
+                        const SizedBox(height: 12),
+                        _categoryDropdown(),
+
+                        const SizedBox(height: 20),
+
+                        /// TARGET DETAILS SECTION
+                        _sectionHeader('Target Details'),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _numberInput(
+                                controller: currentWeightController,
+                                label: 'Current Weight',
+                                suffix: 'kg',
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _numberInput(
+                                controller: targetWeightController,
+                                label: 'Target Weight',
+                                suffix: 'kg',
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _numberInput(
+                                controller: bodyFatController,
+                                label: 'Body Fat',
+                                suffix: '%',
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _numberInput(
+                                controller: muscleMassController,
+                                label: 'Muscle Mass',
+                                suffix: '%',
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _numberInput(
+                          controller: caloriesController,
+                          label: 'Daily Calories Target',
+                          suffix: 'kcal',
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// WORKOUT FREQUENCY SECTION
+                        _sectionHeader('Workout Frequency'),
+                        const SizedBox(height: 12),
+                        _workoutCounter(),
+
+                        const SizedBox(height: 20),
+
+                        /// TIMELINE SECTION
+                        _sectionHeader('Timeline'),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _datePickerCard('Start Date', startDate),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child:
+                              _datePickerCard('Target Date', targetDate),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// ACTIVITIES SECTION
+                        _sectionHeader('My Activities'),
+                        const SizedBox(height: 12),
+                        _activitiesSelector(),
+
+                        const SizedBox(height: 20),
+
+                        /// NOTES SECTION
+                        _label('Notes (Optional)'),
+                        const SizedBox(height: 5),
+                        _input(
+                          controller: notesController,
+                          hint: 'Add any additional notes here...',
+                          maxLines: 4,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        /// UPDATE BUTTON
+                        SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.darkPrimary,
+                              disabledBackgroundColor:
+                              AppTheme.darkPrimary.withOpacity(0.6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: isLoading ? null : _confirmUpdate,
+                            child: isLoading
+                                ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white),
+                              ),
+                            )
+                                : const Text(
+                              'Update Goal',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.darkBackground,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 40),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 16),
-
-              /// FORM
-              Expanded(
-                child: ListView(
-                  children: [
-                    _label('Goal Name'),
-                    _input(
-                      controller: goalNameController,
-                      hint: 'e.g. Lose 10kg in 3 months',
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// CATEGORY SECTION
-                    _sectionHeader('Category'),
-                    const SizedBox(height: 12),
-                    _categoryDropdown(),
-
-                    const SizedBox(height: 20),
-
-                    /// TARGET DETAILS SECTION
-                    _sectionHeader('Target Details'),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _numberInput(
-                            controller: currentWeightController,
-                            label: 'Current Weight',
-                            suffix: 'kg',
+            // Loading overlay
+            if (isLoading)
+              Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Card(
+                    color: AppTheme.darkThird,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(
+                              color: AppTheme.darkPrimary),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Updating goal...',
+                            style: TextStyle(color: AppTheme.darkText),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _numberInput(
-                            controller: targetWeightController,
-                            label: 'Target Weight',
-                            suffix: 'kg',
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _numberInput(
-                            controller: bodyFatController,
-                            label: 'Body Fat',
-                            suffix: '%',
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _numberInput(
-                            controller: muscleMassController,
-                            label: 'Muscle Mass',
-                            suffix: '%',
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _numberInput(
-                      controller: caloriesController,
-                      label: 'Daily Calories Target',
-                      suffix: 'kcal',
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// WORKOUT FREQUENCY SECTION
-                    _sectionHeader('Workout Frequency'),
-                    const SizedBox(height: 12),
-                    _workoutCounter(),
-
-                    const SizedBox(height: 20),
-
-                    /// TIMELINE SECTION
-                    _sectionHeader('Timeline'),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _datePickerCard('Start Date', startDate),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _datePickerCard('Target Date', targetDate),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// ACTIVITIES SECTION
-                    _sectionHeader('My Activities'),
-                    const SizedBox(height: 12),
-                    _activitiesSelector(),
-
-                    const SizedBox(height: 20),
-
-                    /// NOTES SECTION
-                    _label('Notes (Optional)'),
-                    const SizedBox(height: 5),
-                    _input(
-                      controller: notesController,
-                      hint: 'Add any additional notes here...',
-                      maxLines: 4,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// UPDATE BUTTON
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: _confirmUpdate,
-                        child: const Text(
-                          'Update Goal',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
+                        ],
                       ),
                     ),
-
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -289,7 +332,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Colors.black87,
+          color: AppTheme.darkText,
         ),
       ),
     );
@@ -301,7 +344,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.black87,
+        color: AppTheme.darkText,
       ),
     );
   }
@@ -318,17 +361,26 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     String? hint,
     int maxLines = 1,
   }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400),
-        contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
-        errorBorder: _border(Colors.red),
-        focusedErrorBorder: _border(Colors.red),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.darkSecondary,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.darkThird),
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        style: const TextStyle(color: AppTheme.darkText),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade400),
+          contentPadding: const EdgeInsets.all(14),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+        ),
       ),
     );
   }
@@ -342,19 +394,28 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _label(label),
-        TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            suffixText: suffix,
-            suffixStyle: TextStyle(
-              color: AppTheme.primary,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.darkSecondary,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppTheme.darkThird),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            style: const TextStyle(color: AppTheme.darkText),
+            decoration: InputDecoration(
+              suffixText: suffix,
+              suffixStyle: const TextStyle(
+                color: AppTheme.darkPrimary,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              contentPadding: const EdgeInsets.all(14),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
             ),
-            contentPadding: const EdgeInsets.all(14),
-            enabledBorder: _border(Colors.grey.shade300),
-            focusedBorder: _border(AppTheme.primary),
           ),
         ),
       ],
@@ -365,7 +426,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        color: AppTheme.darkSecondary,
+        border: Border.all(color: AppTheme.darkThird),
         borderRadius: BorderRadius.circular(14),
       ),
       child: DropdownButtonFormField<String>(
@@ -373,16 +435,20 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w400,
-          color: Colors.black87,
+          color: AppTheme.darkText,
         ),
+        dropdownColor: AppTheme.darkSecondary,
         decoration: const InputDecoration(
           border: InputBorder.none,
           isDense: true,
           contentPadding: EdgeInsets.zero,
         ),
-        items:
-        categories
-            .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+        items: categories
+            .map((cat) => DropdownMenuItem(
+          value: cat,
+          child: Text(cat,
+              style: const TextStyle(color: AppTheme.darkText)),
+        ))
             .toList(),
         onChanged: (value) {
           if (value != null) {
@@ -397,9 +463,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -409,21 +474,21 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppTheme.darkText,
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             height: 40,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300, width: 1),
+              border: Border.all(color: AppTheme.darkThird, width: 1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(Icons.remove, color: Colors.grey.shade700),
+                  icon: const Icon(Icons.remove, color: AppTheme.darkText),
                   onPressed: () {
                     if (workoutSessionsPerWeek > 1) {
                       setState(() => workoutSessionsPerWeek--);
@@ -438,11 +503,12 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: AppTheme.darkText,
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.add, color: Colors.grey.shade700),
+                  icon: const Icon(Icons.add, color: AppTheme.darkText),
                   onPressed: () {
                     if (workoutSessionsPerWeek < 7) {
                       setState(() => workoutSessionsPerWeek++);
@@ -469,7 +535,10 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                colorScheme: ColorScheme.light(primary: AppTheme.primary),
+                colorScheme: ColorScheme.dark(
+                  primary: AppTheme.darkPrimary,
+                  surface: AppTheme.darkSecondary,
+                ),
               ),
               child: child!,
             );
@@ -492,12 +561,14 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
+              color: AppTheme.darkSecondary,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppTheme.darkThird),
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today, size: 16, color: AppTheme.primary),
+                Icon(Icons.calendar_today,
+                    size: 16, color: AppTheme.darkPrimary),
                 const SizedBox(width: 8),
                 Text(
                   date != null
@@ -506,6 +577,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
+                    color: AppTheme.darkText,
                   ),
                 ),
               ],
@@ -520,23 +592,22 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children:
-      activities.map((activity) {
+      children: activities.map((activity) {
         final isSelected = selectedActivities.contains(activity);
         return ChoiceChip(
           label: Text(activity),
           selected: isSelected,
-          selectedColor: AppTheme.primary.withOpacity(0.15),
-          backgroundColor: Colors.white,
+          selectedColor: AppTheme.darkPrimary.withOpacity(0.15),
+          backgroundColor: AppTheme.darkThird,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: isSelected ? AppTheme.primary : Colors.grey.shade300,
+              color: isSelected ? AppTheme.darkPrimary : AppTheme.darkThird,
               width: 1,
             ),
           ),
           labelStyle: TextStyle(
-            color: isSelected ? AppTheme.primary : Colors.black87,
+            color: isSelected ? AppTheme.darkBackground : AppTheme.darkText,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
           onSelected: (selected) {
@@ -559,20 +630,27 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Update Goal'),
-        content: const Text('Are you sure you want to update this goal?'),
+        backgroundColor: AppTheme.darkSecondary,
+        title: const Text(
+          'Update Goal',
+          style: TextStyle(color: AppTheme.darkText),
+        ),
+        content: const Text(
+          'Are you sure you want to update this goal?',
+          style: TextStyle(color: AppTheme.darkText),
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(color: Colors.grey.shade400),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
+              backgroundColor: AppTheme.darkPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -583,7 +661,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
             },
             child: const Text(
               'Update',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: AppTheme.darkBackground),
             ),
           ),
         ],
@@ -635,15 +713,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
       return;
     }
 
-    // Show loading indicator
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    // Show loading
+    setState(() => isLoading = true);
 
     try {
       // Create request object
@@ -665,9 +736,7 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
       // Call API
       await GoalService.updateGoal(widget.goal.goal.id, request);
 
-      // Close loading dialog
       if (!mounted) return;
-      Navigator.pop(context);
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -684,21 +753,17 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
 
       // Return to previous screen with success result
       Navigator.pop(context, true); // true indicates successful update
-
     } catch (e) {
-      // Close loading dialog
       if (!mounted) return;
-      Navigator.pop(context);
 
       // Show error
       _showError('Failed to update goal: ${e.toString()}');
       debugPrint('❌ Update goal error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
-  }
-
-  /// Helper method to format date to "yyyy-MM-dd"
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   void _showError(String message) {

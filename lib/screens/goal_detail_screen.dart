@@ -53,14 +53,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   Color get statusColor {
     switch (currentGoal.goal.status.toUpperCase()) {
       case 'COMPLETED':
-        return Colors.green;
+        return Colors.green.shade400;
       case 'ACTIVE':
       case 'IN_PROGRESS':
-        return Colors.orange;
+        return Colors.orange.shade400;
       case 'CANCELED':
-        return Colors.red;
+        return Colors.red.shade400;
       default:
-        return Colors.grey;
+        return Colors.grey.shade400;
     }
   }
 
@@ -96,18 +96,19 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Column(
           children: [
             /// HEADER
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Colors.white,
+              color: AppTheme.darkBackground,
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new,
+                        size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Expanded(
@@ -117,6 +118,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -125,7 +127,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     icon: Icon(
                       Icons.refresh,
                       size: 20,
-                      color: isLoading ? Colors.grey : AppTheme.primary,
+                      color: isLoading
+                          ? Colors.grey.shade600
+                          : AppTheme.darkPrimary,
                     ),
                     onPressed: isLoading ? null : _refreshGoalData,
                   ),
@@ -137,7 +141,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshGoalData,
-                color: AppTheme.primary,
+                color: AppTheme.darkPrimary,
+                backgroundColor: AppTheme.darkSecondary,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
@@ -195,14 +200,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primary,
-            AppTheme.primary.withOpacity(0.8),
+            AppTheme.darkThird,
+            AppTheme.darkThird.withOpacity(0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.3),
+            color: AppTheme.darkThird.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -220,7 +225,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: AppTheme.darkBackground.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -229,6 +234,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
@@ -307,7 +313,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             Icons.fitness_center,
             'Workouts',
             '${currentGoal.completedWorkouts}/${currentGoal.totalWorkouts}',
-            Colors.blue,
+            Colors.blue.shade400,
           ),
         ),
         const SizedBox(width: 12),
@@ -316,7 +322,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             Icons.timer_outlined,
             'Duration',
             '$duration days',
-            Colors.orange,
+            Colors.orange.shade400,
           ),
         ),
       ],
@@ -327,14 +333,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -347,6 +353,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
+              color: AppTheme.darkText,
             ),
           ),
           const SizedBox(height: 16),
@@ -356,8 +363,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: currentGoal.progressPercentage / 100,
-              backgroundColor: Colors.grey.shade200,
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+              backgroundColor: AppTheme.darkThird,
+              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.darkPrimary),
               minHeight: 12,
             ),
           ),
@@ -367,36 +374,41 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             children: [
               Text(
                 '${currentGoal.progressPercentage.toStringAsFixed(1)}% Complete',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.primary,
+                  color: AppTheme.darkPrimary,
                 ),
               ),
               Text(
                 '${currentGoal.completedWorkouts}/${currentGoal.totalWorkouts} workouts',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade400,
                 ),
               ),
             ],
           ),
 
           const SizedBox(height: 16),
-          const Divider(),
+          Divider(color: AppTheme.darkThird),
           const SizedBox(height: 16),
 
           /// This Week Stats
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
+              color: AppTheme.darkPrimary.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.darkPrimary.withOpacity(0.3),
+                width: 1,
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today, color: AppTheme.primary, size: 20),
+                Icon(Icons.calendar_today,
+                    color: AppTheme.darkPrimary, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -406,7 +418,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                         'This Week',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade400,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -415,6 +427,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ],
@@ -425,7 +438,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     'Target: ${currentGoal.goal.targetWorkoutSessionsPerWeek}/week',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade400,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -455,14 +468,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.darkSecondary,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: AppTheme.darkThird),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -473,35 +486,35 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   icon: Icons.monitor_weight,
                   label: 'Target Weight',
                   value: '${goal.targetWeight} kg',
-                  color: Colors.blue,
+                  color: Colors.blue.shade400,
                 ),
               if (goal.targetBodyFatPercentage != null)
                 _buildTargetItem(
                   icon: Icons.trending_down,
                   label: 'Target Body Fat',
                   value: '${goal.targetBodyFatPercentage}%',
-                  color: Colors.orange,
+                  color: Colors.orange.shade400,
                 ),
               if (goal.targetMuscleMass != null)
                 _buildTargetItem(
                   icon: Icons.fitness_center,
                   label: 'Target Muscle Mass',
                   value: '${goal.targetMuscleMass} kg',
-                  color: Colors.green,
+                  color: Colors.green.shade400,
                 ),
               if (goal.targetWorkoutSessionsPerWeek != null)
                 _buildTargetItem(
                   icon: Icons.event_repeat,
                   label: 'Workouts Per Week',
                   value: '${goal.targetWorkoutSessionsPerWeek} sessions',
-                  color: Colors.purple,
+                  color: Colors.purple.shade400,
                 ),
               if (goal.targetCaloriesPerDay != null)
                 _buildTargetItem(
                   icon: Icons.local_fire_department,
                   label: 'Daily Calories',
                   value: '${goal.targetCaloriesPerDay} kcal',
-                  color: Colors.red,
+                  color: Colors.red.shade400,
                   isLast: true,
                 ),
             ],
@@ -525,14 +538,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.darkSecondary,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: AppTheme.darkThird),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -569,7 +582,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                 _buildTimelineItem(
                   icon: Icons.history,
                   label: 'Days Elapsed',
-                  value: '${daysElapsed > duration ? duration : daysElapsed} days',
+                  value:
+                  '${daysElapsed > duration ? duration : daysElapsed} days',
                   isLast: true,
                 ),
             ],
@@ -589,9 +603,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.amber.shade50,
+            color: Colors.amber.shade900.withOpacity(0.15),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.amber.shade200),
+            border: Border.all(color: Colors.amber.shade700.withOpacity(0.3)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,15 +613,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               Icon(
                 Icons.sticky_note_2_outlined,
                 size: 20,
-                color: Colors.amber.shade700,
+                color: Colors.amber.shade400,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   currentGoal.goal.notes,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.amber.shade900,
+                    color: AppTheme.darkText,
                     height: 1.5,
                   ),
                 ),
@@ -628,14 +642,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppTheme.darkSecondary,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: AppTheme.darkThird),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -644,7 +658,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               Icon(
                 Icons.monitor_heart_outlined,
                 size: 20,
-                color: AppTheme.primary,
+                color: AppTheme.darkPrimary,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -652,14 +666,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   'InBody data available',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade700,
+                    color: Colors.grey.shade300,
                   ),
                 ),
               ),
               Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: Colors.grey.shade400,
+                color: Colors.grey.shade500,
               ),
             ],
           ),
@@ -694,14 +708,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -711,7 +725,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 20, color: color),
@@ -719,9 +733,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           const SizedBox(height: 12),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black54,
+              color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -732,6 +746,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
+              color: AppTheme.darkText,
             ),
           ),
         ],
@@ -753,7 +768,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -764,7 +779,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade400,
               ),
             ),
           ),
@@ -773,6 +788,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
+              color: AppTheme.darkText,
             ),
           ),
         ],
@@ -790,14 +806,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
       padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primary, size: 18),
+          Icon(icon, color: AppTheme.darkPrimary, size: 18),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade400,
               ),
             ),
           ),
@@ -806,6 +822,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
+              color: AppTheme.darkText,
             ),
           ),
         ],
@@ -820,6 +837,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
         fontSize: 18,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
+        color: AppTheme.darkText,
       ),
     );
   }

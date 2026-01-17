@@ -74,6 +74,7 @@ flutter_native_splash:
 flutter:
   assets:
     - assets/lottie/done.json
+    - assets/lottie/done_dark.json
     - assets/logo/Fitly.png
     - assets/logo/Fitly_logo.png
 

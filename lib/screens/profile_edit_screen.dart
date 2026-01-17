@@ -21,6 +21,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   DateTime? dateOfBirth;
   String selectedGender = 'Male';
   String? avatarUrl;
+  bool isLoading = false;
 
   final List<String> genders = ['Male', 'Female', 'Other', 'Prefer not to say'];
 
@@ -31,7 +32,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     // Pre-fill with existing data
     fullNameController = TextEditingController(text: widget.userInfo.fullName);
     emailController = TextEditingController(text: widget.userInfo.email);
-    phoneController = TextEditingController(text: widget.userInfo.phoneNumber ?? '');
+    phoneController =
+        TextEditingController(text: widget.userInfo.phoneNumber ?? '');
 
     // Map gender from database format
     selectedGender = _mapGenderFromApi(widget.userInfo.gender);
@@ -54,191 +56,234 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              /// HEADER
-              Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Edit Profile',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                  /// HEADER
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new,
+                            size: 18, color: AppTheme.darkText),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'Edit Profile',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.darkText,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 40),
+                    ],
                   ),
-                  const SizedBox(width: 40),
-                ],
-              ),
 
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              /// FORM
-              Expanded(
-                child: ListView(
-                  children: [
-                    /// AVATAR SECTION
-                    Center(
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppTheme.primary,
-                                width: 3,
-                              ),
-                              image:
-                              avatarUrl != null
-                                  ? DecorationImage(
-                                image: NetworkImage(avatarUrl!),
-                                fit: BoxFit.cover,
-                              )
-                                  : null,
-                            ),
-                            child:
-                            avatarUrl == null
-                                ? Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.grey.shade400,
-                            )
-                                : null,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: _pickAvatar,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
+                  /// FORM
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        /// AVATAR SECTION
+                        Center(
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
-                                    width: 2,
+                                    color: AppTheme.darkPrimary,
+                                    width: 3,
+                                  ),
+                                  color: AppTheme.darkThird,
+                                  image: avatarUrl != null
+                                      ? DecorationImage(
+                                    image: NetworkImage(avatarUrl!),
+                                    fit: BoxFit.cover,
+                                  )
+                                      : null,
+                                ),
+                                child: avatarUrl == null
+                                    ? Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey.shade600,
+                                )
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: _pickAvatar,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.darkPrimary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppTheme.darkBackground,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt,
+                                      size: 18,
+                                      color: AppTheme.darkBackground,
+                                    ),
                                   ),
                                 ),
-                                child: const Icon(
-                                  Icons.camera_alt,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Center(
+                          child: TextButton(
+                            onPressed: _pickAvatar,
+                            child: const Text(
+                              'Change Photo',
+                              style: TextStyle(
+                                color: AppTheme.darkPrimary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        /// PERSONAL INFORMATION SECTION
+                        _sectionHeader('Personal Information'),
+                        const SizedBox(height: 12),
+
+                        _label('Full Name'),
+                        _input(
+                          controller: fullNameController,
+                          hint: 'Enter your full name',
+                          icon: Icons.person_outline,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _label('Email'),
+                        _input(
+                          controller: emailController,
+                          hint: 'Enter your email',
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          enabled: false,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _label('Phone Number'),
+                        _input(
+                          controller: phoneController,
+                          hint: 'Enter your phone number',
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// DATE OF BIRTH & GENDER SECTION
+                        _sectionHeader('Additional Details'),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Expanded(child: _dateOfBirthPicker()),
+                            const SizedBox(width: 12),
+                            Expanded(child: _genderDropdown()),
+                          ],
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        /// UPDATE BUTTON
+                        SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.darkPrimary,
+                              disabledBackgroundColor:
+                              AppTheme.darkPrimary.withOpacity(0.6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: isLoading ? null : _updateProfile,
+                            child: isLoading
+                                ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white),
+                              ),
+                            )
+                                : const Text(
+                              'Update Profile',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.darkBackground,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Loading overlay
+            if (isLoading)
+              Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Card(
+                    color: AppTheme.darkThird,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(
+                              color: AppTheme.darkPrimary),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Updating profile...',
+                            style: TextStyle(color: AppTheme.darkText),
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 8),
-
-                    Center(
-                      child: TextButton(
-                        onPressed: _pickAvatar,
-                        child: Text(
-                          'Change Photo',
-                          style: TextStyle(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// PERSONAL INFORMATION SECTION
-                    _sectionHeader('Personal Information'),
-                    const SizedBox(height: 12),
-
-                    _label('Full Name'),
-                    _input(
-                      controller: fullNameController,
-                      hint: 'Enter your full name',
-                      icon: Icons.person_outline,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _label('Email'),
-                    _input(
-                    controller: emailController,
-                    hint: 'Enter your email',
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    enabled: false
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _label('Phone Number'),
-                    _input(
-                      controller: phoneController,
-                      hint: 'Enter your phone number',
-                      icon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// DATE OF BIRTH & GENDER SECTION
-                    _sectionHeader('Additional Details'),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(child: _dateOfBirthPicker()),
-                        const SizedBox(width: 12),
-                        Expanded(child: _genderDropdown()),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// UPDATE BUTTON
-                    SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: _updateProfile,
-                        child: const Text(
-                          'Update Profile',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -254,7 +299,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: Colors.black87,
+          color: AppTheme.darkText,
         ),
       ),
     );
@@ -266,7 +311,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.black87,
+        color: AppTheme.darkText,
       ),
     );
   }
@@ -283,24 +328,33 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     String? hint,
     IconData? icon,
     TextInputType? keyboardType,
-    bool enabled = true
+    bool enabled = true,
   }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      enabled: enabled,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400),
-        prefixIcon:
-        icon != null
-            ? Icon(icon, color: Colors.grey.shade600, size: 20)
-            : null,
-        contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
-        errorBorder: _border(Colors.red),
-        focusedErrorBorder: _border(Colors.red),
+    return Container(
+      decoration: BoxDecoration(
+        color: enabled ? AppTheme.darkSecondary : AppTheme.darkThird,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.darkThird),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        enabled: enabled,
+        style: TextStyle(
+          color: enabled ? AppTheme.darkText : Colors.grey.shade500,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade400),
+          prefixIcon: icon != null
+              ? Icon(icon, color: AppTheme.darkPrimary, size: 20)
+              : null,
+          contentPadding: const EdgeInsets.all(14),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+        ),
       ),
     );
   }
@@ -310,15 +364,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate:
-          dateOfBirth ??
+          initialDate: dateOfBirth ??
               DateTime.now().subtract(const Duration(days: 365 * 25)),
           firstDate: DateTime(1900),
           lastDate: DateTime.now(),
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                colorScheme: ColorScheme.light(primary: AppTheme.primary),
+                colorScheme: ColorScheme.dark(
+                  primary: AppTheme.darkPrimary,
+                  surface: AppTheme.darkSecondary,
+                ),
               ),
               child: child!,
             );
@@ -336,15 +392,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
+              color: AppTheme.darkSecondary,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppTheme.darkThird),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.calendar_today,
                   size: 16,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.darkPrimary,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -354,9 +411,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color:
-                    dateOfBirth != null
-                        ? Colors.black87
+                    color: dateOfBirth != null
+                        ? AppTheme.darkText
                         : Colors.grey.shade400,
                   ),
                 ),
@@ -376,7 +432,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
+            color: AppTheme.darkSecondary,
+            border: Border.all(color: AppTheme.darkThird),
             borderRadius: BorderRadius.circular(14),
           ),
           child: DropdownButtonFormField<String>(
@@ -385,19 +442,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppTheme.darkText,
             ),
+            dropdownColor: AppTheme.darkSecondary,
             decoration: const InputDecoration(
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
             ),
-            items:
-            genders
+            items: genders
                 .map(
                   (gender) => DropdownMenuItem(
                 value: gender,
-                child: Text(gender),
+                child: Text(gender,
+                    style: const TextStyle(color: AppTheme.darkText)),
               ),
             )
                 .toList(),
@@ -447,11 +505,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void _pickAvatar() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.darkSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder:
-          (context) => Container(
+      builder: (context) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -460,26 +518,32 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: AppTheme.darkThird,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Change Profile Photo',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.darkText,
+              ),
             ),
             const SizedBox(height: 20),
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withOpacity(0.1),
+                  color: AppTheme.darkPrimary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.camera_alt, color: AppTheme.primary),
+                child: const Icon(Icons.camera_alt,
+                    color: AppTheme.darkPrimary),
               ),
-              title: const Text('Take Photo'),
+              title: const Text('Take Photo',
+                  style: TextStyle(color: AppTheme.darkText)),
               onTap: () {
                 Navigator.pop(context);
                 _showInfo('Camera feature coming soon');
@@ -489,12 +553,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.shade400.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.photo_library, color: Colors.blue),
+                child: Icon(Icons.photo_library, color: Colors.blue.shade400),
               ),
-              title: const Text('Choose from Gallery'),
+              title: const Text('Choose from Gallery',
+                  style: TextStyle(color: AppTheme.darkText)),
               onTap: () {
                 Navigator.pop(context);
                 _showInfo('Gallery feature coming soon');
@@ -505,12 +570,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.shade400.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.delete, color: Colors.red),
+                  child: Icon(Icons.delete, color: Colors.red.shade400),
                 ),
-                title: const Text('Remove Photo'),
+                title: const Text('Remove Photo',
+                    style: TextStyle(color: AppTheme.darkText)),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() => avatarUrl = null);
@@ -539,15 +605,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       return;
     }
 
-    // Show loading indicator
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    setState(() => isLoading = true);
 
     try {
       debugPrint('🔵 Updating profile for user ID: ${widget.userInfo.id}');
@@ -564,9 +622,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         birthday: dateOfBirth,
       );
 
-      // Close loading dialog
       if (!mounted) return;
-      Navigator.pop(context);
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -574,22 +630,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           content: const Text('Profile updated successfully!'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           duration: const Duration(seconds: 2),
         ),
       );
 
       // Return to previous screen with success flag
       Navigator.pop(context, true);
-
     } catch (e) {
-      // Close loading dialog
       if (!mounted) return;
-      Navigator.pop(context);
 
       // Show error
       _showError('Failed to update profile: ${e.toString()}');
       debugPrint('❌ Update profile error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 

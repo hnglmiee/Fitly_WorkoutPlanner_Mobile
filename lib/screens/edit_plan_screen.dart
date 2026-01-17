@@ -21,8 +21,6 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
   bool everyDay = true;
   bool isLoading = false;
 
-  /// EXERCISE DATA WITH PROPER IDs
-  /// Structure: categoryId -> category name -> list of exercises with IDs
   final Map<int, Map<String, dynamic>> categoryMap = {
     1: {
       'name': 'Chest',
@@ -99,7 +97,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Stack(
           children: [
@@ -111,7 +109,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                        icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const Expanded(
@@ -119,8 +117,9 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                           child: Text(
                             'Edit Plan',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.darkText
                             ),
                           ),
                         ),
@@ -161,7 +160,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                         /// ➕ ADD EXERCISE BUTTON
                         OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: AppTheme.primary, width: 1.5),
+                            side: BorderSide(color: AppTheme.darkPrimary, width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -172,11 +171,11 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                               exercises.add(ExerciseForm());
                             });
                           },
-                          icon: Icon(Icons.add_rounded, color: AppTheme.primary),
+                          icon: Icon(Icons.add_rounded, color: AppTheme.darkPrimary),
                           label: Text(
                             'Add Exercise',
                             style: TextStyle(
-                              color: AppTheme.primary,
+                              color: AppTheme.darkText,
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
                             ),
@@ -222,11 +221,12 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                           height: 52,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primary,
+                              backgroundColor: AppTheme.darkPrimary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               elevation: 0,
+                              disabledBackgroundColor: AppTheme.darkPrimary.withOpacity(0.6),
                             ),
                             onPressed: isLoading ? null : _updatePlan,
                             child: isLoading
@@ -234,7 +234,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
+                                strokeWidth: 2.5,
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
@@ -243,7 +243,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: AppTheme.darkBackground,
                               ),
                             ),
                           ),
@@ -263,14 +263,18 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                 color: Colors.black26,
                 child: Center(
                   child: Card(
+                    color: AppTheme.darkThird,
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(color: AppTheme.primary),
+                          CircularProgressIndicator(color: AppTheme.darkPrimary),
                           const SizedBox(height: 16),
-                          const Text('Adding exercises...'),
+                          const Text(
+                            'Adding exercises...',
+                            style: TextStyle(color: AppTheme.darkText),
+                          ),
                         ],
                       ),
                     ),
@@ -291,9 +295,9 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.darkText
         ),
       ),
     );
@@ -303,9 +307,9 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Colors.black87,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.darkText
       ),
     );
   }
@@ -325,12 +329,13 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: const TextStyle(color: AppTheme.darkText),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400),
         contentPadding: const EdgeInsets.all(14),
-        enabledBorder: _border(Colors.grey.shade300),
-        focusedBorder: _border(AppTheme.primary),
+        enabledBorder: _border(AppTheme.darkThird),
+        focusedBorder: _border(AppTheme.darkThird),
         errorBorder: _border(Colors.red),
         focusedErrorBorder: _border(Colors.red),
       ),
@@ -340,8 +345,8 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
   InputDecoration _dropdownDecoration() {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      enabledBorder: _border(Colors.grey.shade300),
-      focusedBorder: _border(AppTheme.primary),
+      enabledBorder: _border(AppTheme.darkThird),
+      focusedBorder: _border(AppTheme.darkThird),
     );
   }
 
@@ -355,14 +360,14 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           height: 48,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300, width: 1),
+            border: Border.all(color: AppTheme.darkThird, width: 1),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(Icons.remove, color: Colors.grey.shade700),
+                icon: Icon(Icons.remove, color: AppTheme.darkText),
                 onPressed: () => onChange(value - 1),
                 padding: EdgeInsets.zero,
               ),
@@ -371,10 +376,11 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: AppTheme.darkText,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.add, color: Colors.grey.shade700),
+                icon: Icon(Icons.add, color: AppTheme.darkText),
                 onPressed: () => onChange(value + 1),
                 padding: EdgeInsets.zero,
               ),
@@ -396,17 +402,17 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
         return ChoiceChip(
           label: Text(day),
           selected: selected,
-          selectedColor: AppTheme.primary.withOpacity(0.15),
-          backgroundColor: Colors.white,
+          selectedColor: AppTheme.darkPrimary.withOpacity(0.15),
+          backgroundColor: AppTheme.darkThird,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(
-              color: selected ? AppTheme.primary : Colors.grey.shade300,
+              color: selected ? AppTheme.darkPrimary : AppTheme.darkThird,
               width: 1,
             ),
           ),
           labelStyle: TextStyle(
-            color: selected ? AppTheme.primary : Colors.black87,
+            color: selected ? AppTheme.darkBackground : AppTheme.darkText,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
           ),
           onSelected: everyDay
@@ -428,9 +434,8 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: AppTheme.darkThird,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -440,12 +445,12 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppTheme.darkText,
             ),
           ),
           Switch(
             value: everyDay,
-            activeColor: AppTheme.primary,
+            activeColor: AppTheme.darkPrimary,
             onChanged: (value) {
               setState(() {
                 everyDay = value;
@@ -462,7 +467,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppTheme.darkThird),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -479,15 +484,19 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: Colors.black87,
+                color: AppTheme.darkText,
               ),
+              dropdownColor: AppTheme.darkSecondary,
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
               items: reminderOptions
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .map((e) => DropdownMenuItem(
+                value: e,
+                child: Text(e, style: const TextStyle(color: AppTheme.darkText)),
+              ))
                   .toList(),
               onChanged: (value) {
                 if (value == null) return;
@@ -515,12 +524,12 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade300),
+        color: AppTheme.darkSecondary,
+        border: Border.all(color: AppTheme.darkThird),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: AppTheme.darkThird.withOpacity(0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -539,7 +548,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.1),
+                      color: AppTheme.darkSecondary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -548,7 +557,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.primary,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -559,7 +568,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: AppTheme.darkText,
                     ),
                   ),
                 ],
@@ -595,15 +604,19 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                     DropdownButtonFormField<int>(
                       isExpanded: true,
                       value: item.categoryId,
-                      hint: const Text('Select'),
+                      hint: const Text('Select', style: TextStyle(color: Colors.grey)),
                       style: const TextStyle(
                         fontSize: 15,
-                        color: Colors.black87,
+                        color: AppTheme.darkText,
                       ),
+                      dropdownColor: AppTheme.darkSecondary,
                       items: categoryMap.entries
                           .map((entry) => DropdownMenuItem(
                         value: entry.key,
-                        child: Text(entry.value['name'] as String),
+                        child: Text(
+                          entry.value['name'] as String,
+                          style: const TextStyle(color: AppTheme.darkText),
+                        ),
                       ))
                           .toList(),
                       onChanged: (value) {
@@ -640,15 +653,19 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                     DropdownButtonFormField<int>(
                       isExpanded: true,
                       value: item.exerciseId,
-                      hint: const Text('Select'),
+                      hint: const Text('Select', style: TextStyle(color: Colors.grey)),
                       style: const TextStyle(
                         fontSize: 15,
-                        color: Colors.black87,
+                        color: AppTheme.darkText,
                       ),
+                      dropdownColor: AppTheme.darkSecondary,
                       items: availableExercises
                           .map((ex) => DropdownMenuItem(
                         value: ex['id'] as int,
-                        child: Text(ex['name'] as String),
+                        child: Text(
+                          ex['name'] as String,
+                          style: const TextStyle(color: AppTheme.darkText),
+                        ),
                       ))
                           .toList(),
                       onChanged: availableExercises.isEmpty
@@ -704,7 +721,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                   Text(
                     '${item.weightRange.start.round()}kg - ${item.weightRange.end.round()}kg',
                     style: TextStyle(
-                      color: AppTheme.primary,
+                      color: AppTheme.darkText,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -717,7 +734,7 @@ class _EditPlanScreenState extends State<EditPlanScreen> {
                 min: 0,
                 max: muscleMaxWeight[item.muscle] ?? 100,
                 divisions: 10,
-                activeColor: AppTheme.primary,
+                activeColor: AppTheme.darkPrimary,
                 inactiveColor: Colors.grey.shade300,
                 onChanged: (values) {
                   setState(() => item.weightRange = values);

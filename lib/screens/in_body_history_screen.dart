@@ -32,11 +32,11 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Column(
           children: [
-            // ✅ Header giống InBodyScreen
+            // ✅ Header
             _header(context),
 
             Expanded(
@@ -45,7 +45,8 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
-                      child: CircularProgressIndicator(color: AppTheme.primary),
+                      child:
+                      CircularProgressIndicator(color: AppTheme.darkPrimary),
                     );
                   }
 
@@ -59,7 +60,7 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
                             Icon(
                               Icons.error_outline,
                               size: 64,
-                              color: Colors.red.shade300,
+                              color: Colors.red.shade400,
                             ),
                             const SizedBox(height: 16),
                             const Text(
@@ -67,6 +68,7 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
+                                color: AppTheme.darkText,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -74,18 +76,21 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
                               snapshot.error.toString(),
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade400,
                               ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton.icon(
                               onPressed: _loadRecords,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Retry'),
+                              icon: const Icon(Icons.refresh,
+                                  color: AppTheme.darkBackground),
+                              label: const Text('Retry',
+                                  style: TextStyle(
+                                      color: AppTheme.darkBackground)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primary,
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppTheme.darkPrimary,
+                                elevation: 0,
                               ),
                             ),
                           ],
@@ -102,15 +107,15 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
                           Icon(
                             Icons.history,
                             size: 64,
-                            color: Colors.grey.shade300,
+                            color: Colors.grey.shade600,
                           ),
                           const SizedBox(height: 16),
-                          Text(
+                          const Text(
                             'No records yet',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                              color: AppTheme.darkText,
                             ),
                           ),
                         ],
@@ -138,8 +143,8 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (_) => InBodyDetailScreen(record: record),
+                                builder: (_) =>
+                                    InBodyDetailScreen(record: record),
                               ),
                             );
 
@@ -164,20 +169,26 @@ class _InBodyHistoryScreenState extends State<InBodyHistoryScreen> {
     );
   }
 
-  // ✅ Header giống InBodyScreen
+  // ✅ Header
   Widget _header(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 20),
+            icon: const Icon(Icons.arrow_back_ios,
+                size: 20, color: AppTheme.darkText),
             onPressed: () => Navigator.pop(context),
           ),
           const Spacer(),
-          Text('In Body History', style: textTheme.headlineMedium),
+          const Text(
+            'In Body History',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.darkText,
+            ),
+          ),
           const Spacer(),
           const Opacity(
             opacity: 0,
@@ -204,30 +215,28 @@ class _RecordCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient:
-            isLatest
-                ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.third.withOpacity(0.1),
-                    AppTheme.primary.withOpacity(0.05),
-                  ],
-                )
-                : null,
-        color: isLatest ? null : Colors.white,
+        gradient: isLatest
+            ? LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.darkPrimary.withOpacity(0.15),
+            AppTheme.darkPrimary.withOpacity(0.05),
+          ],
+        )
+            : null,
+        color: isLatest ? null : AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color:
-              isLatest
-                  ? AppTheme.primary.withOpacity(0.2)
-                  : Colors.grey.shade200,
+          color: isLatest
+              ? AppTheme.darkPrimary.withOpacity(0.3)
+              : AppTheme.darkThird,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -248,13 +257,13 @@ class _RecordCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.15),
+                        color: AppTheme.darkPrimary.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.fitness_center,
                         size: 20,
-                        color: AppTheme.primary,
+                        color: AppTheme.darkPrimary,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -263,20 +272,19 @@ class _RecordCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            DateFormat(
-                              'MMM dd, yyyy',
-                            ).format(record.measuredAt),
+                            DateFormat('MMM dd, yyyy').format(record.measuredAt),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
+                              color: AppTheme.darkText,
                             ),
                           ),
                           Text(
                             DateFormat('HH:mm').format(record.measuredAt),
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade400,
                             ),
                           ),
                         ],
@@ -289,19 +297,20 @@ class _RecordCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.shade400.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.star, size: 14, color: Colors.green),
-                            SizedBox(width: 4),
+                          children: [
+                            Icon(Icons.star,
+                                size: 14, color: Colors.green.shade400),
+                            const SizedBox(width: 4),
                             Text(
                               'Latest',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.green,
+                                color: Colors.green.shade400,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -345,7 +354,7 @@ class _RecordCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: AppTheme.darkThird,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -353,7 +362,7 @@ class _RecordCard extends StatelessWidget {
                         Icon(
                           Icons.note_outlined,
                           size: 16,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade400,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -361,7 +370,7 @@ class _RecordCard extends StatelessWidget {
                             record.notes!,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade300,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -399,11 +408,11 @@ class _StatChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.darkThird,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -411,13 +420,13 @@ class _StatChip extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 16, color: AppTheme.primary),
+            Icon(icon, size: 16, color: AppTheme.darkPrimary),
             const SizedBox(height: 6),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: Colors.black54,
+                color: Colors.grey.shade400,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -432,6 +441,7 @@ class _StatChip extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 const SizedBox(width: 2),
@@ -439,9 +449,9 @@ class _StatChip extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 1),
                   child: Text(
                     unit,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
-                      color: Colors.black54,
+                      color: Colors.grey.shade400,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

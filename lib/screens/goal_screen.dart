@@ -42,7 +42,7 @@ class _GoalScreenState extends State<GoalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -53,7 +53,7 @@ class _GoalScreenState extends State<GoalScreen> {
               /// HEADER
               const Text(
                 "Goal",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.darkText),
               ),
 
               const SizedBox(height: 20),
@@ -77,6 +77,7 @@ class _GoalScreenState extends State<GoalScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                    color: AppTheme.darkText
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -88,7 +89,7 @@ class _GoalScreenState extends State<GoalScreen> {
                 "You can choose more than one — change\nanytime later.",
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.grey.shade600,
+                  color: AppTheme.darkText,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -142,8 +143,8 @@ class _GoalScreenState extends State<GoalScreen> {
                           }
                           : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
-                    disabledBackgroundColor: AppTheme.primary.withOpacity(0.4),
+                    backgroundColor: AppTheme.darkPrimary,
+                    disabledBackgroundColor: AppTheme.darkPrimary.withOpacity(0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -152,7 +153,7 @@ class _GoalScreenState extends State<GoalScreen> {
                   child: const Text(
                     "Next",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.darkBackground,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -175,7 +176,7 @@ class _GoalScreenState extends State<GoalScreen> {
         height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: active ? AppTheme.primary : Colors.grey.shade300,
+          color: active ? AppTheme.darkPrimary : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(3),
         ),
       ),
@@ -196,9 +197,9 @@ class _GoalScreenState extends State<GoalScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.grey.shade50,
           border: Border.all(
-            color: isSelected ? AppTheme.primary : Colors.grey.shade200,
+            color: isSelected ? AppTheme.darkPrimary : Colors.grey.shade200,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(20),
@@ -242,7 +243,7 @@ class _GoalScreenState extends State<GoalScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? AppTheme.primary : Colors.black87,
+                      color: isSelected ? AppTheme.darkBackground : Colors.black87,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -262,7 +263,7 @@ class _GoalScreenState extends State<GoalScreen> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary,
+                  color: AppTheme.darkBackground,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.check, color: Colors.white, size: 18),

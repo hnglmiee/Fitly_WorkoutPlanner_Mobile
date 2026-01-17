@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 class CustomNavigationBar extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
@@ -31,7 +33,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xffc9e6ff),
+        color: AppTheme.darkPrimary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(50),
       ),
       child: Row(
@@ -58,10 +60,10 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
 
               decoration: BoxDecoration(
                 color:
-                    isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                    isSelected ? AppTheme.darkPrimary : Colors.white.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(40),
                 border: Border.all(
-                  color: isSelected ? Colors.blue : Colors.transparent,
+                  color: isSelected ? AppTheme.darkPrimary : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -71,13 +73,13 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                         ? MainAxisAlignment.start
                         : MainAxisAlignment.center,
                 children: [
-                  Icon(icons[index], color: Colors.blue),
+                  Icon(icons[index], color: AppTheme.darkBackground),
                   if (isSelected) ...[
                     const SizedBox(width: 8),
                     Text(
                       labels[index],
                       style: const TextStyle(
-                        color: Colors.blue,
+                        color: AppTheme.darkBackground,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

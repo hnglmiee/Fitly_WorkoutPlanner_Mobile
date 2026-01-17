@@ -43,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightBackground,
+      backgroundColor: AppTheme.darkBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -59,12 +59,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
+                    color: AppTheme.darkText
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 "Sign up and take the first step towards your goals.",
-                style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 15, color: AppTheme.darkText),
               ),
 
               const SizedBox(height: 40),
@@ -118,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _onRegisterPressed,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppTheme.darkPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -138,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           : const Text(
                             "Sign Up",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppTheme.darkBackground,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -157,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Text(
                       "OR",
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: AppTheme.darkText,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -178,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       "Already have an account? ",
                       style: TextStyle(
                         fontSize: 15,
-                        color: Colors.grey.shade700,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     GestureDetector(
@@ -189,7 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         "Sign In",
                         style: TextStyle(
                           fontSize: 15,
-                          color: AppTheme.primary,
+                          color: AppTheme.darkPrimary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -213,7 +214,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.darkText),
       ),
     );
   }
@@ -228,7 +229,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+          color: AppTheme.darkText,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(

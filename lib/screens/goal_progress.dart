@@ -53,20 +53,28 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
       barrierDismissible: false,
       builder: (_) {
         return AlertDialog(
+          backgroundColor: AppTheme.darkSecondary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: const Text(
             "Delete Goal",
-            style: TextStyle(fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.darkText,
+            ),
           ),
           content: const Text(
             "Are you sure you want to delete this goal?\nThis action cannot be undone.",
+            style: TextStyle(color: AppTheme.darkText),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: AppTheme.darkText),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -178,6 +186,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
       barrierDismissible: false,
       builder: (_) {
         return Dialog(
+          backgroundColor: AppTheme.darkSecondary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -193,30 +202,32 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
+                    color: AppTheme.darkText,
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: noteController,
                   maxLines: 4,
+                  style: const TextStyle(color: AppTheme.darkText),
                   decoration: InputDecoration(
                     hintText: "Enter your note...",
                     hintStyle: TextStyle(color: Colors.grey.shade400),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
+                    fillColor: AppTheme.darkThird,
                     contentPadding: const EdgeInsets.all(14),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: AppTheme.darkThird),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: AppTheme.darkThird),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide(
-                        color: AppTheme.primary,
+                        color: AppTheme.darkPrimary,
                         width: 1.5,
                       ),
                     ),
@@ -230,7 +241,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                            color: Colors.grey.shade300,
+                            color: AppTheme.darkThird,
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
@@ -242,7 +253,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                           "Cancel",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: AppTheme.darkText,
                           ),
                         ),
                       ),
@@ -257,7 +268,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
+                          backgroundColor: AppTheme.darkPrimary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -267,7 +278,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         child: const Text(
                           "Save",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.darkBackground,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -286,7 +297,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.darkBackground,
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
         child: CustomNavigationBar(
@@ -300,18 +311,18 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
             /// ===== Header =====
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Colors.white,
+              color: AppTheme.darkBackground,
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppTheme.darkText),
                     onPressed: () => Navigator.pop(context),
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.add_circle_outline,
                       size: 22,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkPrimary,
                     ),
                     onPressed: () async {
                       final result = await Navigator.push(
@@ -337,6 +348,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.darkText,
                         ),
                       ),
                     ),
@@ -345,7 +357,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     icon: Icon(
                       Icons.edit_outlined,
                       size: 22,
-                      color: AppTheme.primary,
+                      color: AppTheme.darkPrimary,
                     ),
                     onPressed: () async {
                       // Get current goal data
@@ -365,7 +377,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.history, size: 22),
+                    icon: const Icon(Icons.history, size: 22, color: AppTheme.darkText),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -392,6 +404,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -405,11 +418,11 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                             height: 200,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.darkSecondary,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: CircularProgressIndicator(
-                              color: AppTheme.primary,
+                              color: AppTheme.darkPrimary,
                             ),
                           );
                         }
@@ -419,11 +432,12 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                           return Container(
                             padding: const EdgeInsets.all(32),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppTheme.darkSecondary,
                               borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppTheme.darkThird),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
+                                  color: Colors.black.withOpacity(0.2),
                                   blurRadius: 10,
                                   offset: const Offset(0, 2),
                                 ),
@@ -436,13 +450,13 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primary.withOpacity(0.1),
+                                    color: AppTheme.darkPrimary.withOpacity(0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     Icons.flag_outlined,
                                     size: 48,
-                                    color: AppTheme.primary,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 20),
@@ -454,6 +468,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: -0.5,
+                                    color: AppTheme.darkText,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -463,7 +478,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                   'Create your first fitness goal to start\ntracking your progress',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey.shade600,
+                                    color: Colors.grey.shade400,
                                     height: 1.5,
                                   ),
                                   textAlign: TextAlign.center,
@@ -493,24 +508,22 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                       }
                                     },
                                     icon: const Icon(Icons.add_circle_outline,
-                                        color: Colors.white, size: 22),
+                                        color: AppTheme.darkBackground, size: 22),
                                     label: const Text(
                                       'Create Goal',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: AppTheme.darkBackground,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: -0.3,
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.primary,
+                                      backgroundColor: AppTheme.darkPrimary,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                       elevation: 0,
-                                      shadowColor:
-                                      AppTheme.primary.withOpacity(0.3),
                                     ),
                                   ),
                                 ),
@@ -547,11 +560,12 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         return Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppTheme.darkSecondary,
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppTheme.darkThird),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withOpacity(0.2),
                                 blurRadius: 10,
                                 offset: const Offset(0, 2),
                               ),
@@ -575,14 +589,14 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                             vertical: 6,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.primary,
+                                            color: AppTheme.darkPrimary,
                                             borderRadius:
                                             BorderRadius.circular(20),
                                           ),
                                           child: Text(
                                             goal.status,
                                             style: const TextStyle(
-                                              color: Colors.white,
+                                              color: AppTheme.darkBackground,
                                               fontSize: 11,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -598,6 +612,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                             fontSize: 18,
                                             fontWeight: FontWeight.w700,
                                             letterSpacing: -0.3,
+                                            color: AppTheme.darkText,
                                           ),
                                         ),
 
@@ -610,7 +625,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                               : "No notes",
                                           style: TextStyle(
                                             fontSize: 13,
-                                            color: Colors.grey.shade600,
+                                            color: Colors.grey.shade400,
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -654,7 +669,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.black87,
+                                          color: AppTheme.darkText,
                                         ),
                                       ),
                                       Text(
@@ -662,7 +677,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: AppTheme.primary,
+                                          color: AppTheme.darkPrimary,
                                         ),
                                       ),
                                     ],
@@ -694,6 +709,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -732,6 +748,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
+                        color: AppTheme.darkText,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -759,7 +776,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                         ? "/${goal!.targetWorkoutSessionsPerWeek}"
                                         : "/week",
                                     icon: Icons.fitness_center,
-                                    color: Colors.blue,
+                                    color: AppTheme.darkPrimary,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -794,7 +811,7 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                                   value: _formatDoubleWithUnit(
                                       inBody?.muscleMass, "%"),
                                   icon: Icons.fitness_center,
-                                  color: Colors.blue,
+                                  color: AppTheme.darkPrimary,
                                   target: goal?.targetMuscleMass,
                                 ),
                                 _MiniTarget(
@@ -813,100 +830,6 @@ class _GoalProgressScreenState extends State<GoalProgressScreen> {
                     ),
 
                     const SizedBox(height: 24),
-
-                    /// ===== Notes =====
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     const Text(
-                    //       "Notes",
-                    //       style: TextStyle(
-                    //         fontSize: 18,
-                    //         fontWeight: FontWeight.w700,
-                    //         letterSpacing: -0.5,
-                    //       ),
-                    //     ),
-                    //     TextButton.icon(
-                    //       onPressed: () => _showAddNoteDialog(context),
-                    //       icon: Icon(
-                    //         Icons.add,
-                    //         size: 18,
-                    //         color: AppTheme.primary,
-                    //       ),
-                    //       label: Text(
-                    //         "Add Note",
-                    //         style: TextStyle(
-                    //           color: AppTheme.primary,
-                    //           fontWeight: FontWeight.w600,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    // const SizedBox(height: 12),
-
-                    // Container(
-                    //   width: double.infinity,
-                    //   padding: const EdgeInsets.all(16),
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.white,
-                    //     borderRadius: BorderRadius.circular(16),
-                    //     border: Border.all(color: Colors.grey.shade200),
-                    //     boxShadow: [
-                    //       BoxShadow(
-                    //         color: Colors.black.withOpacity(0.02),
-                    //         blurRadius: 8,
-                    //         offset: const Offset(0, 2),
-                    //       ),
-                    //     ],
-                    //   ),
-                    //   child: Row(
-                    //     children: [
-                    //       Container(
-                    //         padding: const EdgeInsets.all(10),
-                    //         decoration: BoxDecoration(
-                    //           color: Colors.orange.withOpacity(0.1),
-                    //           borderRadius: BorderRadius.circular(12),
-                    //         ),
-                    //         child: const Icon(
-                    //           Icons.restaurant,
-                    //           color: Colors.orange,
-                    //           size: 20,
-                    //         ),
-                    //       ),
-                    //       const SizedBox(width: 12),
-                    //       Expanded(
-                    //         child: Column(
-                    //           crossAxisAlignment: CrossAxisAlignment.start,
-                    //           children: [
-                    //             const Text(
-                    //               "Oatmeal with Egg",
-                    //               style: TextStyle(
-                    //                 fontWeight: FontWeight.w600,
-                    //                 fontSize: 14,
-                    //               ),
-                    //             ),
-                    //             const SizedBox(height: 4),
-                    //             Text(
-                    //               "160 kcal / day",
-                    //               style: TextStyle(
-                    //                 fontSize: 12,
-                    //                 color: Colors.grey.shade600,
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       ),
-                    //       IconButton(
-                    //         icon: const Icon(Icons.more_vert, size: 20),
-                    //         onPressed: () {},
-                    //         color: Colors.grey.shade600,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-
-                    // const SizedBox(height: 24),
 
                     /// ===== Delete Button =====
                     SizedBox(
@@ -964,12 +887,12 @@ class _ModernActivityChip extends StatelessWidget {
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -977,11 +900,15 @@ class _ModernActivityChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppTheme.primary),
+          Icon(icon, size: 18, color: AppTheme.darkPrimary),
           const SizedBox(width: 8),
           Text(
             label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.darkText,
+            ),
           ),
         ],
       ),
@@ -1013,11 +940,12 @@ class _ModernStatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.darkSecondary,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.darkThird),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -1029,7 +957,7 @@ class _ModernStatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, size: 22, color: color),
@@ -1037,9 +965,9 @@ class _ModernStatCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black54,
+              color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1054,6 +982,7 @@ class _ModernStatCard extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   height: 1,
                   letterSpacing: -1,
+                  color: AppTheme.darkText,
                 ),
               ),
               if (sub != null)
@@ -1063,7 +992,7 @@ class _ModernStatCard extends StatelessWidget {
                     sub!,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade400,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1075,7 +1004,7 @@ class _ModernStatCard extends StatelessWidget {
                     unit!,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade400,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1121,11 +1050,12 @@ class _MiniTarget extends StatelessWidget {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.darkSecondary,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.darkThird),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -1136,7 +1066,7 @@ class _MiniTarget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, size: 18, color: color),
@@ -1145,9 +1075,9 @@ class _MiniTarget extends StatelessWidget {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: Colors.black54,
+                color: Colors.grey.shade400,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1157,6 +1087,7 @@ class _MiniTarget extends StatelessWidget {
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
+                color: AppTheme.darkText,
               ),
             ),
             if (target != null) ...[
